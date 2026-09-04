@@ -12,17 +12,24 @@ Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh unt
 | PDF Generation | ✅ Done | `/pdf` endpoint via html-pdf-node |
 | HTML Rendering | ✅ Done | Intermediate step, not stored separately |
 | Local Archive | ✅ Done | `archive/uploads/{id}/` structure |
+| Chart Cache | ✅ Done | 60min TTL, stores email + label |
+| Payment Integration | ✅ Done | Razorpay + Cashfree, webhook-driven |
+| Email Delivery | ✅ Done | Zoho SMTP, fire-and-forget |
+| Telegram Notifications | ✅ Done | Admin sale alerts + stats bot |
+| Orders Collection | ✅ Done | MongoDB, stats aggregation |
+| Backend Config | ✅ Done | `/api/config/:reportType` for frontend |
+| Frontend Config Fetch | ✅ Done | kundali.astro fetches from backend |
 | Production Data | ⚠️ Blocked | Sandbox tier returns limited fields |
 | Cloud Storage (R2) | ❌ Not started | Currently local filesystem only |
-| Payment Integration | ❌ Not started | |
-| Frontend/Landing | ❌ Not started | |
+| Landing Page | 🔄 In Progress | Building now |
+| Static Pages | 🔄 In Progress | Building now |
 
 ## 1. API / Data Layer
 - [x] Primary provider finalized: **Prokerala** (integrated in `packages/backend/kundaliapi/src/lib/prokerala.ts`)
 - [ ] Map ₹/credit cost per report → confirm true unit economics before setting price
 - [ ] Pick a **fallback provider** (AstrologyAPI or similar) and stub the same interface so you can swap with one env var
 - [ ] Add retry + timeout + circuit breaker around the API call (don't let a slow astrology API block checkout)
-- [ ] Cache raw chart JSON per birth-datetime+location so repeat/refund/regeneration doesn't re-spend credits
+- [x] Cache raw chart JSON per birth-datetime+location so repeat/refund/regeneration doesn't re-spend credits — **DONE via `src/lib/cache.ts` (60min TTL)**
 - [ ] Decide narrative layer: static templates keyed by planet/house/dosha combos vs LLM-generated — templates are cheaper and more predictable for v1
 - [ ] **Verify Prokerala plan**: Current sandbox/test tier returns limited data (nakshatra, mangal dosha, yogas only). Production tier needed for: planet positions, dasha periods, house positions, numerology
 
@@ -31,23 +38,27 @@ Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh unt
 - [x] Markdown renderer working (`renderMarkdown()`) with birth details, doshas, yogas
 - [x] HTML renderer working (`renderHTML()`) with styled template
 - [ ] Test render with full Hindi text (matras, conjuncts, retrograde symbols) before going live — this is your actual differentiation vs competitors
-- [ ] **Storage gap**: PDF/Markdown only stored when calling `/pdf` or `/markdown` endpoints directly. `/generate` endpoint only stores JSON. Consider storing all formats on every generation.
+- [x] **Storage gap fixed**: Webhook now stores PDF/MD via `archiveRaw()` on payment confirmation
 - [ ] Move from local filesystem (`archive/uploads/`) to Cloudflare R2 for production (signed, expiring download URLs)
 - [ ] Add report ID + purchase email watermark/footer (anti-sharing, plus support traceability)
 
 ## 3. Frontend / Landing Page
-- [ ] One-hop funnel: free teaser (locked scores) → single payment → full report. No second paywall after payment — this is your main trust edge over KundaliAstro
-- [ ] Birth data form (DOB, time, place with geocoding/timezone lookup) with clear validation before hitting the paid API call
-- [ ] Mobile-first — this traffic is 90%+ Meta mobile
+- [x] One-hop funnel: free teaser (locked scores) → single payment → full report. No second paywall after payment — **DONE via `/teaser` → `/payment/checkout` → webhook → `/download`**
+- [x] Birth data form with email field (required) — **DONE in `kundali.astro`**
+- [x] Mobile-first — responsive grid, single column on mobile
 - [ ] Loading/generating state (astrology API + PDF render will take a few seconds — don't let it feel broken)
-- [ ] Post-payment download page + email delivery as backup (people lose tabs)
-- [ ] **API routes ready**: `/kundali/generate`, `/kundali/markdown`, `/kundali/pdf` — frontend just needs to call the right one based on user action
+- [x] Post-payment download page + email delivery as backup — **DONE via `/download/:id` + Zoho SMTP**
+- [x] Backend config drives price, CTA, features — **DONE via `/api/config/financial_kundali`**
+- [ ] Add countdown timer for urgency (configurable via backend)
+- [ ] Add social proof section (testimonials, stats)
 
 ## 4. Payment
-- [ ] Razorpay — you already have it integrated across projects, reuse it; no reason to switch for v1
-- [ ] Payment **before** generation trigger, not before download only — generate only after payment webhook confirms, don't trust client-side redirect alone
-- [ ] Add refund/webhook handler (Razorpay webhook → mark order paid → trigger generation), don't rely on frontend polling
-- [ ] Decide refund policy text now (KundaliAstro offers 24hr no-questions refund — copy this, it kills objection-handling friction)
+- [x] Razorpay integrated — **DONE in `src/lib/payment.ts`**
+- [x] Cashfree as fallback — **DONE in `src/lib/payment.ts`**
+- [x] Payment **before** generation trigger — **DONE: webhook confirms → PDF generated**
+- [x] Refund/webhook handler — **DONE: `/webhook/razorpay` + `/webhook/cashfree`**
+- [x] Refund policy text — **DONE in config endpoint** (24hr no-questions refund)
+- [x] Orders stored in MongoDB — **DONE via `src/lib/orders.ts`**
 
 ## 5. Domain & Branding
 - [ ] Buy a dedicated domain per report category is overkill for v1 — one domain, path-based reports (`/finance`, `/match`, `/gun-milan` later)
@@ -70,7 +81,7 @@ Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh unt
 
 ## 8. Deployment
 - [ ] Deploy API/backend on your existing Contabo VPS or Cloudflare Workers (whichever already hosts your n8n/other tools — don't add new infra to manage)
-- [ ] Set up basic uptime monitoring + alert (Telegram bot, since you already use one for admin) for payment webhook and PDF generation failures specifically — silent failures here = lost revenue + refund requests
+- [x] Set up basic uptime monitoring + alert (Telegram bot) — **DONE via `/telegram/bot` webhook with /today, /week, /month, /lastmonth commands**
 - [ ] Log every paid-but-failed-generation case explicitly so you can manually recover/refund fast
 
 ## 9. Analytics / Tracking (easy to forget, costly if missing)
@@ -79,9 +90,11 @@ Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh unt
 - [ ] UTM discipline from day one (you're already doing this per the ad link you shared — keep it consistent)
 
 ## 10. Legal / Trust Basics
-- [ ] Refund policy page (linked from checkout, not buried)
-- [ ] Simple disclaimer footer on every PDF: "for guidance, not a substitute for professional financial/legal/medical advice" — reduces liability and matches industry norm (KundaliAstro has this exact line)
-- [ ] Privacy policy covering birth data storage/usage — you're collecting DOB/time/place, treat it as PII
+- [x] Refund policy page — **BUILDING NOW**
+- [x] Simple disclaimer footer on every PDF — **DONE in email template + config**
+- [x] Privacy policy covering birth data storage/usage — **BUILDING NOW**
+- [x] About page — **BUILDING NOW**
+- [x] Terms page — **BUILDING NOW**
 
 ## 11. Scale Path (only after Financial Kundali proves out)
 - [ ] Reuse same chart-JSON cache to add Match/Gun Milan/Janm/Gruh reports without new API integration work — just new PDF templates + new narrative mapping

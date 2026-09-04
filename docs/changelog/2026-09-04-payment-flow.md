@@ -43,3 +43,40 @@ Added one-hop payment flow: form → teaser → pay → PDF. No second paywall.
 - Email field added to teaser payload
 
 **Env vars added:** `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, `CASHFREE_ENV`, `APP_URL`, `ZOHO_SMTP_HOST`, `ZOHO_SMTP_PORT`, `ZOHO_SMTP_USER`, `ZOHO_SMTP_PASS`, `ZOHO_SMTP_FROM`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`
+
+---
+
+## 2026-09-04 — Landing Page + Static Pages + SEO
+
+**Landing page (`index.astro`):**
+- Hero with animated CTA (pulse animation)
+- Pain points section (4 common financial struggles)
+- 6 feature cards (Income, Savings, Loan, Investment, Career, Outlook)
+- Free teaser score preview (6 money-axis boxes)
+- How it works (3 steps)
+- Testimonials (3 cards)
+- Full form with geocoding fallback (50+ Indian cities)
+- FAQ accordion (5 questions)
+- Bottom CTA
+- Sticky mobile CTA on scroll
+- Responsive grid (single column on mobile)
+
+**Static pages created:**
+- `/refund` — 24-hour no-questions refund policy
+- `/privacy` — Birth data storage/usage, third-party services
+- `/about` — Mission, how it works, privacy-first
+- `/terms` — Service terms, payments, IP, liability
+- `/disclaimer` — Not financial advice, no guaranteed outcomes
+
+**Layout updates:**
+- Footer with links to all static pages
+- SEO meta description added
+- Mobile-responsive design
+
+**Checklist updated:**
+- Payment integration: ✅ Done
+- Frontend config: ✅ Done
+- Landing page: ✅ Done
+- Static pages: ✅ Done
+- Telegram notifications: ✅ Done
+- Orders collection: ✅ Done

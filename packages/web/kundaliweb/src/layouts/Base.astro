@@ -3,6 +3,8 @@ interface Props {
   title: string;
 }
 const { title } = Astro.props;
+const META_PIXEL_ID = import.meta.env.PUBLIC_META_PIXEL_ID ?? "";
+const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
 ---
 <!doctype html>
 <html lang="en">
@@ -10,6 +12,33 @@ const { title } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} | Shri Kundali</title>
+    <meta name="description" content="Vedic Financial Kundali Report — Discover your financial destiny with personalized birth chart analysis." />
+    <meta property="og:title" content={`${title} | Shri Kundali`} />
+    <meta property="og:description" content="Vedic Financial Kundali Report — Discover your financial destiny with personalized birth chart analysis." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shrikundali.in" />
+    <meta property="og:site_name" content="Shri Kundali" />
+
+    <!-- Meta Pixel -->
+    {META_PIXEL_ID && (
+      <script is:inline>
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '{META_PIXEL_ID}');
+        fbq('track', 'PageView');
+      </script>
+    )}
+
+    <!-- Google Analytics -->
+    {GA_MEASUREMENT_ID && (
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
+      <script is:inline>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{GA_MEASUREMENT_ID}', { page_path: window.location.pathname });
+      </script>
+    )}
+
     <style is:global>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; background: #faf8f5; line-height: 1.6; }
@@ -18,16 +47,39 @@ const { title } = Astro.props;
       nav { background: #8b4513; color: #fff; padding: 0.75rem 1.5rem; }
       nav a { color: #fff; text-decoration: none; margin-right: 1.5rem; font-size: 0.95rem; }
       nav a:hover { text-decoration: underline; }
+      footer { text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid #f0e6d6; }
+      footer a { color: #888; font-size: 0.85rem; margin: 0 0.5rem; text-decoration: none; }
+      footer a:hover { color: #8b4513; }
+      footer p { color: #aaa; font-size: 0.75rem; margin-top: 0.5rem; }
     </style>
   </head>
   <body>
     <nav>
       <a href="/">Home</a>
       <a href="/kundali">Kundali</a>
+      <a href="/about">About</a>
       <a href="/docs" target="_blank">API Docs</a>
     </nav>
     <div class="container">
       <slot />
     </div>
+    <footer>
+      <div>
+        <a href="/about">About</a>
+        <a href="/refund">Refund</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/disclaimer">Disclaimer</a>
+        <a href="/sitemap">Sitemap</a>
+      </div>
+      <p>&copy; 2026 Shri Kundali. All rights reserved.</p>
+    </footer>
+
+    <!-- NoScript fallback for Meta Pixel -->
+    {META_PIXEL_ID && (
+      <noscript>
+        <img height="1" width="1" style="display:none" src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} />
+      </noscript>
+    )}
   </body>
 </html>

@@ -2,24 +2,484 @@
 import Base from "../layouts/Base.astro";
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 ---
-<Base title="Home">
-  <h1 style="color:#8b4513;margin-bottom:0.5rem">Shri Kundali</h1>
-  <p style="color:#666;margin-bottom:2rem">Vedic Astrology API & Report Generator</p>
+<Base title="Financial Kundali Report — Dhan, Career, Investment Timing">
+  <style>
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .cta-pulse { animation: pulse 2s ease-in-out infinite; }
+    .slide-up { animation: slideUp 0.6s ease-out forwards; }
+    .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+    .fade-in-delay { animation: fadeIn 0.8s ease-out 0.3s forwards; opacity: 0; }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(139,69,19,0.15); }
+    .feature-card { transition: all 0.3s ease; }
+    .step-num { width: 32px; height: 32px; background: #8b4513; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .testimonial { background: #fff; border: 1px solid #d4a373; border-radius: 8px; padding: 1.25rem; }
+    .testimonial::before { content: '\201C'; font-size: 2rem; color: #d4a373; line-height: 1; display: block; margin-bottom: 0.5rem; }
+    .faq-item { border-bottom: 1px solid #f0e6d6; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { cursor: pointer; padding: 1rem 0; font-weight: 600; color: #8b4513; display: flex; justify-content: space-between; align-items: center; }
+    .faq-a { display: none; padding-bottom: 1rem; color: #555; font-size: 0.95rem; line-height: 1.6; }
+    .faq-a.open { display: block; }
+    .score-box { background: #faf3e8; border: 1px solid #d4a373; border-radius: 8px; padding: 1rem; text-align: center; }
+    .score-num { font-size: 1.8rem; font-weight: 700; color: #8b4513; }
+    .sticky-cta { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #d4a373; padding: 0.75rem 1rem; z-index: 100; transform: translateY(100%); transition: transform 0.3s ease; }
+    .sticky-cta.show { transform: translateY(0); }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 1.6rem !important; }
+      .hero-sub { font-size: 0.95rem !important; }
+      .grid-2 { grid-template-columns: 1fr !important; }
+      .grid-3 { grid-template-columns: 1fr !important; }
+      .score-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+  </style>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-    <a href="/kundali" style="display:block;background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;text-decoration:none;color:inherit;transition:border-color 0.2s">
-      <h2 style="color:#8b4513;font-size:1.1rem;margin-bottom:0.5rem">Generate Kundali</h2>
-      <p style="font-size:0.9rem;color:#666">Create birth chart, mangal dosha, and yoga analysis. Export as JSON, Markdown, or PDF.</p>
+  <!-- Hero Section -->
+  <section class="slide-up" style="text-align:center;padding:2rem 0 1.5rem">
+    <div style="display:inline-block;background:#faf3e8;border:1px solid #d4a373;border-radius:20px;padding:0.3rem 0.8rem;font-size:0.8rem;color:#8b4513;margin-bottom:1rem">
+      &#x1F512; Secure &bull; 100% Private
+    </div>
+    <h1 class="hero-title" style="font-size:2rem;color:#8b4513;margin-bottom:0.75rem;line-height:1.3">
+      Financial Kundali Report
+    </h1>
+    <p class="hero-sub" style="font-size:1.1rem;color:#555;margin-bottom:0.5rem;max-width:500px;margin-left:auto;margin-right:auto">
+      Discover your financial destiny with Vedic astrology. Get personalized insights on wealth, career, investments, and money management.
+    </p>
+    <p style="font-size:0.85rem;color:#888;margin-bottom:1.5rem">
+      Trusted by 10,000+ users &bull; 4.8&#x2605; &bull; Instant PDF
+    </p>
+    <a href="#form-section" class="cta-pulse" style="display:inline-block;background:#8b4513;color:#fff;padding:0.9rem 2.5rem;border-radius:8px;text-decoration:none;font-size:1.1rem;font-weight:600;box-shadow:0 4px 16px rgba(139,69,19,0.3)">
+      Get Your Report &#8594;
     </a>
-    <a href="/docs" target="_blank" style="display:block;background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;text-decoration:none;color:inherit;transition:border-color 0.2s">
-      <h2 style="color:#8b4513;font-size:1.1rem;margin-bottom:0.5rem">API Docs</h2>
-      <p style="font-size:0.9rem;color:#666">Interactive OpenAPI reference for all endpoints. Test directly from the browser.</p>
+  </section>
+
+  <!-- Pain Points -->
+  <section class="fade-in" style="background:#fff;border:1px solid #d4a373;border-radius:12px;padding:1.5rem;margin:1.5rem 0">
+    <h2 style="color:#8b4513;font-size:1.1rem;margin-bottom:1rem;text-align:center">Does this sound like you?</h2>
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:#faf3e8;border-radius:8px">
+        <span style="font-size:1.2rem">&#x1F4B8;</span>
+        <span style="font-size:0.9rem">Salary comes in, but money doesn't stay</span>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:#faf3e8;border-radius:8px">
+        <span style="font-size:1.2rem">&#x1F4C9;</span>
+        <span style="font-size:0.9rem">EMI / credit card pressure keeps growing</span>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:#faf3e8;border-radius:8px">
+        <span style="font-size:1.2rem">&#x1F914;</span>
+        <span style="font-size:0.9rem">Confused between business vs job?</span>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:#faf3e8;border-radius:8px">
+        <span style="font-size:1.2rem">&#x1F3E0;</span>
+        <span style="font-size:0.9rem">Can't time property / investment decisions</span>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:1rem;color:#8b4513;font-weight:600;font-size:0.95rem">
+      The answer lies in your birth chart &#8212; fill the form below to find out
+    </p>
+  </section>
+
+  <!-- What's in the Report -->
+  <section class="fade-in-delay" style="margin:2rem 0">
+    <h2 style="color:#8b4513;font-size:1.3rem;margin-bottom:1rem;text-align:center">What's in Your Report</h2>
+    <p style="text-align:center;color:#666;font-size:0.9rem;margin-bottom:1.5rem">6 key financial aspects &#8212; one personalized PDF</p>
+    <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+      <div class="feature-card" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.25rem;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">&#x1F4B0;</div>
+        <h3 style="color:#8b4513;font-size:0.95rem;margin-bottom:0.25rem">Income Flow</h3>
+        <p style="font-size:0.8rem;color:#666">Source stability & timing</p>
+      </div>
+      <div class="feature-card" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.25rem;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">&#x1F4B3;</div>
+        <h3 style="color:#8b4513;font-size:0.95rem;margin-bottom:0.25rem">Savings & Expenses</h3>
+        <p style="font-size:0.8rem;color:#666">Why money doesn't stay</p>
+      </div>
+      <div class="feature-card" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.25rem;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">&#x1F3E6;</div>
+        <h3 style="color:#8b4513;font-size:0.95rem;margin-bottom:0.25rem">Loan / EMI</h3>
+        <p style="font-size:0.8rem;color:#666">Debt release windows</p>
+      </div>
+      <div class="feature-card" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.25rem;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">&#x1F4C8;</div>
+        <h3 style="color:#8b4513;font-size:0.95rem;margin-bottom:0.25rem">Investment</h3>
+        <p style="font-size:0.8rem;color:#666">Land, gold, stocks &#8212; what suits you</p>
+      </div>
+      <div class="feature-card" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.25rem;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">&#x1F4BC;</div>
+        <h3 style="color:#8b4513;font-size:0.95rem;margin-bottom:0.25rem">Career & Business</h3>
+        <p style="font-size:0.8rem;color:#666">Promotion timing + path</p>
+      </div>
+      <div class="feature-card" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.25rem;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.5rem">&#x1F52E;</div>
+        <h3 style="color:#8b4513;font-size:0.95rem;margin-bottom:0.25rem">12-Month Outlook</h3>
+        <p style="font-size:0.8rem;color:#666">When to act, when to wait</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teaser Scores -->
+  <section style="background:#fff;border:1px solid #d4a373;border-radius:12px;padding:1.5rem;margin:2rem 0">
+    <h2 style="color:#8b4513;font-size:1.1rem;margin-bottom:0.5rem;text-align:center">Your Money-Axis Scores</h2>
+    <p style="text-align:center;color:#666;font-size:0.85rem;margin-bottom:1.5rem">Free preview &#8212; full details in paid report</p>
+    <div class="score-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem">
+      <div class="score-box"><div class="score-num">--</div><div style="font-size:0.75rem;color:#666">Wealth</div></div>
+      <div class="score-box"><div class="score-num">--</div><div style="font-size:0.75rem;color:#666">Career</div></div>
+      <div class="score-box"><div class="score-num">--</div><div style="font-size:0.75rem;color:#666">Business</div></div>
+      <div class="score-box"><div class="score-num">--</div><div style="font-size:0.75rem;color:#666">Property</div></div>
+      <div class="score-box"><div class="score-num">--</div><div style="font-size:0.75rem;color:#666">Investment</div></div>
+      <div class="score-box"><div class="score-num">--</div><div style="font-size:0.75rem;color:#666">Stability</div></div>
+    </div>
+    <p style="text-align:center;margin-top:1rem;font-size:0.8rem;color:#888">Fill the form below to see your scores</p>
+  </section>
+
+  <!-- How it Works -->
+  <section style="margin:2rem 0">
+    <h2 style="color:#8b4513;font-size:1.3rem;margin-bottom:1.5rem;text-align:center">How It Works</h2>
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:500px;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="step-num">1</div>
+        <div><strong style="color:#8b4513">Fill your birth details</strong><br><span style="font-size:0.85rem;color:#666">Name, email, date, time & place of birth</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="step-num">2</div>
+        <div><strong style="color:#8b4513">Get your free preview</strong><br><span style="font-size:0.85rem;color:#666">See basic scores and chart summary</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="step-num">3</div>
+        <div><strong style="color:#8b4513">Download full PDF</strong><br><span style="font-size:0.85rem;color:#666">Instant delivery via email + download link</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section style="margin:2rem 0">
+    <h2 style="color:#8b4513;font-size:1.3rem;margin-bottom:1.5rem;text-align:center">What People Say</h2>
+    <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+      <div class="testimonial">
+        <p style="font-size:0.9rem;color:#555;margin-bottom:0.75rem">The loan release timing was accurate. Saturn antardasha relief came exactly as predicted.</p>
+        <div style="font-size:0.85rem"><strong>Amit</strong> <span style="color:#888">&#x2022; Lucknow</span></div>
+      </div>
+      <div class="testimonial">
+        <p style="font-size:0.9rem;color:#555;margin-bottom:0.75rem">Career diagnosis opened my eyes. Chart showed job stability over business. Got promotion after a year.</p>
+        <div style="font-size:0.85rem"><strong>Rahul</strong> <span style="color:#888">&#x2022; Pune</span></div>
+      </div>
+      <div class="testimonial">
+        <p style="font-size:0.9rem;color:#555;margin-bottom:0.75rem">Property timing window was genuine. Waited in the right window, got better rate and loan sanctioned.</p>
+        <div style="font-size:0.85rem"><strong>Neha</strong> <span style="color:#888">&#x2022; Delhi</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section id="form-section" style="background:#fff;border:2px solid #8b4513;border-radius:12px;padding:2rem;margin:2rem 0">
+    <h2 style="color:#8b4513;font-size:1.3rem;margin-bottom:0.5rem;text-align:center">Get Your Financial Kundali</h2>
+    <p style="text-align:center;color:#666;font-size:0.9rem;margin-bottom:1.5rem">Fill once &#8212; instant analysis starts</p>
+
+    <form id="kundali-form" style="max-width:600px;margin:0 auto">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Full Name *</span>
+          <input type="text" id="label" placeholder="Your name" required
+            style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Email *</span>
+          <input type="email" id="email" placeholder="you@example.com" required
+            style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Date of Birth *</span>
+          <input type="date" id="dob" required
+            style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Time of Birth</span>
+          <input type="time" id="birthtime"
+            style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Place of Birth *</span>
+          <input type="text" id="birthplace" placeholder="City, State" required
+            style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Coordinates</span>
+          <input type="text" id="coordinates" placeholder="lat,lon (auto-filled)" readonly
+            style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem;background:#faf3e8" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Ayanamsa</span>
+          <select id="ayanamsa" style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem">
+            <option value="1" selected>Lahiri</option>
+            <option value="3">Raman</option>
+            <option value="5">KP</option>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Language</span>
+          <select id="la" style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;font-size:0.95rem">
+            <option value="en" selected>English</option>
+            <option value="hi">Hindi</option>
+          </select>
+        </label>
+      </div>
+      <div style="margin-top:1.5rem;text-align:center">
+        <button type="submit" class="cta-pulse"
+          style="background:#8b4513;color:#fff;border:none;padding:1rem 3rem;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(139,69,19,0.3)">
+          Get Instant Analysis &#8594;
+        </button>
+        <p style="font-size:0.8rem;color:#888;margin-top:0.5rem">&#x1F512; Secure &bull; 100% private &bull; 24hr refund</p>
+      </div>
+    </form>
+
+    <div id="status" style="display:none;padding:0.75rem;border-radius:8px;margin-top:1rem;font-size:0.9rem;text-align:center"></div>
+  </section>
+
+  <!-- FAQ -->
+  <section style="margin:2rem 0;max-width:600px;margin-left:auto;margin-right:auto">
+    <h2 style="color:#8b4513;font-size:1.3rem;margin-bottom:1rem;text-align:center">Frequently Asked Questions</h2>
+    <div style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:0 1.25rem">
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">What do I get in the Financial Kundali? <span>+</span></div>
+        <div class="faq-a">Your personalized PDF includes 6 money-axis scores: Income Flow, Savings, Loan/EMI timing, Investment guidance, Career/Business path, and 12-month outlook &#8212; all based on your actual birth chart positions.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Is this financial advice? <span>+</span></div>
+        <div class="faq-a">No. This is Vedic financial astrology guidance based on your birth chart. It is not SEBI-registered financial advice. Please consult a qualified advisor for major investment or loan decisions.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">What if I don't know my exact birth time? <span>+</span></div>
+        <div class="faq-a">Exact time gives more refined readings, but birth date and place alone can still identify financial patterns. Leave the time field blank if unsure.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">How fast is the report? <span>+</span></div>
+        <div class="faq-a">Instant. Once you fill the form and complete payment, your personalized PDF is generated immediately and sent to your email.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">What's the refund policy? <span>+</span></div>
+        <div class="faq-a">Full refund within 24 hours of purchase, no questions asked. <a href="/refund" style="color:#8b4513">View full policy</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section style="text-align:center;padding:2rem 0;margin-top:1rem">
+    <p style="color:#8b4513;font-size:1.1rem;font-weight:600;margin-bottom:0.5rem">Ready to know your financial future?</p>
+    <p style="color:#666;font-size:0.9rem;margin-bottom:1rem">Dhan yog &#x2022; Saturn timing &#x2022; Personalized PDF</p>
+    <a href="#form-section" class="cta-pulse" style="display:inline-block;background:#8b4513;color:#fff;padding:0.9rem 2.5rem;border-radius:8px;text-decoration:none;font-size:1.1rem;font-weight:600;box-shadow:0 4px 16px rgba(139,69,19,0.3)">
+      Get Your Report Now &#8594;
+    </a>
+  </section>
+
+  <!-- Disclaimer -->
+  <section style="text-align:center;padding:1rem 0;border-top:1px solid #f0e6d6;margin-top:1rem">
+    <p style="font-size:0.75rem;color:#888;max-width:500px;margin:0 auto">
+      This is Vedic Financial Kundali guidance, not SEBI-registered financial advice. Outcomes vary by individual. For major loan/investment decisions, consult a qualified advisor.
+    </p>
+  </section>
+
+  <!-- Sticky Mobile CTA -->
+  <div id="sticky-cta" class="sticky-cta">
+    <a href="#form-section" style="display:block;background:#8b4513;color:#fff;text-align:center;padding:0.75rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:1rem">
+      Get Your Report &#8594;
     </a>
   </div>
 
-  <div style="margin-top:2rem;background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem">
-    <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem">API Status</h2>
-    <p style="font-size:0.9rem">Backend: <code>{API_URL}</code></p>
-    <p style="font-size:0.85rem;color:#888;margin-top:0.5rem">Set <code>VITE_API_URL</code> in .env to change the API endpoint.</p>
-  </div>
+  <script is:inline>
+    const API = import.meta.env?.VITE_API_URL ?? "http://localhost:3400";
+    const form = document.getElementById("kundali-form");
+    const statusEl = document.getElementById("status");
+    const stickyCta = document.getElementById("sticky-cta");
+
+    // Sticky CTA on scroll
+    window.addEventListener("scroll", () => {
+      const formSection = document.getElementById("form-section");
+      if (formSection) {
+        const rect = formSection.getBoundingClientRect();
+        stickyCta.classList.toggle("show", rect.bottom < 0);
+      }
+    });
+
+    function showStatus(msg, type) {
+      statusEl.style.display = "block";
+      statusEl.textContent = msg;
+      statusEl.style.background = type === "error" ? "#fee" : "#efe";
+      statusEl.style.color = type === "error" ? "#c00" : "#060";
+      statusEl.style.border = `1px solid ${type === "error" ? "#c00" : "#0a0"}`;
+    }
+
+    // Simple geocoding fallback
+    const CITY_COORDS = {
+      "mumbai": "19.0760,72.8777",
+      "delhi": "28.6139,77.2090",
+      "bangalore": "12.9716,77.5946",
+      "bengaluru": "12.9716,77.5946",
+      "chennai": "13.0827,80.2707",
+      "kolkata": "22.5726,88.3639",
+      "hyderabad": "17.3850,78.4867",
+      "pune": "18.5204,73.8567",
+      "ahmedabad": "23.0225,72.5714",
+      "jaipur": "26.9124,75.7873",
+      "lucknow": "26.8467,80.9462",
+      "kanpur": "26.4499,80.3319",
+      "nagpur": "21.1458,79.0882",
+      "indore": "22.7196,75.8577",
+      "thane": "19.2183,72.9781",
+      "bhopal": "23.2599,77.4126",
+      "visakhapatnam": "17.6868,83.2185",
+      "patna": "25.6093,85.1376",
+      "vadodara": "22.3072,73.1812",
+      "ghaziabad": "28.6692,77.4538",
+      "surat": "21.1702,72.8311",
+      "pimpri": "18.6279,73.8009",
+      "nashik": "19.9975,73.7898",
+      "faridabad": "28.4089,77.3178",
+      "meerut": "28.9845,77.7064",
+      "rajkot": "22.3039,70.8022",
+      "varanasi": "25.3176,82.9739",
+      "srinagar": "34.0837,74.7973",
+      "aurangabad": "19.8762,75.3433",
+      "dhanbad": "23.7957,86.4304",
+      "amritsar": "31.6340,74.8723",
+      "allahabad": "25.4358,81.8463",
+      "prayagraj": "25.4358,81.8463",
+      "ranchi": "23.3441,85.3096",
+      "howrah": "22.5958,88.2636",
+      "coimbatore": "11.0168,76.9558",
+      "jabalpur": "23.1815,79.9864",
+      "gwalior": "26.2183,78.1828",
+      "vijayawada": "16.5062,80.6480",
+      "jodhpur": "26.2389,73.0243",
+      "guwahati": "26.1445,91.7362",
+      "thiruvananthapuram": "8.5241,76.9366",
+      "tiruchirappalli": "10.7905,78.7047",
+      "madurai": "9.9252,78.1198",
+      "mysore": "12.2958,76.6394",
+      "mysuru": "12.2958,76.6394",
+      "martandam": "8.3041,77.5371",
+      "nellore": "14.4426,79.9865",
+      "kurnool": "15.8281,78.0373",
+      "tirupati": "13.6288,79.4192",
+      "chengalpattu": "12.6915,79.9771",
+      "kanchipuram": "12.8342,79.7036",
+      "cuddalore": "11.7401,79.7661",
+      "viluppuram": "11.9416,79.4924",
+      "thoothukudi": "8.7642,78.1348",
+      "tirunelveli": "8.7139,77.7567",
+      "kovai": "11.0168,76.9558",
+      "erode": "11.3410,77.7172",
+      "salem": "11.6643,78.1460",
+      "karur": "10.9601,78.0766",
+      "dindigul": "10.3673,77.9803",
+      "theni": "10.0109,77.4969",
+      "madurai": "9.9252,78.1198",
+      "virudhunagar": "9.5853,77.9577",
+      "ramanathapuram": "9.3768,78.8304",
+      "sivaganga": "9.8458,78.4836",
+      "pudukkottai": "10.3814,78.8213",
+      "thanjavur": "10.7870,79.1378",
+      "nagapattinam": "10.7672,79.8478",
+      "thiruvarur": "10.7710,79.6370",
+      "mayiladuthurai": "11.1034,79.6560",
+      "karur": "10.9601,78.0766",
+      "namakkal": "11.2220,78.1670",
+      "erode": "11.3410,77.7172",
+      "gobichettipalayam": "11.4540,77.4430",
+      "sathyamangalam": "11.5071,77.2438",
+      "coimbatore": "11.0168,76.9558",
+      "pollachi": "10.6594,76.9982",
+      "valparai": "10.3253,76.9503",
+      "udumalpet": "10.5850,77.2480",
+      "palani": "10.4540,77.5207",
+      "dindigul": "10.3673,77.9803",
+      "kodaikanal": "10.2382,77.4893",
+      "theni": "10.0109,77.4969",
+      "cumbum": "9.7340,77.2931",
+      "madurai": "9.9252,78.1198",
+      "sivakasi": "9.4520,77.8000",
+      "rajapalayam": "9.4510,77.5547",
+      "srivilliputhur": "9.5124,77.6333",
+      "virudhunagar": "9.5853,77.9577",
+      "sattur": "9.3509,77.9233",
+      "tiruchuli": "9.4038,77.8735",
+      "paramakudi": "9.4443,78.2326",
+      "ramanathapuram": "9.3768,78.8304",
+      "mudukulathur": "9.3565,78.9513",
+      "kamuthi": "9.2580,78.8364",
+      "rameswaram": "9.2876,79.3129",
+      "mandapam": "9.2785,79.1234",
+      "kanyakumari": "8.0883,77.5385",
+      "nagercoil": "8.1771,77.4342",
+      "colachel": "8.1729,77.2575",
+      "thiruvananthapuram": "8.5241,76.9366",
+      "kazhakoottam": "8.5562,76.8887",
+      "vattiyoorkavu": "8.5030,76.9546",
+      "neyyattinkara": "8.3993,77.0855",
+      "parassala": "8.2757,77.3231",
+      "colachel": "8.1729,77.2575",
+      "kuzhithurai": "8.3162,77.1924",
+      "thuckalay": "8.2574,77.1242",
+      "kilmanickam": "8.2084,77.1630",
+      "nagarcoil": "8.1771,77.4342",
+    };
+
+    document.getElementById("birthplace").addEventListener("input", (e) => {
+      const val = e.target.value.toLowerCase().trim();
+      if (CITY_COORDS[val]) {
+        document.getElementById("coordinates").value = CITY_COORDS[val];
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      showStatus("Analyzing your birth chart...", "ok");
+
+      const dob = document.getElementById("dob").value;
+      const birthtime = document.getElementById("birthtime").value || "12:00";
+      const datetime = `${dob}T${birthtime}+05:30`;
+
+      const payload = {
+        coordinates: document.getElementById("coordinates").value || "19.0760,72.8777",
+        datetime,
+        ayanamsa: Number(document.getElementById("ayanamsa").value),
+        la: document.getElementById("la").value,
+        label: document.getElementById("label").value,
+        email: document.getElementById("email").value,
+      };
+
+      try {
+        const res = await fetch(`${API}/teaser`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: "Unknown error" }));
+          showStatus(err.error || "Failed to generate. Please try again.", "error");
+          return;
+        }
+
+        const data = await res.json();
+
+        // Update score boxes
+        const scores = data.teaser?.moneyAxisScores;
+        if (scores) {
+          const boxes = document.querySelectorAll(".score-num");
+          const keys = ["wealthPotential", "careerGrowth", "businessLuck", "propertyAssets", "investmentSense", "financialStability"];
+          boxes.forEach((box, i) => {
+            if (scores[keys[i]] !== undefined) {
+              box.textContent = scores[keys[i]];
+              box.style.color = scores[keys[i]] >= 7 ? "#0a0" : scores[keys[i]] >= 4 ? "#b8860b" : "#c00";
+            }
+          });
+        }
+
+        // Redirect to payment
+        window.location.href = `/kundali?cacheId=${data.cacheId}&email=${encodeURIComponent(payload.email)}&name=${encodeURIComponent(payload.label)}`;
+      } catch (err) {
+        showStatus(`Network error: ${err.message}. Is the API running?`, "error");
+      }
+    });
+  </script>
 </Base>
