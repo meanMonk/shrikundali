@@ -1,0 +1,123 @@
+### Variables
+@baseUrl = http://localhost:3400
+@contentType = application/json
+
+### ─── Health & DB ──────────────────────────────────────
+
+### Health Check
+GET {{baseUrl}}/health
+
+### DB Ping
+GET {{baseUrl}}/db/ping
+
+### ─── Kundali: Generate (JSON) ─────────────────────────
+
+### Generate Kundali — Mumbai birth
+POST {{baseUrl}}/kundali/generate
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "19.0760,72.8777",
+  "datetime": "1990-01-01T10:30:00+05:30",
+  "ayanamsa": 1,
+  "la": "en",
+  "label": "Sahil Kashetwar"
+}
+
+### Generate Kundali — Delhi birth (Hindi)
+POST {{baseUrl}}/kundali/generate
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "28.6139,77.2090",
+  "datetime": "1985-01-01T14:15:00+05:30",
+  "ayanamsa": 1,
+  "la": "hi",
+  "label": "Sahil"
+}
+
+### Generate Kundali — Bangalore (Raman ayanamsa)
+POST {{baseUrl}}/kundali/generate
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "12.9716,77.5946",
+  "datetime": "2000-01-01T00:00:00+05:30",
+  "ayanamsa": 3,
+  "la": "en",
+  "label": "Millennial"
+}
+
+### ─── Kundali: Markdown ────────────────────────────────
+
+### Markdown Report — Mumbai
+POST {{baseUrl}}/kundali/markdown
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "19.0760,72.8777",
+  "datetime": "1990-01-01T10:30:00+05:30",
+  "ayanamsa": 1,
+  "la": "en",
+  "label": "Sahil Kashetwar"
+}
+
+### Markdown Report — minimal params
+POST {{baseUrl}}/kundali/markdown
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "28.6139,77.2090",
+  "datetime": "1985-01-01T14:15:00+05:30"
+}
+
+### ─── Kundali: PDF ─────────────────────────────────────
+
+### PDF Report — Mumbai
+POST {{baseUrl}}/kundali/pdf
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "19.0760,72.8777",
+  "datetime": "1990-01-01T10:30:00+05:30",
+  "ayanamsa": 1,
+  "la": "en",
+  "label": "Sahil Kashetwar"
+}
+
+### PDF Report — Delhi
+POST {{baseUrl}}/kundali/pdf
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "28.6139,77.2090",
+  "datetime": "1985-01-01T14:15:00+05:30",
+  "ayanamsa": 1,
+  "la": "en",
+  "label": "Delhi Native"
+}
+
+### ─── Error cases ──────────────────────────────────────
+
+### Missing coordinates (should 400)
+POST {{baseUrl}}/kundali/generate
+Content-Type: {{contentType}}
+
+{
+  "datetime": "1990-01-01T10:30:00+05:30"
+}
+
+### Invalid datetime format (should 400)
+POST {{baseUrl}}/kundali/generate
+Content-Type: {{contentType}}
+
+{
+  "coordinates": "19.0760,72.8777",
+  "datetime": "not-a-date"
+}
+
+### Empty body (should 400)
+POST {{baseUrl}}/kundali/generate
+Content-Type: {{contentType}}
+
+{}

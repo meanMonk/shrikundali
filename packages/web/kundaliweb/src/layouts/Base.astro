@@ -1,0 +1,33 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | Shri Kundali</title>
+    <style is:global>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; background: #faf8f5; line-height: 1.6; }
+      a { color: #8b4513; }
+      .container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+      nav { background: #8b4513; color: #fff; padding: 0.75rem 1.5rem; }
+      nav a { color: #fff; text-decoration: none; margin-right: 1.5rem; font-size: 0.95rem; }
+      nav a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/kundali">Kundali</a>
+      <a href="/docs" target="_blank">API Docs</a>
+    </nav>
+    <div class="container">
+      <slot />
+    </div>
+  </body>
+</html>

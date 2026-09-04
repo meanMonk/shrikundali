@@ -1,0 +1,25 @@
+---
+import Base from "../layouts/Base.astro";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
+---
+<Base title="Home">
+  <h1 style="color:#8b4513;margin-bottom:0.5rem">Shri Kundali</h1>
+  <p style="color:#666;margin-bottom:2rem">Vedic Astrology API & Report Generator</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <a href="/kundali" style="display:block;background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;text-decoration:none;color:inherit;transition:border-color 0.2s">
+      <h2 style="color:#8b4513;font-size:1.1rem;margin-bottom:0.5rem">Generate Kundali</h2>
+      <p style="font-size:0.9rem;color:#666">Create birth chart, mangal dosha, and yoga analysis. Export as JSON, Markdown, or PDF.</p>
+    </a>
+    <a href="/docs" target="_blank" style="display:block;background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;text-decoration:none;color:inherit;transition:border-color 0.2s">
+      <h2 style="color:#8b4513;font-size:1.1rem;margin-bottom:0.5rem">API Docs</h2>
+      <p style="font-size:0.9rem;color:#666">Interactive OpenAPI reference for all endpoints. Test directly from the browser.</p>
+    </a>
+  </div>
+
+  <div style="margin-top:2rem;background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem">
+    <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem">API Status</h2>
+    <p style="font-size:0.9rem">Backend: <code>{API_URL}</code></p>
+    <p style="font-size:0.85rem;color:#888;margin-top:0.5rem">Set <code>VITE_API_URL</code> in .env to change the API endpoint.</p>
+  </div>
+</Base>

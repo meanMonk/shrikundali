@@ -1,0 +1,195 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Generate Kundali">
+  <h1 style="color:#8b4513;margin-bottom:1rem">Janam Kundali Generator</h1>
+
+  <form id="kundali-form" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <label style="display:flex;flex-direction:column;gap:0.25rem">
+        <span style="font-weight:600;font-size:0.9rem">Coordinates (lat,lon)</span>
+        <input type="text" id="coordinates" value="19.0760,72.8777" placeholder="23.1765,75.7885"
+          style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
+      </label>
+      <label style="display:flex;flex-direction:column;gap:0.25rem">
+        <span style="font-weight:600;font-size:0.9rem">Birth DateTime</span>
+        <input type="datetime-local" id="datetime" value="1990-01-01T10:30"
+          style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
+      </label>
+      <label style="display:flex;flex-direction:column;gap:0.25rem">
+        <span style="font-weight:600;font-size:0.9rem">Ayanamsa</span>
+        <select id="ayanamsa" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
+          <option value="1" selected>Lahiri</option>
+          <option value="3">Raman</option>
+          <option value="5">KP</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:0.25rem">
+        <span style="font-weight:600;font-size:0.9rem">Language</span>
+        <select id="la" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
+          <option value="en" selected>English</option>
+          <option value="hi">Hindi</option>
+          <option value="ta">Tamil</option>
+          <option value="ml">Malayalam</option>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:0.25rem;grid-column:span 2">
+        <span style="font-weight:600;font-size:0.9rem">Label (optional)</span>
+        <input type="text" id="label" placeholder="Person name"
+          style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" />
+      </label>
+    </div>
+    <div style="display:flex;gap:0.75rem;margin-top:1rem">
+      <button type="submit" data-format="json"
+        style="background:#8b4513;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
+        Generate JSON
+      </button>
+      <button type="button" data-format="markdown"
+        style="background:#6b3a0e;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
+        Markdown
+      </button>
+      <button type="button" data-format="pdf"
+        style="background:#4a2508;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
+        PDF
+      </button>
+    </div>
+  </form>
+
+  <div id="status" style="display:none;padding:0.75rem;border-radius:4px;margin-bottom:1rem;font-size:0.9rem"></div>
+
+  <div id="result" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+      <h2 style="color:#8b4513;font-size:1.1rem">Result</h2>
+      <div style="display:flex;gap:0.5rem">
+        <button id="btn-copy" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Copy</button>
+        <button id="btn-download" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Download</button>
+      </div>
+    </div>
+    <pre id="output" style="background:#fff;border:1px solid #d4a373;border-radius:6px;padding:1rem;overflow-x:auto;font-size:0.85rem;max-height:600px;overflow-y:auto;white-space:pre-wrap"></pre>
+  </div>
+
+  <div id="archive-info" style="display:none;background:#f5f0e8;border:1px solid #d4a373;border-radius:6px;padding:1rem;margin-top:1rem;font-size:0.85rem">
+    <strong>Saved to archive:</strong>
+    <pre id="archive-detail" style="margin-top:0.5rem;white-space:pre-wrap"></pre>
+  </div>
+
+  <script is:inline>
+    const API = import.meta.env?.VITE_API_URL ?? "http://localhost:3400";
+    const form = document.getElementById("kundali-form");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+    const outputEl = document.getElementById("output");
+    const archiveEl = document.getElementById("archive-info");
+    const archiveDetail = document.getElementById("archive-detail");
+    const btnCopy = document.getElementById("btn-copy");
+    const btnDownload = document.getElementById("btn-download");
+
+    let currentFormat = "json";
+    let currentData = "";
+
+    function showStatus(msg, type) {
+      statusEl.style.display = "block";
+      statusEl.textContent = msg;
+      statusEl.style.background = type === "error" ? "#fee" : "#efe";
+      statusEl.style.color = type === "error" ? "#c00" : "#060";
+      statusEl.style.border = `1px solid ${type === "error" ? "#c00" : "#0a0"}`;
+    }
+
+    function hideStatus() { statusEl.style.display = "none"; }
+
+    function getPayload() {
+      const dt = document.getElementById("datetime").value;
+      const offset = "+05:30";
+      const iso = dt ? dt.replace("T", "T") + offset : "";
+      return {
+        coordinates: document.getElementById("coordinates").value,
+        datetime: iso,
+        ayanamsa: Number(document.getElementById("ayanamsa").value),
+        la: document.getElementById("la").value,
+        label: document.getElementById("label").value || undefined,
+      };
+    }
+
+    async function callApi(format) {
+      hideStatus();
+      resultEl.style.display = "none";
+      showStatus("Generating...", "ok");
+
+      const endpoint = format === "json" ? "/kundali/generate" : format === "markdown" ? "/kundali/markdown" : "/kundali/pdf";
+      const payload = getPayload();
+
+      try {
+        const res = await fetch(`${API}${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          showStatus(`Error ${res.status}: ${err}`, "error");
+          return;
+        }
+
+        if (format === "pdf") {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `kundali-${Date.now()}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showStatus("PDF downloaded. Check archive/uploads/ on server.", "ok");
+          return;
+        }
+
+        const text = await res.text();
+        currentFormat = format;
+        currentData = text;
+        outputEl.textContent = text;
+        resultEl.style.display = "block";
+
+        const archiveId = res.headers.get("X-Archive-Id");
+        const archiveDir = res.headers.get("X-Archive-Dir");
+        if (archiveId) {
+          archiveEl.style.display = "block";
+          archiveDetail.textContent = `ID: ${archiveId}\nDir: ${archiveDir}`;
+        }
+
+        showStatus("Done.", "ok");
+      } catch (e) {
+        showStatus(`Network error: ${e.message}. Is the API running on ${API}?`, "error");
+      }
+    }
+
+    form.addEventListener("submit", (e) => { e.preventDefault(); callApi("json"); });
+
+    document.querySelector('[data-format="markdown"]').addEventListener("click", () => callApi("markdown"));
+    document.querySelector('[data-format="pdf"]').addEventListener("click", () => callApi("pdf"));
+
+    btnCopy.addEventListener("click", () => {
+      navigator.clipboard.writeText(currentData).then(() => {
+        btnCopy.textContent = "Copied!";
+        setTimeout(() => btnCopy.textContent = "Copy", 1500);
+      });
+    });
+
+    btnDownload.addEventListener("click", () => {
+      const ext = currentFormat === "markdown" ? "md" : "json";
+      const blob = new Blob([currentData], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `kundali-${Date.now()}.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+
+  <style>
+    @media (max-width: 600px) {
+      form > div:first-child { grid-template-columns: 1fr !important; }
+      form > div:first-child > label:last-child { grid-column: span 1 !important; }
+    }
+  </style>
+</Base>
