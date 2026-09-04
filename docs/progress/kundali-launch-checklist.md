@@ -2,18 +2,37 @@
 
 Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh until report #1 has a positive ROAS for 2+ weeks straight.
 
+## Current Status Summary (Sept 2026)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Prokerala API Integration | ✅ Done | Auth + kundli endpoint working |
+| JSON Generation | ✅ Done | `/generate` endpoint, archived |
+| Markdown Generation | ✅ Done | `/markdown` endpoint, archived |
+| PDF Generation | ✅ Done | `/pdf` endpoint via html-pdf-node |
+| HTML Rendering | ✅ Done | Intermediate step, not stored separately |
+| Local Archive | ✅ Done | `archive/uploads/{id}/` structure |
+| Production Data | ⚠️ Blocked | Sandbox tier returns limited fields |
+| Cloud Storage (R2) | ❌ Not started | Currently local filesystem only |
+| Payment Integration | ❌ Not started | |
+| Frontend/Landing | ❌ Not started | |
+
 ## 1. API / Data Layer
-- [ ] Finalize primary provider (AstrologyAPI.com, since Hono route already drafted) — confirm exact endpoints needed: birth chart, navagraha, dasha, dosha flags, numerology
+- [x] Primary provider finalized: **Prokerala** (integrated in `packages/backend/kundaliapi/src/lib/prokerala.ts`)
 - [ ] Map ₹/credit cost per report → confirm true unit economics before setting price
-- [ ] Pick a **fallback provider** (Prokerala is the safest #2 — different vendor, similar Lahiri-based calc) and stub the same interface so you can swap with one env var
+- [ ] Pick a **fallback provider** (AstrologyAPI or similar) and stub the same interface so you can swap with one env var
 - [ ] Add retry + timeout + circuit breaker around the API call (don't let a slow astrology API block checkout)
 - [ ] Cache raw chart JSON per birth-datetime+location so repeat/refund/regeneration doesn't re-spend credits
 - [ ] Decide narrative layer: static templates keyed by planet/house/dosha combos vs LLM-generated — templates are cheaper and more predictable for v1
+- [ ] **Verify Prokerala plan**: Current sandbox/test tier returns limited data (nakshatra, mangal dosha, yogas only). Production tier needed for: planet positions, dasha periods, house positions, numerology
 
 ## 2. PDF Generation
-- [ ] Build PDF via Playwright/Puppeteer HTML→PDF (not jsPDF/PDFKit) — avoids the Devanagari conjunct-breaking you saw in KundaliAstro's sample
+- [x] PDF generation implemented via `html-pdf-node` (html→pdf approach) in `packages/backend/kundaliapi/src/lib/render.ts`
+- [x] Markdown renderer working (`renderMarkdown()`) with birth details, doshas, yogas
+- [x] HTML renderer working (`renderHTML()`) with styled template
 - [ ] Test render with full Hindi text (matras, conjuncts, retrograde symbols) before going live — this is your actual differentiation vs competitors
-- [ ] Store generated PDF in object storage (Cloudflare R2, since you're already on Cloudflare) with a signed, expiring download URL
+- [ ] **Storage gap**: PDF/Markdown only stored when calling `/pdf` or `/markdown` endpoints directly. `/generate` endpoint only stores JSON. Consider storing all formats on every generation.
+- [ ] Move from local filesystem (`archive/uploads/`) to Cloudflare R2 for production (signed, expiring download URLs)
 - [ ] Add report ID + purchase email watermark/footer (anti-sharing, plus support traceability)
 
 ## 3. Frontend / Landing Page
@@ -22,6 +41,7 @@ Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh unt
 - [ ] Mobile-first — this traffic is 90%+ Meta mobile
 - [ ] Loading/generating state (astrology API + PDF render will take a few seconds — don't let it feel broken)
 - [ ] Post-payment download page + email delivery as backup (people lose tabs)
+- [ ] **API routes ready**: `/kundali/generate`, `/kundali/markdown`, `/kundali/pdf` — frontend just needs to call the right one based on user action
 
 ## 4. Payment
 - [ ] Razorpay — you already have it integrated across projects, reuse it; no reason to switch for v1

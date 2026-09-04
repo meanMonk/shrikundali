@@ -2,79 +2,123 @@
 import Base from "../layouts/Base.astro";
 ---
 <Base title="Generate Kundali">
-  <h1 style="color:#8b4513;margin-bottom:1rem">Janam Kundali Generator</h1>
+  <div id="config-loading" style="text-align:center;padding:2rem;color:#888">Loading...</div>
 
-  <form id="kundali-form" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <label style="display:flex;flex-direction:column;gap:0.25rem">
-        <span style="font-weight:600;font-size:0.9rem">Coordinates (lat,lon)</span>
-        <input type="text" id="coordinates" value="19.0760,72.8777" placeholder="23.1765,75.7885"
-          style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
-      </label>
-      <label style="display:flex;flex-direction:column;gap:0.25rem">
-        <span style="font-weight:600;font-size:0.9rem">Birth DateTime</span>
-        <input type="datetime-local" id="datetime" value="1990-01-01T10:30"
-          style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
-      </label>
-      <label style="display:flex;flex-direction:column;gap:0.25rem">
-        <span style="font-weight:600;font-size:0.9rem">Ayanamsa</span>
-        <select id="ayanamsa" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
-          <option value="1" selected>Lahiri</option>
-          <option value="3">Raman</option>
-          <option value="5">KP</option>
-        </select>
-      </label>
-      <label style="display:flex;flex-direction:column;gap:0.25rem">
-        <span style="font-weight:600;font-size:0.9rem">Language</span>
-        <select id="la" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
-          <option value="en" selected>English</option>
-          <option value="hi">Hindi</option>
-          <option value="ta">Tamil</option>
-          <option value="ml">Malayalam</option>
-        </select>
-      </label>
-      <label style="display:flex;flex-direction:column;gap:0.25rem;grid-column:span 2">
-        <span style="font-weight:600;font-size:0.9rem">Label (optional)</span>
-        <input type="text" id="label" placeholder="Person name"
-          style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" />
-      </label>
-    </div>
-    <div style="display:flex;gap:0.75rem;margin-top:1rem">
-      <button type="submit" data-format="json"
-        style="background:#8b4513;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
-        Generate JSON
-      </button>
-      <button type="button" data-format="markdown"
-        style="background:#6b3a0e;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
-        Markdown
-      </button>
-      <button type="button" data-format="pdf"
-        style="background:#4a2508;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
-        PDF
-      </button>
-    </div>
-  </form>
+  <div id="config-content" style="display:none">
+    <h1 id="report-title" style="color:#8b4513;margin-bottom:0.5rem"></h1>
+    <p id="report-desc" style="color:#666;margin-bottom:1.5rem;font-size:0.95rem"></p>
 
-  <div id="status" style="display:none;padding:0.75rem;border-radius:4px;margin-bottom:1rem;font-size:0.9rem"></div>
-
-  <div id="result" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
-      <h2 style="color:#8b4513;font-size:1.1rem">Result</h2>
-      <div style="display:flex;gap:0.5rem">
-        <button id="btn-copy" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Copy</button>
-        <button id="btn-download" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Download</button>
+    <div style="background:#faf3e8;border:1px solid #d4a373;border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:baseline;gap:0.75rem">
+        <span id="report-price" style="font-size:1.5rem;font-weight:700;color:#8b4513"></span>
+        <span id="report-discount" style="font-size:1rem;color:#888;text-decoration:line-through"></span>
+        <span id="report-discount-label" style="font-size:0.85rem;color:#0a0;font-weight:600"></span>
       </div>
     </div>
-    <pre id="output" style="background:#fff;border:1px solid #d4a373;border-radius:6px;padding:1rem;overflow-x:auto;font-size:0.85rem;max-height:600px;overflow-y:auto;white-space:pre-wrap"></pre>
-  </div>
 
-  <div id="archive-info" style="display:none;background:#f5f0e8;border:1px solid #d4a373;border-radius:6px;padding:1rem;margin-top:1rem;font-size:0.85rem">
-    <strong>Saved to archive:</strong>
-    <pre id="archive-detail" style="margin-top:0.5rem;white-space:pre-wrap"></pre>
+    <form id="kundali-form" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Full Name</span>
+          <input type="text" id="label" placeholder="Enter your name"
+            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Email Address</span>
+          <input type="email" id="email" placeholder="you@example.com"
+            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Coordinates (lat,lon)</span>
+          <input type="text" id="coordinates" value="19.0760,72.8777" placeholder="23.1765,75.7885"
+            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Birth DateTime</span>
+          <input type="datetime-local" id="datetime" value="1990-01-01T10:30"
+            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Ayanamsa</span>
+          <select id="ayanamsa" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
+            <option value="1" selected>Lahiri</option>
+            <option value="3">Raman</option>
+            <option value="5">KP</option>
+          </select>
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem">
+          <span style="font-weight:600;font-size:0.9rem">Language</span>
+          <select id="la" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
+            <option value="en" selected>English</option>
+            <option value="hi">Hindi</option>
+            <option value="ta">Tamil</option>
+            <option value="ml">Malayalam</option>
+          </select>
+        </label>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1rem">
+        <button type="submit" data-format="json"
+          style="background:#8b4513;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
+          Generate JSON
+        </button>
+        <button type="button" data-format="markdown"
+          style="background:#6b3a0e;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
+          Markdown
+        </button>
+        <button type="button" data-format="pdf"
+          style="background:#4a2508;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
+          PDF
+        </button>
+      </div>
+    </form>
+
+    <div id="status" style="display:none;padding:0.75rem;border-radius:4px;margin-bottom:1rem;font-size:0.9rem"></div>
+
+    <div id="result" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+        <h2 style="color:#8b4513;font-size:1.1rem">Result</h2>
+        <div style="display:flex;gap:0.5rem">
+          <button id="btn-copy" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Copy</button>
+          <button id="btn-download" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Download</button>
+        </div>
+      </div>
+      <pre id="output" style="background:#fff;border:1px solid #d4a373;border-radius:6px;padding:1rem;overflow-x:auto;font-size:0.85rem;max-height:600px;overflow-y:auto;white-space:pre-wrap"></pre>
+    </div>
+
+    <div id="archive-info" style="display:none;background:#f5f0e8;border:1px solid #d4a373;border-radius:6px;padding:1rem;margin-top:1rem;font-size:0.85rem">
+      <strong>Saved to archive:</strong>
+      <pre id="archive-detail" style="margin-top:0.5rem;white-space:pre-wrap"></pre>
+    </div>
   </div>
 
   <script is:inline>
     const API = import.meta.env?.VITE_API_URL ?? "http://localhost:3400";
+    const REPORT_TYPE = "financial_kundali";
+    let config = null;
+
+    async function loadConfig() {
+      try {
+        const res = await fetch(`${API}/api/config/${REPORT_TYPE}`);
+        if (res.ok) {
+          config = await res.json();
+          document.getElementById("report-title").textContent = config.title;
+          document.getElementById("report-desc").textContent = config.description;
+          document.getElementById("report-price").textContent = `₹${config.price}`;
+          if (config.discountPrice) {
+            document.getElementById("report-discount").textContent = `₹${config.price}`;
+            document.getElementById("report-discount-label").textContent = `₹${config.discountPrice} (${Math.round((1 - config.discountPrice / config.price) * 100)}% off)`;
+            document.getElementById("report-price").textContent = `₹${config.discountPrice}`;
+          }
+          document.getElementById("config-loading").style.display = "none";
+          document.getElementById("config-content").style.display = "block";
+        }
+      } catch (e) {
+        document.getElementById("config-loading").textContent = "Failed to load config. Please refresh.";
+      }
+    }
+
+    loadConfig();
+
     const form = document.getElementById("kundali-form");
     const statusEl = document.getElementById("status");
     const resultEl = document.getElementById("result");
@@ -107,6 +151,7 @@ import Base from "../layouts/Base.astro";
         ayanamsa: Number(document.getElementById("ayanamsa").value),
         la: document.getElementById("la").value,
         label: document.getElementById("label").value || undefined,
+        email: document.getElementById("email").value,
       };
     }
 
@@ -189,7 +234,6 @@ import Base from "../layouts/Base.astro";
   <style>
     @media (max-width: 600px) {
       form > div:first-child { grid-template-columns: 1fr !important; }
-      form > div:first-child > label:last-child { grid-column: span 1 !important; }
     }
   </style>
 </Base>
