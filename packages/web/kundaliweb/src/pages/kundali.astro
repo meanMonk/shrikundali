@@ -1,239 +1,251 @@
 ---
 import Base from "../layouts/Base.astro";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 ---
-<Base title="Generate Kundali">
-  <div id="config-loading" style="text-align:center;padding:2rem;color:#888">Loading...</div>
+<Base title="Financial Kundali Report">
+  <style>
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .cta-pulse { animation: pulse 2s ease-in-out infinite; }
+    .score-box { background: #faf3e8; border: 1px solid #d4a373; border-radius: 8px; padding: 0.75rem; text-align: center; }
+    .score-num { font-size: 1.5rem; font-weight: 700; color: #8b4513; }
+    @media (max-width: 600px) { .grid-3 { grid-template-columns: 1fr !important; } .grid-2 { grid-template-columns: 1fr !important; } }
+  </style>
 
-  <div id="config-content" style="display:none">
-    <h1 id="report-title" style="color:#8b4513;margin-bottom:0.5rem"></h1>
-    <p id="report-desc" style="color:#666;margin-bottom:1.5rem;font-size:0.95rem"></p>
+  <div id="loading" style="text-align:center;padding:3rem;color:#888">Loading report details...</div>
 
-    <div style="background:#faf3e8;border:1px solid #d4a373;border-radius:8px;padding:1rem;margin-bottom:1.5rem">
-      <div style="display:flex;align-items:baseline;gap:0.75rem">
-        <span id="report-price" style="font-size:1.5rem;font-weight:700;color:#8b4513"></span>
-        <span id="report-discount" style="font-size:1rem;color:#888;text-decoration:line-through"></span>
-        <span id="report-discount-label" style="font-size:0.85rem;color:#0a0;font-weight:600"></span>
+  <div id="content" style="display:none">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <h1 id="report-title" style="color:#8b4513;margin-bottom:0.5rem"></h1>
+      <p id="report-desc" style="color:#666;font-size:0.95rem;max-width:500px;margin:0 auto"></p>
+    </div>
+
+    <!-- Pricing -->
+    <div style="background:#fff;border:2px solid #8b4513;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;text-align:center">
+      <div style="display:flex;align-items:baseline;justify-content:center;gap:0.75rem;margin-bottom:0.5rem">
+        <span id="report-price" style="font-size:2rem;font-weight:700;color:#8b4513"></span>
+        <span id="report-original" style="font-size:1.1rem;color:#888;text-decoration:line-through"></span>
+        <span id="report-save" style="font-size:0.85rem;color:#0a0;font-weight:600;background:#efe;border-radius:4px;padding:0.2rem 0.5rem"></span>
+      </div>
+      <p style="font-size:0.85rem;color:#888">One-time payment &bull; Instant PDF &bull; Email delivery</p>
+    </div>
+
+    <!-- Features -->
+    <div style="margin-bottom:1.5rem">
+      <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem;text-align:center">What You Get</h2>
+      <div class="grid-3" id="features-list" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem"></div>
+    </div>
+
+    <!-- Teaser Scores -->
+    <div style="background:#fff;border:1px solid #d4a373;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+      <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem;text-align:center">Your Money-Axis Scores</h2>
+      <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem">
+        <div class="score-box"><div class="score-num" id="s-wealth">--</div><div style="font-size:0.7rem;color:#666">Wealth</div></div>
+        <div class="score-box"><div class="score-num" id="s-career">--</div><div style="font-size:0.7rem;color:#666">Career</div></div>
+        <div class="score-box"><div class="score-num" id="s-business">--</div><div style="font-size:0.7rem;color:#666">Business</div></div>
+        <div class="score-box"><div class="score-num" id="s-property">--</div><div style="font-size:0.7rem;color:#666">Property</div></div>
+        <div class="score-box"><div class="score-num" id="s-invest">--</div><div style="font-size:0.7rem;color:#666">Investment</div></div>
+        <div class="score-box"><div class="score-num" id="s-stability">--</div><div style="font-size:0.7rem;color:#666">Stability</div></div>
       </div>
     </div>
 
-    <form id="kundali-form" style="background:#fff;border:1px solid #d4a373;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <label style="display:flex;flex-direction:column;gap:0.25rem">
-          <span style="font-weight:600;font-size:0.9rem">Full Name</span>
-          <input type="text" id="label" placeholder="Enter your name"
-            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
-        </label>
-        <label style="display:flex;flex-direction:column;gap:0.25rem">
-          <span style="font-weight:600;font-size:0.9rem">Email Address</span>
-          <input type="email" id="email" placeholder="you@example.com"
-            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
-        </label>
-        <label style="display:flex;flex-direction:column;gap:0.25rem">
-          <span style="font-weight:600;font-size:0.9rem">Coordinates (lat,lon)</span>
-          <input type="text" id="coordinates" value="19.0760,72.8777" placeholder="23.1765,75.7885"
-            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
-        </label>
-        <label style="display:flex;flex-direction:column;gap:0.25rem">
-          <span style="font-weight:600;font-size:0.9rem">Birth DateTime</span>
-          <input type="datetime-local" id="datetime" value="1990-01-01T10:30"
-            style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px" required />
-        </label>
-        <label style="display:flex;flex-direction:column;gap:0.25rem">
-          <span style="font-weight:600;font-size:0.9rem">Ayanamsa</span>
-          <select id="ayanamsa" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
-            <option value="1" selected>Lahiri</option>
-            <option value="3">Raman</option>
-            <option value="5">KP</option>
-          </select>
-        </label>
-        <label style="display:flex;flex-direction:column;gap:0.25rem">
-          <span style="font-weight:600;font-size:0.9rem">Language</span>
-          <select id="la" style="padding:0.5rem;border:1px solid #d4a373;border-radius:4px">
-            <option value="en" selected>English</option>
-            <option value="hi">Hindi</option>
-            <option value="ta">Tamil</option>
-            <option value="ml">Malayalam</option>
-          </select>
-        </label>
-      </div>
-      <div style="display:flex;gap:0.75rem;margin-top:1rem">
-        <button type="submit" data-format="json"
-          style="background:#8b4513;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
-          Generate JSON
-        </button>
-        <button type="button" data-format="markdown"
-          style="background:#6b3a0e;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
-          Markdown
-        </button>
-        <button type="button" data-format="pdf"
-          style="background:#4a2508;color:#fff;border:none;padding:0.6rem 1.2rem;border-radius:4px;cursor:pointer;font-size:0.9rem">
-          PDF
-        </button>
-      </div>
-    </form>
-
-    <div id="status" style="display:none;padding:0.75rem;border-radius:4px;margin-bottom:1rem;font-size:0.9rem"></div>
-
-    <div id="result" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
-        <h2 style="color:#8b4513;font-size:1.1rem">Result</h2>
-        <div style="display:flex;gap:0.5rem">
-          <button id="btn-copy" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Copy</button>
-          <button id="btn-download" style="background:#d4a373;color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem">Download</button>
+    <!-- Payment Form -->
+    <div style="background:#fff;border:1px solid #d4a373;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+      <h2 style="color:#8b4513;font-size:1rem;margin-bottom:1rem;text-align:center">Complete Your Purchase</h2>
+      <form id="payment-form" style="max-width:400px;margin:0 auto">
+        <div style="margin-bottom:1rem">
+          <label style="display:flex;flex-direction:column;gap:0.25rem">
+            <span style="font-weight:600;font-size:0.9rem">Name</span>
+            <input type="text" id="pay-name" readonly
+              style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;background:#faf3e8" />
+          </label>
         </div>
-      </div>
-      <pre id="output" style="background:#fff;border:1px solid #d4a373;border-radius:6px;padding:1rem;overflow-x:auto;font-size:0.85rem;max-height:600px;overflow-y:auto;white-space:pre-wrap"></pre>
+        <div style="margin-bottom:1rem">
+          <label style="display:flex;flex-direction:column;gap:0.25rem">
+            <span style="font-weight:600;font-size:0.9rem">Email</span>
+            <input type="email" id="pay-email" readonly
+              style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;background:#faf3e8" />
+          </label>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label style="display:flex;flex-direction:column;gap:0.25rem">
+            <span style="font-weight:600;font-size:0.9rem">Payment Method</span>
+            <select id="pay-provider" style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px">
+              <option value="razorpay">Razorpay (UPI, Cards, Netbanking)</option>
+              <option value="cashfree">Cashfree</option>
+            </select>
+          </label>
+        </div>
+        <button type="submit" class="cta-pulse" id="pay-btn"
+          style="width:100%;background:#8b4513;color:#fff;border:none;padding:1rem;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(139,69,19,0.3)">
+          Pay &amp; Download Report &#8594;
+        </button>
+        <p style="font-size:0.8rem;color:#888;margin-top:0.75rem;text-align:center">&#x1F512; Secure &bull; 24hr refund &bull; Instant delivery</p>
+      </form>
     </div>
 
-    <div id="archive-info" style="display:none;background:#f5f0e8;border:1px solid #d4a373;border-radius:6px;padding:1rem;margin-top:1rem;font-size:0.85rem">
-      <strong>Saved to archive:</strong>
-      <pre id="archive-detail" style="margin-top:0.5rem;white-space:pre-wrap"></pre>
-    </div>
+    <div id="status" style="display:none;padding:0.75rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem;text-align:center"></div>
+
+    <!-- Disclaimer -->
+    <p style="font-size:0.75rem;color:#888;text-align:center;max-width:500px;margin:0 auto">
+      This is Vedic Financial Kundali guidance, not SEBI-registered financial advice. Outcomes vary by individual.
+    </p>
   </div>
 
   <script is:inline>
     const API = import.meta.env?.VITE_API_URL ?? "http://localhost:3400";
-    const REPORT_TYPE = "financial_kundali";
+    const params = new URLSearchParams(window.location.search);
+    const cacheId = params.get("cacheId");
+    const email = params.get("email");
+    const name = params.get("name");
+
+    if (!cacheId || !email) {
+      window.location.href = "/";
+    }
+
+    // Track page view
+    if (typeof fbq === "function") fbq("track", "PageView");
+    if (typeof gtag === "function") gtag("event", "page_view", { page_title: "Checkout" });
+
     let config = null;
+    let scores = null;
 
-    async function loadConfig() {
-      try {
-        const res = await fetch(`${API}/api/config/${REPORT_TYPE}`);
-        if (res.ok) {
-          config = await res.json();
-          document.getElementById("report-title").textContent = config.title;
-          document.getElementById("report-desc").textContent = config.description;
-          document.getElementById("report-price").textContent = `₹${config.price}`;
-          if (config.discountPrice) {
-            document.getElementById("report-discount").textContent = `₹${config.price}`;
-            document.getElementById("report-discount-label").textContent = `₹${config.discountPrice} (${Math.round((1 - config.discountPrice / config.price) * 100)}% off)`;
-            document.getElementById("report-price").textContent = `₹${config.discountPrice}`;
-          }
-          document.getElementById("config-loading").style.display = "none";
-          document.getElementById("config-content").style.display = "block";
+    async function init() {
+      const configRes = await fetch(`${API}/api/config/financial_kundali`);
+      if (configRes.ok) {
+        config = await configRes.json();
+        document.getElementById("report-title").textContent = config.title;
+        document.getElementById("report-desc").textContent = config.description;
+        document.getElementById("report-price").textContent = `₹${config.discountPrice || config.price}`;
+        if (config.discountPrice) {
+          document.getElementById("report-original").textContent = `₹${config.price}`;
+          document.getElementById("report-save").textContent = `Save ${Math.round((1 - config.discountPrice / config.price) * 100)}%`;
         }
-      } catch (e) {
-        document.getElementById("config-loading").textContent = "Failed to load config. Please refresh.";
+        const featuresEl = document.getElementById("features-list");
+        if (config.features) {
+          featuresEl.innerHTML = config.features.map(f =>
+            `<div style="display:flex;align-items:start;gap:0.5rem;padding:0.5rem;background:#faf3e8;border-radius:6px;font-size:0.8rem">
+              <span style="color:#0a0">&#10003;</span><span>${f}</span>
+            </div>`
+          ).join("");
+        }
       }
-    }
 
-    loadConfig();
+      document.getElementById("pay-name").value = name || "";
+      document.getElementById("pay-email").value = email || "";
 
-    const form = document.getElementById("kundali-form");
-    const statusEl = document.getElementById("status");
-    const resultEl = document.getElementById("result");
-    const outputEl = document.getElementById("output");
-    const archiveEl = document.getElementById("archive-info");
-    const archiveDetail = document.getElementById("archive-detail");
-    const btnCopy = document.getElementById("btn-copy");
-    const btnDownload = document.getElementById("btn-download");
-
-    let currentFormat = "json";
-    let currentData = "";
-
-    function showStatus(msg, type) {
-      statusEl.style.display = "block";
-      statusEl.textContent = msg;
-      statusEl.style.background = type === "error" ? "#fee" : "#efe";
-      statusEl.style.color = type === "error" ? "#c00" : "#060";
-      statusEl.style.border = `1px solid ${type === "error" ? "#c00" : "#0a0"}`;
-    }
-
-    function hideStatus() { statusEl.style.display = "none"; }
-
-    function getPayload() {
-      const dt = document.getElementById("datetime").value;
-      const offset = "+05:30";
-      const iso = dt ? dt.replace("T", "T") + offset : "";
-      return {
-        coordinates: document.getElementById("coordinates").value,
-        datetime: iso,
-        ayanamsa: Number(document.getElementById("ayanamsa").value),
-        la: document.getElementById("la").value,
-        label: document.getElementById("label").value || undefined,
-        email: document.getElementById("email").value,
-      };
-    }
-
-    async function callApi(format) {
-      hideStatus();
-      resultEl.style.display = "none";
-      showStatus("Generating...", "ok");
-
-      const endpoint = format === "json" ? "/kundali/generate" : format === "markdown" ? "/kundali/markdown" : "/kundali/pdf";
-      const payload = getPayload();
-
-      try {
-        const res = await fetch(`${API}${endpoint}`, {
+      const cachedScores = sessionStorage.getItem("teaserScores");
+      if (cachedScores) {
+        scores = JSON.parse(cachedScores);
+        updateScores(scores);
+      } else {
+        const teaserRes = await fetch(`${API}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ cacheId, datetime: "1990-01-01T12:00+05:30", coordinates: "19.0760,72.8777", email, label: name }),
+        });
+        if (teaserRes.ok) {
+          const data = await teaserRes.json();
+          scores = data.teaser?.moneyAxisScores;
+          if (scores) {
+            sessionStorage.setItem("teaserScores", JSON.stringify(scores));
+            updateScores(scores);
+          }
+        }
+      }
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("content").style.display = "block";
+    }
+
+    function updateScores(s) {
+      if (!s) return;
+      document.getElementById("s-wealth").textContent = s.wealthPotential ?? "--";
+      document.getElementById("s-career").textContent = s.careerGrowth ?? "--";
+      document.getElementById("s-business").textContent = s.businessLuck ?? "--";
+      document.getElementById("s-property").textContent = s.propertyAssets ?? "--";
+      document.getElementById("s-invest").textContent = s.investmentSense ?? "--";
+      document.getElementById("s-stability").textContent = s.financialStability ?? "--";
+    }
+
+    init();
+
+    document.getElementById("payment-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("pay-btn");
+      const statusEl = document.getElementById("status");
+      btn.disabled = true;
+      btn.textContent = "Processing...";
+
+      if (typeof fbq === "function") fbq("track", "InitiateCheckout", { value: config?.discountPrice || config?.price || 199, currency: "INR" });
+      if (typeof gtag === "function") gtag("event", "payment_initiated", { event_category: "funnel", value: config?.discountPrice || config?.price || 199 });
+
+      const provider = document.getElementById("pay-provider").value;
+
+      try {
+        const res = await fetch(`${API}/payment/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cacheId, provider, email, name }),
         });
 
         if (!res.ok) {
-          const err = await res.text();
-          showStatus(`Error ${res.status}: ${err}`, "error");
+          const err = await res.json().catch(() => ({ error: "Failed" }));
+          statusEl.style.display = "block";
+          statusEl.style.background = "#fee";
+          statusEl.style.color = "#c00";
+          statusEl.textContent = err.error || "Payment failed. Please try again.";
+          btn.disabled = false;
+          btn.textContent = "Pay & Download Report →";
           return;
         }
 
-        if (format === "pdf") {
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `kundali-${Date.now()}.pdf`;
-          a.click();
-          URL.revokeObjectURL(url);
-          showStatus("PDF downloaded. Check archive/uploads/ on server.", "ok");
-          return;
+        const data = await res.json();
+
+        if (typeof fbq === "function") fbq("track", "Purchase", { value: data.amount, currency: data.currency, content_ids: [data.orderId] });
+        if (typeof gtag === "function") gtag("event", "payment_success", { event_category: "funnel", transaction_id: data.orderId, value: data.amount });
+
+        if (provider === "razorpay" && data.key) {
+          const options = {
+            key: data.key,
+            amount: data.amount * 100,
+            currency: data.currency,
+            name: "Shri Kundali",
+            description: `Financial Kundali Report`,
+            order_id: data.orderId,
+            handler: function(response) {
+              window.location.href = `/download?orderId=${data.orderId}`;
+            },
+            prefill: data.prefill,
+            theme: { color: "#8b4513" },
+          };
+          const rzp = new window.Razorpay(options);
+          rzp.on("payment.failed", function() {
+            statusEl.style.display = "block";
+            statusEl.style.background = "#fee";
+            statusEl.style.color = "#c00";
+            statusEl.textContent = "Payment failed. Please try again.";
+            btn.disabled = false;
+            btn.textContent = "Pay & Download Report →";
+          });
+          rzp.open();
+        } else if (provider === "cashfree" && data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          statusEl.style.display = "block";
+          statusEl.style.background = "#efe";
+          statusEl.style.color = "#060";
+          statusEl.textContent = `Order created: ${data.orderId}. Check your email for payment link.`;
         }
-
-        const text = await res.text();
-        currentFormat = format;
-        currentData = text;
-        outputEl.textContent = text;
-        resultEl.style.display = "block";
-
-        const archiveId = res.headers.get("X-Archive-Id");
-        const archiveDir = res.headers.get("X-Archive-Dir");
-        if (archiveId) {
-          archiveEl.style.display = "block";
-          archiveDetail.textContent = `ID: ${archiveId}\nDir: ${archiveDir}`;
-        }
-
-        showStatus("Done.", "ok");
-      } catch (e) {
-        showStatus(`Network error: ${e.message}. Is the API running on ${API}?`, "error");
+      } catch (err) {
+        statusEl.style.display = "block";
+        statusEl.style.background = "#fee";
+        statusEl.style.color = "#c00";
+        statusEl.textContent = `Error: ${err.message}`;
+        btn.disabled = false;
+        btn.textContent = "Pay & Download Report →";
       }
-    }
-
-    form.addEventListener("submit", (e) => { e.preventDefault(); callApi("json"); });
-
-    document.querySelector('[data-format="markdown"]').addEventListener("click", () => callApi("markdown"));
-    document.querySelector('[data-format="pdf"]').addEventListener("click", () => callApi("pdf"));
-
-    btnCopy.addEventListener("click", () => {
-      navigator.clipboard.writeText(currentData).then(() => {
-        btnCopy.textContent = "Copied!";
-        setTimeout(() => btnCopy.textContent = "Copy", 1500);
-      });
-    });
-
-    btnDownload.addEventListener("click", () => {
-      const ext = currentFormat === "markdown" ? "md" : "json";
-      const blob = new Blob([currentData], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `kundali-${Date.now()}.${ext}`;
-      a.click();
-      URL.revokeObjectURL(url);
     });
   </script>
 
-  <style>
-    @media (max-width: 600px) {
-      form > div:first-child { grid-template-columns: 1fr !important; }
-    }
-  </style>
+  <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 </Base>

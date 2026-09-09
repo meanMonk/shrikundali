@@ -80,3 +80,34 @@ Added one-hop payment flow: form → teaser → pay → PDF. No second paywall.
 - Static pages: ✅ Done
 - Telegram notifications: ✅ Done
 - Orders collection: ✅ Done
+
+---
+
+## 2026-09-04 — Analytics + Tracking + Domain Setup
+
+**Domain:** shrikundali.in
+**Support email:** support@shrikundali.com
+
+**Analytics added:**
+- Meta Pixel (client-side PageView, Lead, InitiateCheckout, Purchase, ViewContent)
+- Google Analytics 4 (page_view, form_start, form_submit, payment_initiated, payment_success)
+- Server-side `/track` endpoint for backend events
+
+**Funnel events tracked:**
+1. PageView — landing page load
+2. InitiateCheckout — form focus (first interaction)
+3. Lead — form submission
+4. ViewContent — teaser scores loaded
+5. InitiateCheckout — payment button clicked
+6. Purchase — payment successful (webhook)
+7. ViewContent — PDF download
+
+**Files added:**
+- `packages/web/kundaliweb/src/lib/tracking.ts` — client-side tracking utility
+- `packages/web/kundaliweb/.env.example` — frontend env vars
+
+**Env vars added:** `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_GA_MEASUREMENT_ID`
+
+**Email updated:**
+- Support address: support@shrikundali.com
+- Footer includes disclaimer link

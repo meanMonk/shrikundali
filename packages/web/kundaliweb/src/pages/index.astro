@@ -291,12 +291,26 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
     const statusEl = document.getElementById("status");
     const stickyCta = document.getElementById("sticky-cta");
 
+    // Track page view
+    if (typeof fbq === "function") fbq("track", "PageView");
+    if (typeof gtag === "function") gtag("event", "page_view", { page_title: "Landing" });
+
     // Sticky CTA on scroll
     window.addEventListener("scroll", () => {
       const formSection = document.getElementById("form-section");
       if (formSection) {
         const rect = formSection.getBoundingClientRect();
         stickyCta.classList.toggle("show", rect.bottom < 0);
+      }
+    });
+
+    // Track form focus
+    let formInteracted = false;
+    form.addEventListener("focusin", () => {
+      if (!formInteracted) {
+        formInteracted = true;
+        if (typeof fbq === "function") fbq("track", "InitiateCheckout");
+        if (typeof gtag === "function") gtag("event", "form_start", { event_category: "funnel" });
       }
     });
 
@@ -355,72 +369,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
       "tiruchirappalli": "10.7905,78.7047",
       "madurai": "9.9252,78.1198",
       "mysore": "12.2958,76.6394",
-      "mysuru": "12.2958,76.6394",
-      "martandam": "8.3041,77.5371",
-      "nellore": "14.4426,79.9865",
-      "kurnool": "15.8281,78.0373",
-      "tirupati": "13.6288,79.4192",
-      "chengalpattu": "12.6915,79.9771",
-      "kanchipuram": "12.8342,79.7036",
-      "cuddalore": "11.7401,79.7661",
-      "viluppuram": "11.9416,79.4924",
-      "thoothukudi": "8.7642,78.1348",
-      "tirunelveli": "8.7139,77.7567",
-      "kovai": "11.0168,76.9558",
-      "erode": "11.3410,77.7172",
-      "salem": "11.6643,78.1460",
-      "karur": "10.9601,78.0766",
-      "dindigul": "10.3673,77.9803",
-      "theni": "10.0109,77.4969",
-      "madurai": "9.9252,78.1198",
-      "virudhunagar": "9.5853,77.9577",
-      "ramanathapuram": "9.3768,78.8304",
-      "sivaganga": "9.8458,78.4836",
-      "pudukkottai": "10.3814,78.8213",
-      "thanjavur": "10.7870,79.1378",
-      "nagapattinam": "10.7672,79.8478",
-      "thiruvarur": "10.7710,79.6370",
-      "mayiladuthurai": "11.1034,79.6560",
-      "karur": "10.9601,78.0766",
-      "namakkal": "11.2220,78.1670",
-      "erode": "11.3410,77.7172",
-      "gobichettipalayam": "11.4540,77.4430",
-      "sathyamangalam": "11.5071,77.2438",
-      "coimbatore": "11.0168,76.9558",
-      "pollachi": "10.6594,76.9982",
-      "valparai": "10.3253,76.9503",
-      "udumalpet": "10.5850,77.2480",
-      "palani": "10.4540,77.5207",
-      "dindigul": "10.3673,77.9803",
-      "kodaikanal": "10.2382,77.4893",
-      "theni": "10.0109,77.4969",
-      "cumbum": "9.7340,77.2931",
-      "madurai": "9.9252,78.1198",
-      "sivakasi": "9.4520,77.8000",
-      "rajapalayam": "9.4510,77.5547",
-      "srivilliputhur": "9.5124,77.6333",
-      "virudhunagar": "9.5853,77.9577",
-      "sattur": "9.3509,77.9233",
-      "tiruchuli": "9.4038,77.8735",
-      "paramakudi": "9.4443,78.2326",
-      "ramanathapuram": "9.3768,78.8304",
-      "mudukulathur": "9.3565,78.9513",
-      "kamuthi": "9.2580,78.8364",
-      "rameswaram": "9.2876,79.3129",
-      "mandapam": "9.2785,79.1234",
-      "kanyakumari": "8.0883,77.5385",
-      "nagercoil": "8.1771,77.4342",
-      "colachel": "8.1729,77.2575",
-      "thiruvananthapuram": "8.5241,76.9366",
-      "kazhakoottam": "8.5562,76.8887",
-      "vattiyoorkavu": "8.5030,76.9546",
-      "neyyattinkara": "8.3993,77.0855",
-      "parassala": "8.2757,77.3231",
-      "colachel": "8.1729,77.2575",
-      "kuzhithurai": "8.3162,77.1924",
-      "thuckalay": "8.2574,77.1242",
-      "kilmanickam": "8.2084,77.1630",
-      "nagarcoil": "8.1771,77.4342",
+      "mysuru": "12.2958,76.6394"
     };
 
     document.getElementById("birthplace").addEventListener("input", (e) => {
@@ -437,14 +386,20 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
       const dob = document.getElementById("dob").value;
       const birthtime = document.getElementById("birthtime").value || "12:00";
       const datetime = `${dob}T${birthtime}+05:30`;
+      const email = document.getElementById("email").value;
+      const name = document.getElementById("label").value;
+
+      // Track form submission
+      if (typeof fbq === "function") fbq("track", "Lead", { content_name: "kundali_form" });
+      if (typeof gtag === "function") gtag("event", "form_submit", { event_category: "funnel", event_label: email });
 
       const payload = {
         coordinates: document.getElementById("coordinates").value || "19.0760,72.8777",
         datetime,
         ayanamsa: Number(document.getElementById("ayanamsa").value),
         la: document.getElementById("la").value,
-        label: document.getElementById("label").value,
-        email: document.getElementById("email").value,
+        label: name,
+        email,
       };
 
       try {
@@ -475,8 +430,12 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
           });
         }
 
+        // Track teaser viewed
+        if (typeof fbq === "function") fbq("track", "ViewContent", { content_name: "teaser", content_ids: [data.cacheId] });
+        if (typeof gtag === "function") gtag("event", "teaser_viewed", { event_category: "funnel", cache_id: data.cacheId });
+
         // Redirect to payment
-        window.location.href = `/kundali?cacheId=${data.cacheId}&email=${encodeURIComponent(payload.email)}&name=${encodeURIComponent(payload.label)}`;
+        window.location.href = `/kundali?cacheId=${data.cacheId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`;
       } catch (err) {
         showStatus(`Network error: ${err.message}. Is the API running?`, "error");
       }

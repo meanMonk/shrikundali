@@ -85,16 +85,20 @@ Start with **Financial Kundali only**. Don't build Match/Janm/Gun Milan/Gruh unt
 - [ ] Log every paid-but-failed-generation case explicitly so you can manually recover/refund fast
 
 ## 9. Analytics / Tracking (easy to forget, costly if missing)
-- [ ] Meta Pixel + Conversion API (server-side) both wired — iOS tracking loss makes pixel-only unreliable
-- [ ] Track funnel steps: landing view → form submit → payment initiated → payment success → PDF downloaded (so you know where drop-off actually happens)
+- [x] Meta Pixel + Conversion API — **DONE: client-side pixel in Base.astro, server-side `/track` endpoint**
+- [x] Google Analytics 4 — **DONE: gtag in Base.astro**
+- [x] Track funnel steps: landing view → form submit → payment initiated → payment success → PDF downloaded — **DONE via `src/lib/tracking.ts`**
 - [ ] UTM discipline from day one (you're already doing this per the ad link you shared — keep it consistent)
 
 ## 10. Legal / Trust Basics
-- [x] Refund policy page — **BUILDING NOW**
+- [x] Refund policy page — **DONE at `/refund`**
 - [x] Simple disclaimer footer on every PDF — **DONE in email template + config**
-- [x] Privacy policy covering birth data storage/usage — **BUILDING NOW**
-- [x] About page — **BUILDING NOW**
-- [x] Terms page — **BUILDING NOW**
+- [x] Privacy policy covering birth data storage/usage — **DONE at `/privacy`**
+- [x] About page — **DONE at `/about`**
+- [x] Terms page — **DONE at `/terms`**
+- [x] Disclaimer page — **DONE at `/disclaimer`**
+- [x] Support email: support@shrikundali.com — **DONE**
+- [x] Domain: shrikundali.in — **CONFIGURED**
 
 ## 11. Scale Path (only after Financial Kundali proves out)
 - [ ] Reuse same chart-JSON cache to add Match/Gun Milan/Janm/Gruh reports without new API integration work — just new PDF templates + new narrative mapping
