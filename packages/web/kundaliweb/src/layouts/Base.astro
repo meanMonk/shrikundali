@@ -1,8 +1,12 @@
 ---
 interface Props {
   title: string;
+  description?: string;
 }
-const { title } = Astro.props;
+const { title, description } = Astro.props;
+const DEFAULT_DESCRIPTION =
+  "Vedic Financial Kundali Report — Discover your financial destiny with personalized birth chart analysis.";
+const pageDescription = description ?? DEFAULT_DESCRIPTION;
 const META_PIXEL_ID = import.meta.env.PUBLIC_META_PIXEL_ID ?? "";
 const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
 ---
@@ -12,9 +16,9 @@ const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} | Shri Kundali</title>
-    <meta name="description" content="Vedic Financial Kundali Report — Discover your financial destiny with personalized birth chart analysis." />
+    <meta name="description" content={pageDescription} />
     <meta property="og:title" content={`${title} | Shri Kundali`} />
-    <meta property="og:description" content="Vedic Financial Kundali Report — Discover your financial destiny with personalized birth chart analysis." />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://shrikundali.in" />
     <meta property="og:site_name" content="Shri Kundali" />

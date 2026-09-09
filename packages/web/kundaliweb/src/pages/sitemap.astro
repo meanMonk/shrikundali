@@ -3,27 +3,38 @@ import Base from "../layouts/Base.astro";
 ---
 <Base title="Sitemap — Shri Kundali">
   <div style="max-width:600px;margin:0 auto;padding:2rem 0">
-    <h1 style="color:#8b4513;margin-bottom:1.5rem">Sitemap</h1>
+    <h1 style="color:var(--color-primary);margin-bottom:1.5rem">Sitemap</h1>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
       <div>
-        <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem">Main</h2>
-        <ul style="color:#555;line-height:2;padding-left:1.5rem">
-          <li><a href="/" style="color:#8b4513">Home</a></li>
-          <li><a href="/kundali" style="color:#8b4513">Financial Kundali</a></li>
-          <li><a href="/about" style="color:#8b4513">About Us</a></li>
+        <h2 style="color:var(--color-primary);font-size:1rem;margin-bottom:0.75rem">Main</h2>
+        <ul style="color:var(--color-text-muted);line-height:2;padding-left:1.5rem">
+          <li><a href="/" style="color:var(--color-primary)">Home</a></li>
+          <li><a href="/kundali" style="color:var(--color-primary)">Financial Kundali</a></li>
+          <li><a href="/about" style="color:var(--color-primary)">About Us</a></li>
         </ul>
       </div>
 
       <div>
-        <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem">Legal</h2>
-        <ul style="color:#555;line-height:2;padding-left:1.5rem">
-          <li><a href="/refund" style="color:#8b4513">Refund Policy</a></li>
-          <li><a href="/privacy" style="color:#8b4513">Privacy Policy</a></li>
-          <li><a href="/terms" style="color:#8b4513">Terms of Service</a></li>
-          <li><a href="/disclaimer" style="color:#8b4513">Disclaimer</a></li>
+        <h2 style="color:var(--color-primary);font-size:1rem;margin-bottom:0.75rem">Legal</h2>
+        <ul style="color:var(--color-text-muted);line-height:2;padding-left:1.5rem">
+          <li><a href="/refund" style="color:var(--color-primary)">Refund Policy</a></li>
+          <li><a href="/privacy" style="color:var(--color-primary)">Privacy Policy</a></li>
+          <li><a href="/terms" style="color:var(--color-primary)">Terms of Service</a></li>
+          <li><a href="/disclaimer" style="color:var(--color-primary)">Disclaimer</a></li>
         </ul>
       </div>
+    </div>
+
+    <div style="margin-top:2rem">
+      <h2 style="color:var(--color-primary);font-size:1rem;margin-bottom:0.75rem">Landing Pages</h2>
+      <ul style="color:var(--color-text-muted);line-height:2;padding-left:1.5rem">
+        <li><a href="/p/kundali-matching" style="color:var(--color-primary)">Kundali Matching</a></li>
+        <li><a href="/p/career-kundali" style="color:var(--color-primary)">Career Kundali</a></li>
+        <li><a href="/p/marriage-kundali" style="color:var(--color-primary)">Marriage Kundali</a></li>
+        <li><a href="/p/dosha-report" style="color:var(--color-primary)">Dosha Report</a></li>
+        <li><a href="/p/health-kundali" style="color:var(--color-primary)">Health Kundali</a></li>
+      </ul>
     </div>
   </div>
 </Base>

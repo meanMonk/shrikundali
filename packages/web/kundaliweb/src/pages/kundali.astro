@@ -56,30 +56,30 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
           <label style="display:flex;flex-direction:column;gap:0.25rem">
             <span style="font-weight:600;font-size:0.9rem">Name</span>
             <input type="text" id="pay-name" readonly
-              style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg)" />
+              style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg);font-size:16px;min-height:44px" />
           </label>
         </div>
         <div style="margin-bottom:1rem">
           <label style="display:flex;flex-direction:column;gap:0.25rem">
             <span style="font-weight:600;font-size:0.9rem">Email</span>
             <input type="email" id="pay-email" readonly
-              style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg)" />
+              style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg);font-size:16px;min-height:44px" />
           </label>
         </div>
         <div style="margin-bottom:1rem">
           <label style="display:flex;flex-direction:column;gap:0.25rem">
             <span style="font-weight:600;font-size:0.9rem">Payment Method</span>
-            <select id="pay-provider" style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px">
+            <select id="pay-provider" style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;font-size:16px;min-height:44px">
               <option value="razorpay">Razorpay (UPI, Cards, Netbanking)</option>
               <option value="cashfree">Cashfree</option>
             </select>
           </label>
         </div>
         <button type="submit" class="cta-pulse" id="pay-btn"
-          style="width:100%;background:var(--color-primary);color:#fff;border:none;padding:1rem;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(181,69,28,0.3)">
+          style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;padding:1rem;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(181,69,28,0.3)">
           Pay &amp; Download Report &#8594;
         </button>
-        <p style="font-size:0.8rem;color:#888;margin-top:0.75rem;text-align:center">&#x1F512; Secure &bull; 24hr refund &bull; Instant delivery</p>
+        <p style="font-size:0.8rem;color:#888;margin-top:0.75rem;text-align:center">&#x1F512; Secure payment &bull; Instant delivery</p>
       </form>
     </div>
 
@@ -140,7 +140,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
         const teaserRes = await fetch(`${API}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cacheId, datetime: "1990-01-01T12:00+05:30", coordinates: "19.0760,72.8777", email, label: name }),
+          body: JSON.stringify({ cacheId, datetime: "1990-01-01T12:00+05:30", coordinates: "19.0760,72.8777", ayanamsa: 1, email, label: name }),
         });
         if (teaserRes.ok) {
           const data = await teaserRes.json();

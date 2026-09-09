@@ -1,0 +1,396 @@
+---
+import Base from "../layouts/Base.astro";
+import { Lock, Sparkles, CheckCircle2, Phone, Mail, Star, Clock } from "@lucide/astro";
+
+export interface Props {
+  headline: string;
+  subheadline: string;
+  angleCopy: string;
+  seoTitle: string;
+  seoDescription: string;
+  heroImageSrc?: string;
+}
+
+const {
+  headline,
+  subheadline,
+  angleCopy,
+  seoTitle,
+  seoDescription,
+  heroImageSrc = "/images/hero-kundali.svg",
+} = Astro.props;
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
+const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+---
+<Base title={seoTitle} description={seoDescription}>
+  {GOOGLE_MAPS_API_KEY && (
+    <script
+      is:inline
+      src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`}
+      async
+      defer
+    ></script>
+  )}
+
+  <!-- Hero -->
+  <section class="hero fade-in" style="text-align:center;padding:1.5rem 0 1rem">
+    <img
+      src={heroImageSrc}
+      alt="Kundali birth chart illustration"
+      width="960"
+      height="360"
+      loading="eager"
+      fetchpriority="high"
+      style="width:100%;max-width:720px;height:auto;border-radius:16px;margin:0 auto 1.25rem;display:block"
+    />
+    <h1 class="hero-title" style="font-size:2rem;color:var(--color-primary);margin-bottom:0.75rem;line-height:1.3">
+      {headline}
+    </h1>
+    <p class="hero-sub" style="font-size:1.1rem;color:var(--color-text-muted);margin-bottom:0.5rem;max-width:560px;margin-left:auto;margin-right:auto">
+      {subheadline}
+    </p>
+    <p style="font-size:0.95rem;color:var(--color-text-muted);max-width:600px;margin:0 auto 1rem">{angleCopy}</p>
+    <a href="#form-section" class="cta-pulse" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--color-primary);color:#fff;padding:0.9rem 1.75rem;border-radius:8px;font-size:1.05rem;font-weight:600;text-decoration:none;min-height:44px">
+      <Sparkles size={20} /> Get My Free Preview
+    </a>
+  </section>
+
+  <!-- Trust / feature strip -->
+  <section class="fade-in" style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:1.5rem;margin:1.5rem 0">
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <Lock size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Private &amp; Secure</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Your birth data stays confidential</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <CheckCircle2 size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Vedic Accuracy</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Lahiri ayanamsa, precise ephemeris</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <Clock size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Instant Delivery</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">PDF report generated in minutes</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <Star size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Trusted by Thousands</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Loved across India</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teaser Form -->
+  <section id="form-section" style="background:#fff;border:2px solid var(--color-primary);border-radius:12px;padding:2rem;margin:2rem 0">
+    <h2 style="color:var(--color-primary);font-size:1.3rem;margin-bottom:0.5rem;text-align:center">Get My Free Kundali Preview</h2>
+    <p id="step-indicator" style="text-align:center;color:var(--color-text-muted);font-size:0.9rem;margin-bottom:1rem">Step 1 of 3 &bull; ~60 seconds</p>
+
+    <form id="kundali-form" style="max-width:600px;margin:0 auto">
+      <div class="form-step" data-step="1">
+        <label class="field-label">
+          <span>Your Name</span>
+          <input type="text" id="label" name="label" placeholder="Your name" required class="field-input" />
+        </label>
+        <button type="button" class="step-next" data-next="2" style="margin-top:1rem;width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600">
+          Continue
+        </button>
+      </div>
+
+      <div class="form-step" data-step="2" style="display:none">
+        <div class="field-row">
+          <label class="field-label">
+            <span>Date of Birth</span>
+            <input type="date" id="dob" name="dob" required class="field-input" />
+          </label>
+          <label class="field-label">
+            <span>Time of Birth</span>
+            <input type="time" id="birthtime" name="birthtime" class="field-input" />
+          </label>
+        </div>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--color-text-muted);margin:0.5rem 0">
+          <input type="checkbox" id="approx-time" style="width:20px;height:20px" />
+          I don't know the exact time (use 12:00 PM)
+        </label>
+        <label class="field-label">
+          <span>Birthplace</span>
+          <input type="text" id="birthplace" name="birthplace" placeholder="City, State" required autocomplete="off" class="field-input" />
+          <input type="hidden" id="coordinates" value="19.0760,72.8777" />
+          <div id="place-suggestions" style="border:1px solid var(--color-border);border-radius:6px;margin-top:0.25rem;display:none;background:#fff;position:relative;z-index:10"></div>
+        </label>
+        <div style="display:flex;gap:0.5rem;margin-top:1rem">
+          <button type="button" class="step-back" data-back="1" style="flex:1;min-height:44px;background:transparent;border:1px solid var(--color-border);border-radius:8px;font-size:1rem">Back</button>
+          <button type="button" class="step-next" data-next="3" style="flex:2;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600">Continue</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="3" style="display:none">
+        <label class="field-label">
+          <span>Email Address</span>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required class="field-input" />
+        </label>
+        <input type="hidden" id="ayanamsa" value="1" />
+        <div style="display:flex;gap:0.5rem;margin-top:1rem">
+          <button type="button" class="step-back" data-back="2" style="flex:1;min-height:44px;background:transparent;border:1px solid var(--color-border);border-radius:8px;font-size:1rem">Back</button>
+          <button type="submit" class="cta-pulse" style="flex:2;min-height:44px;background:var(--color-accent);color:var(--color-secondary);border:none;border-radius:8px;font-size:1rem;font-weight:700">Reveal My Free Preview</button>
+        </div>
+      </div>
+    </form>
+
+    <p id="form-status" style="text-align:center;margin-top:1rem;font-size:0.9rem"></p>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="fade-in" style="margin:2rem 0">
+    <h2 style="color:var(--color-primary);font-size:1.3rem;margin-bottom:1rem;text-align:center">What People Say</h2>
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div style="background:#fff;border:1px solid var(--color-border);border-radius:10px;padding:1rem">
+        <p style="font-size:0.9rem;color:var(--color-text-muted)">"Incredibly detailed and accurate. The timing predictions matched my life events perfectly."</p>
+        <p style="font-size:0.8rem;font-weight:600;margin-top:0.5rem">— Priya S.</p>
+      </div>
+      <div style="background:#fff;border:1px solid var(--color-border);border-radius:10px;padding:1rem">
+        <p style="font-size:0.9rem;color:var(--color-text-muted)">"Got my PDF instantly after payment. Beautifully explained in simple language."</p>
+        <p style="font-size:0.8rem;font-weight:600;margin-top:0.5rem">— Rohan M.</p>
+      </div>
+      <div style="background:#fff;border:1px solid var(--color-border);border-radius:10px;padding:1rem">
+        <p style="font-size:0.9rem;color:var(--color-text-muted)">"Worth every rupee. Helped me plan my next few years with confidence."</p>
+        <p style="font-size:0.8rem;font-weight:600;margin-top:0.5rem">— Anjali K.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="fade-in" style="margin:2rem 0">
+    <h2 style="color:var(--color-primary);font-size:1.3rem;margin-bottom:1rem;text-align:center">Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">How is my Kundali generated? <span>+</span></div>
+      <div class="faq-a">We use your exact date, time and place of birth with the Lahiri ayanamsa (Vedic sidereal system) to compute your birth chart and generate a personalized PDF report.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Is my data kept private? <span>+</span></div>
+      <div class="faq-a">Yes. Your birth details are used only to generate your report and are never shared with third parties. See our Privacy Policy for details.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">How fast will I receive my report? <span>+</span></div>
+      <div class="faq-a">Your full PDF report is generated instantly after payment — usually within a couple of minutes.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">What if I don't know my exact birth time? <span>+</span></div>
+      <div class="faq-a">You can tick "I don't know the exact time" and we'll use 12:00 PM as a reasonable default, though exact time gives the most precise results.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Can I get a refund? <span>+</span></div>
+      <div class="faq-a">Since this is an instantly-delivered digital report, we don't offer refunds once generation has started, except in cases of duplicate or failed payment. See our Refund Policy.</div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="fade-in" style="text-align:center;background:var(--color-secondary);color:#fff;border-radius:12px;padding:2rem;margin:2rem 0">
+    <h2 style="font-size:1.4rem;margin-bottom:0.5rem">Ready to see what your stars reveal?</h2>
+    <p style="margin-bottom:1rem;opacity:0.85">Get your free preview in under a minute — no card required.</p>
+    <a href="#form-section" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--color-accent);color:var(--color-secondary);padding:0.9rem 1.75rem;border-radius:8px;font-weight:700;text-decoration:none;min-height:44px">
+      <Mail size={18} /> Get My Free Preview
+    </a>
+  </section>
+
+  <!-- Sticky mobile CTA -->
+  <a href="#form-section" id="sticky-cta" class="sticky-mobile-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--color-primary);color:#fff;text-align:center;padding:0.9rem;font-weight:700;text-decoration:none;z-index:50;min-height:44px">
+    <Phone size={16} /> Get My Free Preview
+  </a>
+
+  <style>
+    .field-label { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--color-secondary); }
+    .field-input {
+      font-size: 16px; /* prevents iOS auto-zoom */
+      min-height: 44px;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .field-row { display: flex; gap: 0.75rem; }
+    .faq-item { border-bottom: 1px solid var(--color-border); padding: 0.75rem 0; }
+    .faq-q { cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; color: var(--color-secondary); }
+    .faq-a { display: none; padding-top: 0.5rem; font-size: 0.9rem; color: var(--color-text-muted); }
+    .faq-a.open { display: block; }
+    .fade-in { animation: fadeIn 0.6s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .cta-pulse { animation: pulse 2.2s infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(181,69,28,0.4); } 50% { box-shadow: 0 0 0 8px rgba(181,69,28,0); } }
+    #place-suggestions div { padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.9rem; }
+    #place-suggestions div:hover { background: var(--color-bg); }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr !important; }
+      .field-row { flex-direction: column; gap: 0; }
+      .hero-title { font-size: 1.5rem !important; }
+      button, .cta-pulse, a.cta-pulse { min-height: 44px; }
+    }
+  </style>
+
+  <script>
+    import { staticLookup, nominatimSearch, debounce, DEFAULT_COORDS } from "../lib/geocoding";
+    import { trackEvent } from "../lib/tracking";
+
+    const API_URL = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:3400";
+    const GOOGLE_MAPS_API_KEY = (import.meta as any).env?.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+
+    // ---- Multi-step form navigation ----
+    const steps = Array.from(document.querySelectorAll<HTMLElement>(".form-step"));
+    const stepIndicator = document.getElementById("step-indicator");
+    function showStep(n: number) {
+      steps.forEach((s) => (s.style.display = s.dataset.step === String(n) ? "block" : "none"));
+      if (stepIndicator) stepIndicator.textContent = `Step ${n} of 3 • ~60 seconds`;
+    }
+    document.querySelectorAll<HTMLButtonElement>(".step-next").forEach((btn) => {
+      btn.addEventListener("click", () => showStep(Number(btn.dataset.next)));
+    });
+    document.querySelectorAll<HTMLButtonElement>(".step-back").forEach((btn) => {
+      btn.addEventListener("click", () => showStep(Number(btn.dataset.back)));
+    });
+
+    // ---- Approx time checkbox ----
+    const approxCheckbox = document.getElementById("approx-time") as HTMLInputElement | null;
+    const birthtimeInput = document.getElementById("birthtime") as HTMLInputElement | null;
+    approxCheckbox?.addEventListener("change", () => {
+      if (birthtimeInput) {
+        birthtimeInput.disabled = approxCheckbox.checked;
+        if (approxCheckbox.checked) birthtimeInput.value = "12:00";
+      }
+    });
+
+    // ---- Birthplace geocoding ----
+    const birthplaceInput = document.getElementById("birthplace") as HTMLInputElement | null;
+    const coordinatesInput = document.getElementById("coordinates") as HTMLInputElement | null;
+    const suggestionsBox = document.getElementById("place-suggestions") as HTMLDivElement | null;
+
+    function setCoordinates(lat: number, lon: number) {
+      if (coordinatesInput) coordinatesInput.value = `${lat.toFixed(4)},${lon.toFixed(4)}`;
+    }
+
+    if (GOOGLE_MAPS_API_KEY && birthplaceInput) {
+      // Google Places Autocomplete (New) widget, wired up once the Maps script loads.
+      const initGooglePlaces = () => {
+        const g = (window as any).google;
+        if (!g?.maps?.places || !birthplaceInput) return;
+        const autocomplete = new g.maps.places.Autocomplete(birthplaceInput, {
+          types: ["(cities)"],
+        });
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          const loc = place?.geometry?.location;
+          if (loc) setCoordinates(loc.lat(), loc.lng());
+        });
+      };
+      if ((window as any).google?.maps?.places) initGooglePlaces();
+      else window.addEventListener("load", initGooglePlaces);
+    } else if (birthplaceInput) {
+      // Nominatim fallback, debounced to respect usage policy (>=1s between requests).
+      const runSearch = debounce(async (query: string) => {
+        if (!suggestionsBox) return;
+        try {
+          const results = await nominatimSearch(query);
+          if (results.length === 0) {
+            suggestionsBox.style.display = "none";
+            return;
+          }
+          suggestionsBox.innerHTML = "";
+          results.forEach((r) => {
+            const item = document.createElement("div");
+            item.textContent = r.label;
+            item.addEventListener("click", () => {
+              if (birthplaceInput) birthplaceInput.value = r.label;
+              setCoordinates(r.lat, r.lon);
+              suggestionsBox.style.display = "none";
+            });
+            suggestionsBox.appendChild(item);
+          });
+          suggestionsBox.style.display = "block";
+        } catch {
+          // Network/geocoding failure — quietly fall back to static table below.
+        }
+      }, 1000);
+
+      birthplaceInput.addEventListener("input", () => {
+        const query = birthplaceInput.value;
+        const staticMatch = staticLookup(query);
+        if (staticMatch) setCoordinates(staticMatch.lat, staticMatch.lon);
+        else setCoordinates(DEFAULT_COORDS.lat, DEFAULT_COORDS.lon);
+        runSearch(query);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (suggestionsBox && !suggestionsBox.contains(e.target as Node) && e.target !== birthplaceInput) {
+          suggestionsBox.style.display = "none";
+        }
+      });
+    }
+
+    // ---- Sticky mobile CTA on scroll ----
+    const stickyCta = document.getElementById("sticky-cta");
+    const formSection = document.getElementById("form-section");
+    window.addEventListener("scroll", () => {
+      if (!stickyCta || !formSection) return;
+      const rect = formSection.getBoundingClientRect();
+      const pastForm = rect.bottom < 0;
+      stickyCta.style.display = pastForm && window.innerWidth < 768 ? "flex" : "none";
+    });
+
+    // ---- Submit: fetch teaser, redirect to checkout ----
+    const form = document.getElementById("kundali-form") as HTMLFormElement | null;
+    const statusEl = document.getElementById("form-status");
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = (document.getElementById("label") as HTMLInputElement).value;
+      const email = (document.getElementById("email") as HTMLInputElement).value;
+      const dob = (document.getElementById("dob") as HTMLInputElement).value;
+      const birthtime = (document.getElementById("birthtime") as HTMLInputElement).value || "12:00";
+      const coordinates = coordinatesInput?.value || `${DEFAULT_COORDS.lat},${DEFAULT_COORDS.lon}`;
+      const datetime = `${dob}T${birthtime}:00+05:30`;
+
+      if (statusEl) {
+        statusEl.textContent = "Generating your preview...";
+        statusEl.style.color = "var(--color-text-muted)";
+      }
+
+      trackEvent("teaser_submitted", { name, email });
+
+      try {
+        const res = await fetch(`${API_URL}/teaser`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            datetime,
+            coordinates,
+            ayanamsa: 1,
+          }),
+        });
+        if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
+        const data = await res.json();
+
+        trackEvent("teaser_viewed", { cache_id: data.cacheId });
+
+        window.location.href = `/kundali?cacheId=${data.cacheId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`;
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = "Something went wrong. Please try again in a moment.";
+          statusEl.style.color = "#c00";
+        }
+        console.error("Teaser submission failed:", err);
+      }
+    });
+  </script>
+</Base>

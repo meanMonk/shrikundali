@@ -10,6 +10,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@lucide/astro": "^1.42.0",
     "astro": "^4.15.0"
   }
 }
