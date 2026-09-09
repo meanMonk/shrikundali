@@ -1,0 +1,93 @@
+- generic [active] [ref=f3e1]:
+  - navigation [ref=f3e2]:
+    - link "Home" [ref=f3e3] [cursor=pointer]:
+      - /url: /
+    - link "About" [ref=f3e4] [cursor=pointer]:
+      - /url: /about
+    - link "API Docs" [ref=f3e5] [cursor=pointer]:
+      - /url: /docs
+  - generic [ref=f3e6]:
+    - generic [ref=f3e7]:
+      - img "Kundali birth chart illustration" [ref=f3e8]
+      - heading "Your Financial Kundali Report" [level=1] [ref=f3e9]
+      - paragraph [ref=f3e10]: Discover your income, career and investment timing through the ancient wisdom of Vedic astrology.
+      - paragraph [ref=f3e11]: Personalized to your exact birth chart — get clarity on money, career growth and the right time to invest, switch jobs, or start a business.
+      - link "Get My Free Preview" [ref=f3e12] [cursor=pointer]:
+        - /url: "#form-section"
+    - generic [ref=f3e17]:
+      - generic [ref=f3e22]:
+        - heading "Private & Secure" [level=3] [ref=f3e23]
+        - paragraph [ref=f3e24]: Your birth data stays confidential
+      - generic [ref=f3e29]:
+        - heading "Vedic Accuracy" [level=3] [ref=f3e30]
+        - paragraph [ref=f3e31]: Lahiri ayanamsa, precise ephemeris
+      - generic [ref=f3e36]:
+        - heading "Instant Delivery" [level=3] [ref=f3e37]
+        - paragraph [ref=f3e38]: PDF report generated in minutes
+      - generic [ref=f3e42]:
+        - heading "Trusted by Thousands" [level=3] [ref=f3e43]
+        - paragraph [ref=f3e44]: Loved across India
+    - generic [ref=f3e45]:
+      - heading "Get My Free Kundali Preview" [level=2] [ref=f3e46]
+      - paragraph [ref=f3e47]: Step 1 of 3 • ~60 seconds
+      - generic [ref=f3e49]:
+        - generic [ref=f3e50]:
+          - generic [ref=f3e51]: Your Name
+          - textbox "Your Name" [ref=f3e52]:
+            - /placeholder: Your name
+        - button "Continue" [ref=f3e53]
+      - paragraph
+    - generic [ref=f3e54]:
+      - heading "What People Say" [level=2] [ref=f3e55]
+      - generic [ref=f3e56]:
+        - generic [ref=f3e57]:
+          - paragraph [ref=f3e58]: "\"Incredibly detailed and accurate. The timing predictions matched my life events perfectly.\""
+          - paragraph [ref=f3e59]: — Priya S.
+        - generic [ref=f3e60]:
+          - paragraph [ref=f3e61]: "\"Got my PDF instantly after payment. Beautifully explained in simple language.\""
+          - paragraph [ref=f3e62]: — Rohan M.
+        - generic [ref=f3e63]:
+          - paragraph [ref=f3e64]: "\"Worth every rupee. Helped me plan my next few years with confidence.\""
+          - paragraph [ref=f3e65]: — Anjali K.
+    - generic [ref=f3e66]:
+      - heading "Frequently Asked Questions" [level=2] [ref=f3e67]
+      - generic [ref=f3e69] [cursor=pointer]:
+        - text: How is my Kundali generated?
+        - generic [ref=f3e70]: +
+      - generic [ref=f3e72] [cursor=pointer]:
+        - text: Is my data kept private?
+        - generic [ref=f3e73]: +
+      - generic [ref=f3e75] [cursor=pointer]:
+        - text: How fast will I receive my report?
+        - generic [ref=f3e76]: +
+      - generic [ref=f3e78] [cursor=pointer]:
+        - text: What if I don't know my exact birth time?
+        - generic [ref=f3e79]: +
+      - generic [ref=f3e81] [cursor=pointer]:
+        - text: Can I get a refund?
+        - generic [ref=f3e82]: +
+    - generic [ref=f3e83]:
+      - heading "Ready to see what your stars reveal?" [level=2] [ref=f3e84]
+      - paragraph [ref=f3e85]: Get your free preview in under a minute — no card required.
+      - link "Get My Free Preview" [ref=f3e86] [cursor=pointer]:
+        - /url: "#form-section"
+  - contentinfo [ref=f3e90]:
+    - generic [ref=f3e91]:
+      - link "About" [ref=f3e92] [cursor=pointer]:
+        - /url: /about
+      - link "Refund" [ref=f3e93] [cursor=pointer]:
+        - /url: /refund
+      - link "Privacy" [ref=f3e94] [cursor=pointer]:
+        - /url: /privacy
+      - link "Terms" [ref=f3e95] [cursor=pointer]:
+        - /url: /terms
+      - link "Disclaimer" [ref=f3e96] [cursor=pointer]:
+        - /url: /disclaimer
+      - link "Sitemap" [ref=f3e97] [cursor=pointer]:
+        - /url: /sitemap
+    - paragraph [ref=f3e98]: © 2026 Shri Kundali. All rights reserved.
+  - generic [ref=f3e101]:
+    - button [ref=f3e102]
+    - button [ref=f3e108]
+    - button [ref=f3e112]
+    - button [ref=f3e117]

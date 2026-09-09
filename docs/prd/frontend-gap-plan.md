@@ -74,64 +74,53 @@ form+payment page), `pages/{about,privacy,terms,refund,disclaimer,sitemap}.astro
       autocomplete API; PRD says "autocomplete," a static list of 50 cities may be
       insufficient for full India coverage — flag as open decision.
 
-## Priority-ordered task list (build order)
+## Priority-ordered task list (build order) — with GitHub issue cross-references
 
 ### P0 — Funnel-critical, blocks "3-minute purchase" promise
-1. Merge form into the landing page as `#form-section` (remove hard nav to `/kundali`
-   for the primary path); keep `/kundali` only if needed as a fallback/deep-link target.
-2. Build the live free teaser: birth-details → instant on-page Lagna/Rashi/Nakshatra/
-   dosha-flag, computed via existing backend teaser logic (or new `/teaser` endpoint) —
-   capture WhatsApp/email only at "Unlock Full Report," not before.
-3. Convert form to 3-step progressive UI (Who / Birth Details / Delivery+Language) with
-   step indicator and per-field reassurance microcopy; add approximate-time fallback
-   (range picker, non-blocking).
-4. Audit and fix mobile responsiveness end-to-end: one field-group per viewport, ≥44px
-   tap targets, native pickers, sticky bottom bar wired to the merged form section,
-   WhatsApp `wa.me/` deep link.
+
+| # | Task | Issue | Status |
+|---|------|-------|--------|
+| 1 | Merge form into landing page as `#form-section`, remove `/kundali` from primary path | [#34](https://github.com/meanMonk/shrikundali/issues/34) (scope item 1) | OPEN |
+| 2 | Live free teaser — wire to AstrologyAPI, show real Lagna/Rashi/Nakshatra/dosha | [#35](https://github.com/meanMonk/shrikundali/issues/35) | OPEN |
+| 3 | Form restructure — single group or 2-step, email moved to payment modal only | [#43](https://github.com/meanMonk/shrikundali/issues/43) | OPEN |
+| 3a | Add Gender field to birth details form | [#39](https://github.com/meanMonk/shrikundali/issues/39) | OPEN |
+| 4 | Payment modal — replace `/kundali` redirect with in-page modal (PRD §6a) | [#36](https://github.com/meanMonk/shrikundali/issues/36) | OPEN |
+| 5 | Mobile responsiveness audit + fixes (sticky bar mobile-only, tap targets, etc.) | [#22](https://github.com/meanMonk/shrikundali/issues/22) + [#40](https://github.com/meanMonk/shrikundali/issues/40) | OPEN |
+
+**Sequencing:** 1 → 3 → 3a → 2 → 4 → 5 (form merge first, then restructure, then teaser, then modal, then mobile)
 
 ### P1 — Trust & conversion mechanics
-5. Apply brand system: color tokens (`#B5451C`/`#241E4E`/`#C9A227`/`#FBF6EF`/etc.),
-   Fraunces/Lora headings + Inter/Manrope body + Noto Sans Devanagari fallback; replace
-   inline `#8b4513`-style ad hoc colors with the token set repo-wide.
-6. Pricing block to spec: struck price, %-off badge, trust row under CTA, price recap
-   above final "Pay ₹[amount] Securely" button.
-7. Static sample-report preview carousel (blurred/watermarked pages) as secondary trust
-   element alongside the live teaser.
-8. CTA copy consistency pass — one verb everywhere, price inside button on payment step.
-9. Trust-elements checklist pass near every CTA (not just footer): secure badges,
-   privacy line, delivery time restated at hero/pricing/form, refund/support contact.
+
+| # | Task | Issue | Status |
+|---|------|-------|--------|
+| 6 | Apply brand system (color tokens, fonts, Devanagari fallback) | [#34](https://github.com/meanMonk/shrikundali/issues/34) (scope item 5) | OPEN |
+| 7 | Pricing block to spec — single source of truth for price | [#41](https://github.com/meanMonk/shrikundali/issues/41) | OPEN |
+| 8 | CTA copy consistency — one verb everywhere | [#37](https://github.com/meanMonk/shrikundali/issues/37) | OPEN |
+| 9 | Trust elements near every CTA | [#38](https://github.com/meanMonk/shrikundali/issues/38) | OPEN |
+| 10 | Static sample-report preview carousel | [#25](https://github.com/meanMonk/shrikundali/issues/25) | OPEN |
 
 ### P2 — Post-purchase & analytics completeness
-10. Build `/report/[order-id]/status` 3-stage tracking page + `GET` status endpoint.
-11. Verify/extend `lib/tracking.ts` to cover all 5 success metrics in PRD §11.
-12. Devanagari/Hindi rendering QA pass at mobile widths (font fallback check).
-13. Image optimization pass: lazy-load + responsive `srcset` for any report/sample
-    imagery.
 
-### P3 — Decisions needed before building (flag to user, don't build blind)
-14. Resolve PRD §13 open decisions: final CTA verb (recommend "Get My Kundli Report"),
-    approximate-time handling (recommend soft-optional), countdown timer usage
-    (recommend skip or real server-side expiry).
-15. Decide Place-of-Birth input: keep static 50-city list vs. real geocoding/autocomplete
-    API (cost + coverage tradeoff).
+| # | Task | Issue | Status |
+|---|------|-------|--------|
+| 11 | Build `/report/[order-id]/status` tracking page | [#27](https://github.com/meanMonk/shrikundali/issues/27) | OPEN |
+| 12 | Verify/extend analytics tracking for PRD §11 metrics | [#28](https://github.com/meanMonk/shrikundali/issues/28) | OPEN |
+| 13 | Devanagari/Hindi rendering QA + responsive image optimization | [#29](https://github.com/meanMonk/shrikundali/issues/29) | OPEN |
 
-### P1/P2 — Premium visual assets & paid acquisition (added 2026-09-09)
-16. Generate all AI image assets per `docs/prd/ai-image-generation-prompts.md` via
-    fal.ai: website hero/motif/OG images (§A), PDF cover + closing page backgrounds
-    (§B), and 5 campaign creative variants (§C). Blocks: brand-identity issue (needs
-    A1-A3), pricing-block issue (needs the offer creative safe-zone), and PDF generation
-    (needs B1-B2 handed to backend to confirm dynamic-text safe zones actually work).
-17. Set up 2 Google Ads campaigns per `docs/prd/google-ads-campaign-setup.md`: a Search
-    campaign on high-intent keywords, and a Performance Max campaign combining broad
-    reach with remarketing to live-teaser completers. Hard-blocked on: the CTA-verb
-    decision (#14), the payment-complete conversion tracking event (#11), the live
-    teaser shipping so its completion is a trackable remarketing signal (#2), and the
-    campaign creative assets (#16).
+### P3 — Decisions needed before building
 
-## Notes for issue creation
-- Each numbered item above → one GitHub issue, labeled by priority (P0/P1/P2/P3) and
-  area (frontend/backend/content/decision).
-- P0 items should be sequenced 1→2→3→4 since the teaser (2) and step UI (3) both live
-  inside the merged form section from (1).
-- Issues should each include: what's currently there, exact PRD section reference, and
-  acceptance criteria (what "done" looks like), so no re-litigating scope mid-build.
+| # | Task | Issue | Status |
+|---|------|-------|--------|
+| 14 | Open decisions: CTA verb, birth-time handling, countdown timer, geocoding | [#42](https://github.com/meanMonk/shrikundali/issues/42) | OPEN |
+
+### P1/P2 — Premium visual assets & paid acquisition
+
+| # | Task | Issue | Status |
+|---|------|-------|--------|
+| 15 | Generate AI image assets (hero, PDF, creatives) | *(not yet created — blocked on brand identity)* | — |
+| 16 | Set up Google Ads campaigns (Search + PMax) | [#33](https://github.com/meanMonk/shrikundali/issues/33) | OPEN |
+
+## Notes
+- P0 items must be completed before any paid traffic is sent (Google Ads issue #33 is hard-blocked on #35 teaser + #43 form restructure + #37 CTA verb decision)
+- Issues #34, #35, #43, #36, #39, #40, #41, #37, #38, #42 were created on 2026-09-09 as part of this gap analysis
+- Each issue includes: current state, PRD section reference, scope, and acceptance criteria
