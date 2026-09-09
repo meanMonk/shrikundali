@@ -61,7 +61,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     </p>
     <p style="font-size:0.95rem;color:#fff;opacity:0.9;max-width:600px;margin:0 auto 1rem">{angleCopy}</p>
     <a href="#form-section" class="cta-pulse" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--color-gold);color:var(--color-secondary);padding:0.9rem 1.75rem;border-radius:8px;font-size:1.05rem;font-weight:700;text-decoration:none;min-height:44px">
-      <Sparkles size={20} /> Get My Free Preview
+      <Sparkles size={20} /> Get My Kundli Report
     </a>
   </section>
 
@@ -85,8 +85,8 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
         <Clock size={22} color="var(--color-primary)" />
         <div>
-          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Instant Delivery</h3>
-          <p style="font-size:0.8rem;color:var(--color-text-muted)">PDF report generated in minutes</p>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">PDF in 24&ndash;48h</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Delivered to your email</p>
         </div>
       </div>
       <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
@@ -142,61 +142,107 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
   <!-- Teaser Form -->
   <section id="form-section" style="background:#fff;border:2px solid var(--color-primary);border-radius:12px;padding:2rem;margin:2rem 0">
     <h2 style="color:var(--color-primary);font-size:1.3rem;margin-bottom:0.5rem;text-align:center">Get My Free Kundali Preview</h2>
-    <p id="step-indicator" style="text-align:center;color:var(--color-text-muted);font-size:0.9rem;margin-bottom:1rem">Step 1 of 3 &bull; ~60 seconds</p>
+    <p style="text-align:center;color:var(--color-text-muted);font-size:0.9rem;margin-bottom:1rem">Fill your birth details below — takes under 60 seconds.</p>
 
     <form id="kundali-form" style="max-width:600px;margin:0 auto">
-      <div class="form-step" data-step="1">
-        <label class="field-label">
-          <span>Your Name</span>
-          <input type="text" id="label" name="label" placeholder="Your name" required class="field-input" />
-        </label>
-        <button type="button" class="step-next" data-next="2" style="margin-top:1rem;width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600">
-          Continue
-        </button>
-      </div>
+      <label class="field-label">
+        <span>Your Name</span>
+        <input type="text" id="label" name="label" placeholder="Your name" required class="field-input" />
+        <span class="field-hint">This appears as the title on your report.</span>
+      </label>
 
-      <div class="form-step" data-step="2" style="display:none">
-        <div class="field-row">
-          <label class="field-label">
-            <span>Date of Birth</span>
-            <input type="date" id="dob" name="dob" required class="field-input" />
-          </label>
-          <label class="field-label">
-            <span>Time of Birth</span>
-            <input type="time" id="birthtime" name="birthtime" class="field-input" />
-          </label>
-        </div>
-        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--color-text-muted);margin:0.5rem 0">
-          <input type="checkbox" id="approx-time" style="width:20px;height:20px" />
-          I don't know the exact time (use 12:00 PM)
-        </label>
-        <label class="field-label">
-          <span>Birthplace</span>
-          <input type="text" id="birthplace" name="birthplace" placeholder="City, State" required autocomplete="off" class="field-input" />
-          <input type="hidden" id="coordinates" value="19.0760,72.8777" />
-          <div id="place-suggestions" style="border:1px solid var(--color-border);border-radius:6px;margin-top:0.25rem;display:none;background:#fff;position:relative;z-index:10"></div>
-        </label>
-        <div style="display:flex;gap:0.5rem;margin-top:1rem">
-          <button type="button" class="step-back" data-back="1" style="flex:1;min-height:44px;background:transparent;border:1px solid var(--color-border);border-radius:8px;font-size:1rem">Back</button>
-          <button type="button" class="step-next" data-next="3" style="flex:2;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600">Continue</button>
-        </div>
-      </div>
+      <label class="field-label">
+        <span>Gender</span>
+        <select id="gender" name="gender" required class="field-input">
+          <option value="" disabled selected>Select</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
 
-      <div class="form-step" data-step="3" style="display:none">
+      <div class="field-row">
         <label class="field-label">
-          <span>Email Address</span>
-          <input type="email" id="email" name="email" placeholder="you@example.com" required class="field-input" />
+          <span>Date of Birth</span>
+          <input type="date" id="dob" name="dob" required class="field-input" />
         </label>
-        <input type="hidden" id="ayanamsa" value="1" />
-        <div style="display:flex;gap:0.5rem;margin-top:1rem">
-          <button type="button" class="step-back" data-back="2" style="flex:1;min-height:44px;background:transparent;border:1px solid var(--color-border);border-radius:8px;font-size:1rem">Back</button>
-          <button type="submit" class="cta-pulse" style="flex:2;min-height:44px;background:var(--color-gold);color:var(--color-secondary);border:none;border-radius:8px;font-size:1rem;font-weight:700">Reveal My Free Preview</button>
-        </div>
+        <label class="field-label">
+          <span>Time of Birth</span>
+          <input type="time" id="birthtime" name="birthtime" class="field-input" />
+        </label>
       </div>
+      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--color-text-muted);margin:0.5rem 0 0.75rem">
+        <input type="checkbox" id="approx-time" style="width:20px;height:20px" />
+        I don't know the exact time (use 12:00 PM)
+      </label>
+
+      <label class="field-label">
+        <span>Birthplace</span>
+        <input type="text" id="birthplace" name="birthplace" placeholder="City, State" required autocomplete="off" class="field-input" />
+        <span class="field-hint">Type your city — we'll match it automatically.</span>
+        <input type="hidden" id="coordinates" value="19.0760,72.8777" />
+        <div id="place-suggestions" style="border:1px solid var(--color-border);border-radius:6px;margin-top:0.25rem;display:none;background:#fff;position:relative;z-index:10"></div>
+      </label>
+
+      <label class="field-label">
+        <span>Report Language</span>
+        <select id="la" name="la" class="field-input">
+          <option value="en" selected>English</option>
+          <option value="hi">Hindi</option>
+        </select>
+      </label>
+
+      <input type="hidden" id="ayanamsa" value="1" />
+
+      <p style="font-size:0.8rem;color:var(--color-success);margin-bottom:1rem;text-align:center">&#x1F512; Your birth details are encrypted and never shared.</p>
+
+      <button type="submit" id="form-submit-btn" class="cta-pulse" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1.05rem;font-weight:700;cursor:pointer">
+        Show My Free Preview
+      </button>
     </form>
 
     <p id="form-status" style="text-align:center;margin-top:1rem;font-size:0.9rem"></p>
+
+    <!-- Teaser results (hidden until API response) -->
+    <div id="teaser-results" style="display:none;margin-top:1.5rem;background:var(--color-bg);border:1px solid var(--color-border);border-radius:8px;padding:1.25rem;text-align:center">
+      <p style="font-size:0.85rem;color:var(--color-secondary);font-weight:600;margin-bottom:0.75rem">Your Free Preview</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;max-width:400px;margin:0 auto">
+        <div><div style="font-size:0.7rem;color:var(--color-text-muted)">Lagna</div><div id="preview-lagna" style="font-weight:700;color:var(--color-primary)">&mdash;</div></div>
+        <div><div style="font-size:0.7rem;color:var(--color-text-muted)">Rashi</div><div id="preview-rashi" style="font-weight:700;color:var(--color-primary)">&mdash;</div></div>
+        <div><div style="font-size:0.7rem;color:var(--color-text-muted)">Nakshatra</div><div id="preview-nakshatra" style="font-weight:700;color:var(--color-primary)">&mdash;</div></div>
+        <div><div style="font-size:0.7rem;color:var(--color-text-muted)">Dosha</div><div id="preview-dosha" style="font-weight:700;color:var(--color-primary)">&mdash;</div></div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--color-text-muted);margin-top:0.75rem">Unlock below for your full detailed Kundali PDF.</p>
+      <button id="unlock-btn" type="button" class="cta-pulse" style="margin-top:1rem;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;padding:0.85rem 2rem;font-size:1.05rem;font-weight:700;cursor:pointer">
+        Unlock Full Report
+      </button>
+      <p style="font-size:0.7rem;color:var(--color-text-muted);margin-top:0.5rem">&#x1F512; Secure payment &bull; Private &bull; Delivered in 24&ndash;48 hours</p>
+    </div>
   </section>
+
+  <!-- Payment Modal -->
+  <div id="payment-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:#fff;border-radius:12px;padding:1.75rem;max-width:420px;width:100%;position:relative">
+      <button id="modal-close" type="button" style="position:absolute;top:0.75rem;right:0.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--color-text-muted)">&times;</button>
+      <h3 style="color:var(--color-primary);font-size:1.15rem;text-align:center;margin-bottom:1rem">Unlock Your Full Kundli Report</h3>
+      <div style="text-align:center;margin-bottom:1rem">
+        <span id="modal-original-price" style="font-size:1rem;color:var(--color-text-muted);text-decoration:line-through;margin-right:0.5rem"></span>
+        <span id="modal-price" style="font-size:1.5rem;font-weight:700;color:var(--color-primary)"></span>
+      </div>
+      <form id="modal-payment-form">
+        <label class="field-label">
+          <span>Email Address</span>
+          <input type="email" id="modal-email" name="email" placeholder="you@example.com" required class="field-input" />
+          <span class="field-hint">We'll send your PDF here as backup, and use it for your payment receipt.</span>
+        </label>
+        <button type="submit" id="modal-pay-btn" class="cta-pulse" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:0.5rem">
+          Pay Securely
+        </button>
+        <p style="font-size:0.7rem;color:var(--color-text-muted);margin-top:0.75rem;text-align:center">&#x1F512; Secure payment via Razorpay &bull; Your birth details stay private</p>
+      </form>
+      <div id="modal-status" style="display:none;padding:0.5rem;border-radius:6px;margin-top:0.75rem;font-size:0.85rem;text-align:center"></div>
+    </div>
+  </div>
 
   <!-- Testimonials -->
   <section class="fade-in" style="margin:2rem 0">
@@ -259,17 +305,18 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     <h2 style="font-size:1.4rem;margin-bottom:0.5rem">Ready to see what your stars reveal?</h2>
     <p style="margin-bottom:1rem;opacity:0.85">Get your free preview in under a minute — no card required.</p>
     <a href="#form-section" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--color-gold);color:var(--color-secondary);padding:0.9rem 1.75rem;border-radius:8px;font-weight:700;text-decoration:none;min-height:44px">
-      <Mail size={18} /> Get My Free Preview
+      <Mail size={18} /> Get My Kundli Report
     </a>
   </section>
 
   <!-- Sticky mobile CTA -->
   <a href="#form-section" id="sticky-cta" class="sticky-mobile-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--color-primary);color:#fff;text-align:center;padding:0.9rem;font-weight:700;text-decoration:none;z-index:50;min-height:44px">
-    <Phone size={16} /> Get My Free Preview
+    <Phone size={16} /> Get My Kundli Report
   </a>
 
   <style>
     .field-label { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--color-secondary); }
+    .field-hint { font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.15rem; }
     .field-input {
       font-size: 16px; /* prevents iOS auto-zoom */
       min-height: 44px;
@@ -290,6 +337,8 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(181,69,28,0.4); } 50% { box-shadow: 0 0 0 8px rgba(181,69,28,0); } }
     #place-suggestions div { padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.9rem; }
     #place-suggestions div:hover { background: var(--color-bg); }
+    #payment-modal { backdrop-filter: blur(2px); }
+    #payment-modal > div { box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
 
     @media (max-width: 768px) {
       .grid-2 { grid-template-columns: 1fr !important; }
@@ -307,19 +356,36 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     const API_URL = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:3400";
     const GOOGLE_MAPS_API_KEY = (import.meta as any).env?.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
-    // ---- Multi-step form navigation ----
-    const steps = Array.from(document.querySelectorAll<HTMLElement>(".form-step"));
-    const stepIndicator = document.getElementById("step-indicator");
-    function showStep(n: number) {
-      steps.forEach((s) => (s.style.display = s.dataset.step === String(n) ? "block" : "none"));
-      if (stepIndicator) stepIndicator.textContent = `Step ${n} of 3 • ~60 seconds`;
+    let cacheId: string | null = null;
+    let reportPrice: number | null = null;
+    let reportOriginalPrice: number | null = null;
+    let formName = "";
+    let formGender = "";
+
+    // ---- Fetch config for price ----
+    async function loadConfig() {
+      try {
+        const res = await fetch(`${API_URL}/api/config/financial_kundali`);
+        if (res.ok) {
+          const cfg = await res.json();
+          reportPrice = cfg.discountPrice || cfg.price || 499;
+          reportOriginalPrice = cfg.price || null;
+          const unlockBtn = document.getElementById("unlock-btn");
+          if (unlockBtn) unlockBtn.textContent = `Unlock Full Report \u2014 \u20B9${reportPrice}`;
+          const modalPrice = document.getElementById("modal-price");
+          const modalOriginal = document.getElementById("modal-original-price");
+          if (modalPrice) modalPrice.textContent = `\u20B9${reportPrice}`;
+          if (modalOriginal && reportOriginalPrice && reportOriginalPrice > reportPrice) {
+            modalOriginal.textContent = `\u20B9${reportOriginalPrice}`;
+          } else if (modalOriginal) {
+            modalOriginal.style.display = "none";
+          }
+          const modalPayBtn = document.getElementById("modal-pay-btn");
+          if (modalPayBtn) modalPayBtn.textContent = `Pay \u20B9${reportPrice} Securely`;
+        }
+      } catch {}
     }
-    document.querySelectorAll<HTMLButtonElement>(".step-next").forEach((btn) => {
-      btn.addEventListener("click", () => showStep(Number(btn.dataset.next)));
-    });
-    document.querySelectorAll<HTMLButtonElement>(".step-back").forEach((btn) => {
-      btn.addEventListener("click", () => showStep(Number(btn.dataset.back)));
-    });
+    loadConfig();
 
     // ---- Approx time checkbox ----
     const approxCheckbox = document.getElementById("approx-time") as HTMLInputElement | null;
@@ -341,7 +407,6 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     }
 
     if (GOOGLE_MAPS_API_KEY && birthplaceInput) {
-      // Google Places Autocomplete (New) widget, wired up once the Maps script loads.
       const initGooglePlaces = () => {
         const g = (window as any).google;
         if (!g?.maps?.places || !birthplaceInput) return;
@@ -357,15 +422,11 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       if ((window as any).google?.maps?.places) initGooglePlaces();
       else window.addEventListener("load", initGooglePlaces);
     } else if (birthplaceInput) {
-      // Nominatim fallback, debounced to respect usage policy (>=1s between requests).
       const runSearch = debounce(async (query: string) => {
         if (!suggestionsBox) return;
         try {
           const results = await nominatimSearch(query);
-          if (results.length === 0) {
-            suggestionsBox.style.display = "none";
-            return;
-          }
+          if (results.length === 0) { suggestionsBox.style.display = "none"; return; }
           suggestionsBox.innerHTML = "";
           results.forEach((r) => {
             const item = document.createElement("div");
@@ -378,9 +439,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
             suggestionsBox.appendChild(item);
           });
           suggestionsBox.style.display = "block";
-        } catch {
-          // Network/geocoding failure — quietly fall back to static table below.
-        }
+        } catch {}
       }, 1000);
 
       birthplaceInput.addEventListener("input", () => {
@@ -408,51 +467,143 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       stickyCta.style.display = pastForm && window.innerWidth < 768 ? "flex" : "none";
     });
 
-    // ---- Submit: fetch teaser, redirect to checkout ----
+    // ---- Form submit: call /teaser, show results on-page ----
     const form = document.getElementById("kundali-form") as HTMLFormElement | null;
     const statusEl = document.getElementById("form-status");
+    const teaserResults = document.getElementById("teaser-results");
+    const submitBtn = document.getElementById("form-submit-btn") as HTMLButtonElement | null;
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = (document.getElementById("label") as HTMLInputElement).value;
-      const email = (document.getElementById("email") as HTMLInputElement).value;
+      formName = (document.getElementById("label") as HTMLInputElement).value;
+      formGender = (document.getElementById("gender") as HTMLSelectElement).value;
       const dob = (document.getElementById("dob") as HTMLInputElement).value;
       const birthtime = (document.getElementById("birthtime") as HTMLInputElement).value || "12:00";
       const coordinates = coordinatesInput?.value || `${DEFAULT_COORDS.lat},${DEFAULT_COORDS.lon}`;
       const datetime = `${dob}T${birthtime}:00+05:30`;
+      const lang = (document.getElementById("la") as HTMLSelectElement).value;
 
-      if (statusEl) {
-        statusEl.textContent = "Generating your preview...";
-        statusEl.style.color = "var(--color-text-muted)";
-      }
+      if (statusEl) { statusEl.textContent = "Generating your preview..."; statusEl.style.color = "var(--color-text-muted)"; }
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Generating..."; }
 
-      trackEvent("teaser_submitted", { name, email });
+      trackEvent("teaser_submitted", { name: formName, gender: formGender });
 
       try {
         const res = await fetch(`${API_URL}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            email,
-            datetime,
-            coordinates,
-            ayanamsa: 1,
-          }),
+          body: JSON.stringify({ name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang }),
         });
         if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
         const data = await res.json();
+        cacheId = data.cacheId;
 
-        trackEvent("teaser_viewed", { cache_id: data.cacheId });
+        // Show teaser results on-page
+        const t = data.teaser || {};
+        const setTxt = (id: string, val: string) => { const el = document.getElementById(id); if (el) el.textContent = val || "\u2014"; };
+        setTxt("preview-lagna", t.lagna);
+        setTxt("preview-rashi", t.rashi);
+        setTxt("preview-nakshatra", t.nakshatra);
+        setTxt("preview-dosha", t.doshaFlag || t.dosha || "\u2014");
 
-        window.location.href = `/kundali?cacheId=${data.cacheId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`;
+        if (teaserResults) teaserResults.style.display = "block";
+        if (statusEl) statusEl.textContent = "";
+        trackEvent("teaser_viewed", { cache_id: cacheId });
+
+        // Scroll to teaser results
+        teaserResults?.scrollIntoView({ behavior: "smooth", block: "center" });
       } catch (err) {
-        if (statusEl) {
-          statusEl.textContent = "Something went wrong. Please try again in a moment.";
-          statusEl.style.color = "#c00";
-        }
+        if (statusEl) { statusEl.textContent = "Something went wrong. Please try again."; statusEl.style.color = "#c00"; }
         console.error("Teaser submission failed:", err);
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Show My Free Preview"; }
+      }
+    });
+
+    // ---- Unlock button: open payment modal ----
+    const modal = document.getElementById("payment-modal") as HTMLDivElement;
+    const modalEmail = document.getElementById("modal-email") as HTMLInputElement;
+    const modalClose = document.getElementById("modal-close");
+
+    document.getElementById("unlock-btn")?.addEventListener("click", () => {
+      if (!cacheId) { alert("Please submit the form first."); return; }
+      modal.style.display = "flex";
+      if (modalEmail) modalEmail.focus();
+      trackEvent("payment_modal_opened", { cache_id: cacheId });
+    });
+
+    modalClose?.addEventListener("click", () => { modal.style.display = "none"; });
+    modal?.addEventListener("click", (e) => { if (e.target === modal) modal.style.display = "none"; });
+
+    // ---- Modal payment: call /payment/checkout + Razorpay ----
+    const modalForm = document.getElementById("modal-payment-form") as HTMLFormElement;
+    const modalPayBtn = document.getElementById("modal-pay-btn") as HTMLButtonElement;
+    const modalStatus = document.getElementById("modal-status");
+
+    modalForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!cacheId) return;
+      const email = modalEmail.value;
+      if (!email) return;
+
+      modalPayBtn.disabled = true;
+      modalPayBtn.textContent = "Processing...";
+      if (modalStatus) { modalStatus.style.display = "none"; }
+
+      trackEvent("payment_initiated", { cache_id: cacheId, email });
+
+      try {
+        const res = await fetch(`${API_URL}/payment/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cacheId, provider: "razorpay", email, name: formName }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: "Failed" }));
+          if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = err.error || "Payment failed. Please try again."; }
+          modalPayBtn.disabled = false;
+          modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+          return;
+        }
+
+        const data = await res.json();
+        trackEvent("payment_success", { order_id: data.orderId, amount: data.amount });
+
+        if (data.key) {
+          const options = {
+            key: data.key,
+            amount: data.amount * 100,
+            currency: data.currency,
+            name: "Shri Kundali",
+            description: "Kundali Report",
+            order_id: data.orderId,
+            handler: function (response: any) {
+              window.location.href = `/download?orderId=${data.orderId}`;
+            },
+            prefill: { email },
+            theme: { color: "#B5451C" },
+          };
+          const rzp = new (window as any).Razorpay(options);
+          rzp.on("payment.failed", function () {
+            if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = "Payment failed. Please try again."; }
+            modalPayBtn.disabled = false;
+            modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+          });
+          rzp.open();
+        } else if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#efe"; modalStatus.style.color = "#060"; modalStatus.textContent = `Order created: ${data.orderId}. Check your email for payment link.`; }
+          modalPayBtn.disabled = false;
+          modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+        }
+      } catch (err: any) {
+        if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = `Error: ${err.message}`; }
+        modalPayBtn.disabled = false;
+        modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
       }
     });
   </script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 </Base>
