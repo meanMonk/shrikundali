@@ -1,7 +1,11 @@
 node_modules
 dist
 .env
+.env.*
+!.env.example
 *.log
 .git
-coverage
-nginx/generated
+docs
+vps
+nginx
+scripts

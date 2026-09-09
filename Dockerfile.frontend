@@ -1,0 +1,21 @@
+FROM node:20-slim AS base
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/web/kundaliweb/package.json ./packages/web/kundaliweb/
+RUN pnpm install
+
+FROM base AS build
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/web/kundaliweb/node_modules ./packages/web/kundaliweb/node_modules
+COPY . .
+RUN cd packages/web/kundaliweb && npx astro build
+
+FROM node:20-slim AS runtime
+RUN npm install -g serve@14
+WORKDIR /app
+COPY --from=build /app/packages/web/kundaliweb/dist ./dist
+EXPOSE 3000
+CMD ["serve", "dist", "-l", "3000", "--single"]

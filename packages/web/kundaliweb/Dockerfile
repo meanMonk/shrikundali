@@ -1,14 +1,20 @@
-# Multi-stage: build with node, serve static with nginx.
-FROM node:22-alpine AS build
-RUN corepack enable
+FROM node:20-slim AS base
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
-COPY package.json ./
-RUN pnpm install
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+FROM base AS build
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM node:20-slim AS runtime
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN npm install -g serve@14
+WORKDIR /app
+COPY --from=build /app/dist ./dist
 EXPOSE 3000
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "dist", "-l", "3000", "--single"]

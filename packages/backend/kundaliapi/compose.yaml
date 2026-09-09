@@ -1,20 +1,29 @@
 # Per-service compose. Joins the shared external vaayu_db network.
 # Run:  docker compose -f compose.yaml up -d --build
-# DB URIs: inside docker the defaults point at the `mongo`/`postgres`
-# containers on vaayu_db. Local brew dev uses 127.0.0.1 from .env (no auth).
 name: vaayu-kundaliapi
 
 services:
   kundaliapi:
-    build: .
+    build:
+      context: ../../..
+      dockerfile: Dockerfile.backend
     image: kundaliapi:latest
     restart: unless-stopped
     env_file: .env
     environment:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/app_kundaliapi}
       PG_URI: ${PG_URI:-postgres://postgres:postgres@postgres:5432/app_kundaliapi}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-false}
+      MINIO_HOST: ${MINIO_HOST:-host.docker.internal}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_SSL: ${MINIO_SSL:-false}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-admin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-shrikundali}
     ports:
-      - "3400:3400"
+      - "3460:3400"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks: [vaayu_db]
 
 networks:

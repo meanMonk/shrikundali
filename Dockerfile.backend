@@ -3,24 +3,22 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json ./
-# In monorepo, lockfile is at root — copy from build context
-COPY ../../pnpm-lock.yaml ./pnpm-lock.yaml 2>/dev/null || true
-COPY ../../pnpm-workspace.yaml ./pnpm-workspace.yaml 2>/dev/null || true
-RUN pnpm install --frozen-lockfile 2>/dev/null || npm install --omit=dev
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/backend/kundaliapi/package.json ./packages/backend/kundaliapi/
+RUN pnpm install --shamefully-hoist
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm build 2>/dev/null || npx tsc
+RUN cd packages/backend/kundaliapi && npx tsc
 
 FROM node:20-slim AS runtime
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 RUN apt-get update && apt-get install -y chromium --no-install-recommends && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/packages/backend/kundaliapi/dist ./dist
+COPY --from=build /app/packages/backend/kundaliapi/package.json ./
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 EXPOSE 3400

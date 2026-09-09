@@ -4,12 +4,14 @@ name: vaayu-kundaliweb
 
 services:
   kundaliweb:
-    build: .
+    build:
+      context: ../../..
+      dockerfile: Dockerfile.frontend
     image: kundaliweb:latest
     restart: unless-stopped
     env_file: .env
     ports:
-      - "3001:3000"
+      - "3006:3000"
     networks: [vaayu_db]
 
 networks:
