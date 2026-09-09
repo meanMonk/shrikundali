@@ -115,6 +115,19 @@ form+payment page), `pages/{about,privacy,terms,refund,disclaimer,sitemap}.astro
 15. Decide Place-of-Birth input: keep static 50-city list vs. real geocoding/autocomplete
     API (cost + coverage tradeoff).
 
+### P1/P2 — Premium visual assets & paid acquisition (added 2026-09-09)
+16. Generate all AI image assets per `docs/prd/ai-image-generation-prompts.md` via
+    fal.ai: website hero/motif/OG images (§A), PDF cover + closing page backgrounds
+    (§B), and 5 campaign creative variants (§C). Blocks: brand-identity issue (needs
+    A1-A3), pricing-block issue (needs the offer creative safe-zone), and PDF generation
+    (needs B1-B2 handed to backend to confirm dynamic-text safe zones actually work).
+17. Set up 2 Google Ads campaigns per `docs/prd/google-ads-campaign-setup.md`: a Search
+    campaign on high-intent keywords, and a Performance Max campaign combining broad
+    reach with remarketing to live-teaser completers. Hard-blocked on: the CTA-verb
+    decision (#14), the payment-complete conversion tracking event (#11), the live
+    teaser shipping so its completion is a trackable remarketing signal (#2), and the
+    campaign creative assets (#16).
+
 ## Notes for issue creation
 - Each numbered item above → one GitHub issue, labeled by priority (P0/P1/P2/P3) and
   area (frontend/backend/content/decision).
