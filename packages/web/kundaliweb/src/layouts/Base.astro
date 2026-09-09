@@ -23,6 +23,13 @@ const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
     <meta property="og:url" content="https://shrikundali.in" />
     <meta property="og:site_name" content="Shri Kundali" />
 
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="shrikundali" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <!-- Meta Pixel -->
     {META_PIXEL_ID && (
       <script is:inline>
@@ -68,9 +75,10 @@ const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
       h1, h2, h3, .font-heading { font-family: var(--font-heading); }
       a { color: var(--color-primary); }
       .container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
-      nav { background: var(--color-secondary); color: #fff; padding: 0.75rem 1.5rem; }
-      nav a { color: #fff; text-decoration: none; margin-right: 1.5rem; font-size: 0.95rem; }
-      nav a:hover { text-decoration: underline; }
+      nav { background: var(--color-secondary); color: #fff; padding: 0.75rem 1.5rem; display: flex; align-items: center; }
+      .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: #fff; }
+      .brand-logo { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; object-fit: contain; }
+      .brand-name { font-family: var(--font-heading); font-weight: 600; font-size: 1.15rem; letter-spacing: 0.01em; }
       footer { text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid var(--color-border); }
       footer a { color: var(--color-text-muted); font-size: 0.85rem; margin: 0 0.5rem; text-decoration: none; }
       footer a:hover { color: var(--color-primary); }
@@ -84,9 +92,10 @@ const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
   </head>
   <body>
     <nav>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-      <a href="/docs" target="_blank">API Docs</a>
+      <a href="/" class="brand">
+        <img src="/logo.png" alt="ShriKundali" class="brand-logo" width="36" height="36" />
+        <span class="brand-name">ShriKundali</span>
+      </a>
     </nav>
     <div class="container">
       <slot />

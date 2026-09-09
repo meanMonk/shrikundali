@@ -2,6 +2,7 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
+import { cors } from "hono/cors";
 import { healthRoutes } from "./routes/health.js";
 import { setupDocs } from "./docs.js";
 import { dbRoutes } from "./routes/db.js";
@@ -15,7 +16,19 @@ import { telegramBotApp } from "./routes/telegram-bot.js";
 
 const app = new Hono();
 
+const allowedOrigins = (process.env.CORS_ORIGINS ?? "http://localhost:3000,http://127.0.0.1:3000")
+  .split(",")
+  .map((o) => o.trim());
+
 app.use("*", logger());
+app.use(
+  "*",
+  cors({
+    origin: allowedOrigins,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.route("/health", healthRoutes);
 app.route("/db", dbRoutes);
 app.route("/kundali", kundaliApp);
