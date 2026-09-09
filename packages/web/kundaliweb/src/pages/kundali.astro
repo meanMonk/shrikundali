@@ -6,8 +6,8 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
   <style>
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     .cta-pulse { animation: pulse 2s ease-in-out infinite; }
-    .score-box { background: #faf3e8; border: 1px solid #d4a373; border-radius: 8px; padding: 0.75rem; text-align: center; }
-    .score-num { font-size: 1.5rem; font-weight: 700; color: #8b4513; }
+    .score-box { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 8px; padding: 0.75rem; text-align: center; }
+    .score-num { font-size: 1.5rem; font-weight: 700; color: var(--color-primary); }
     @media (max-width: 600px) { .grid-3 { grid-template-columns: 1fr !important; } .grid-2 { grid-template-columns: 1fr !important; } }
   </style>
 
@@ -15,14 +15,14 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 
   <div id="content" style="display:none">
     <div style="text-align:center;margin-bottom:1.5rem">
-      <h1 id="report-title" style="color:#8b4513;margin-bottom:0.5rem"></h1>
+      <h1 id="report-title" style="color:var(--color-primary);margin-bottom:0.5rem"></h1>
       <p id="report-desc" style="color:#666;font-size:0.95rem;max-width:500px;margin:0 auto"></p>
     </div>
 
     <!-- Pricing -->
-    <div style="background:#fff;border:2px solid #8b4513;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;text-align:center">
+    <div style="background:#fff;border:2px solid var(--color-primary);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;text-align:center">
       <div style="display:flex;align-items:baseline;justify-content:center;gap:0.75rem;margin-bottom:0.5rem">
-        <span id="report-price" style="font-size:2rem;font-weight:700;color:#8b4513"></span>
+        <span id="report-price" style="font-size:2rem;font-weight:700;color:var(--color-primary)"></span>
         <span id="report-original" style="font-size:1.1rem;color:#888;text-decoration:line-through"></span>
         <span id="report-save" style="font-size:0.85rem;color:#0a0;font-weight:600;background:#efe;border-radius:4px;padding:0.2rem 0.5rem"></span>
       </div>
@@ -31,13 +31,13 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 
     <!-- Features -->
     <div style="margin-bottom:1.5rem">
-      <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem;text-align:center">What You Get</h2>
+      <h2 style="color:var(--color-primary);font-size:1rem;margin-bottom:0.75rem;text-align:center">What You Get</h2>
       <div class="grid-3" id="features-list" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem"></div>
     </div>
 
     <!-- Teaser Scores -->
-    <div style="background:#fff;border:1px solid #d4a373;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
-      <h2 style="color:#8b4513;font-size:1rem;margin-bottom:0.75rem;text-align:center">Your Money-Axis Scores</h2>
+    <div style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+      <h2 style="color:var(--color-primary);font-size:1rem;margin-bottom:0.75rem;text-align:center">Your Money-Axis Scores</h2>
       <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem">
         <div class="score-box"><div class="score-num" id="s-wealth">--</div><div style="font-size:0.7rem;color:#666">Wealth</div></div>
         <div class="score-box"><div class="score-num" id="s-career">--</div><div style="font-size:0.7rem;color:#666">Career</div></div>
@@ -49,34 +49,34 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
     </div>
 
     <!-- Payment Form -->
-    <div style="background:#fff;border:1px solid #d4a373;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
-      <h2 style="color:#8b4513;font-size:1rem;margin-bottom:1rem;text-align:center">Complete Your Purchase</h2>
+    <div style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+      <h2 style="color:var(--color-primary);font-size:1rem;margin-bottom:1rem;text-align:center">Complete Your Purchase</h2>
       <form id="payment-form" style="max-width:400px;margin:0 auto">
         <div style="margin-bottom:1rem">
           <label style="display:flex;flex-direction:column;gap:0.25rem">
             <span style="font-weight:600;font-size:0.9rem">Name</span>
             <input type="text" id="pay-name" readonly
-              style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;background:#faf3e8" />
+              style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg)" />
           </label>
         </div>
         <div style="margin-bottom:1rem">
           <label style="display:flex;flex-direction:column;gap:0.25rem">
             <span style="font-weight:600;font-size:0.9rem">Email</span>
             <input type="email" id="pay-email" readonly
-              style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px;background:#faf3e8" />
+              style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-bg)" />
           </label>
         </div>
         <div style="margin-bottom:1rem">
           <label style="display:flex;flex-direction:column;gap:0.25rem">
             <span style="font-weight:600;font-size:0.9rem">Payment Method</span>
-            <select id="pay-provider" style="padding:0.6rem;border:1px solid #d4a373;border-radius:6px">
+            <select id="pay-provider" style="padding:0.6rem;border:1px solid var(--color-border);border-radius:6px">
               <option value="razorpay">Razorpay (UPI, Cards, Netbanking)</option>
               <option value="cashfree">Cashfree</option>
             </select>
           </label>
         </div>
         <button type="submit" class="cta-pulse" id="pay-btn"
-          style="width:100%;background:#8b4513;color:#fff;border:none;padding:1rem;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(139,69,19,0.3)">
+          style="width:100%;background:var(--color-primary);color:#fff;border:none;padding:1rem;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(181,69,28,0.3)">
           Pay &amp; Download Report &#8594;
         </button>
         <p style="font-size:0.8rem;color:#888;margin-top:0.75rem;text-align:center">&#x1F512; Secure &bull; 24hr refund &bull; Instant delivery</p>
@@ -91,8 +91,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
     </p>
   </div>
 
-  <script is:inline>
-    const API = import.meta.env?.VITE_API_URL ?? "http://localhost:3400";
+  <script define:vars={{ API }}>
     const params = new URLSearchParams(window.location.search);
     const cacheId = params.get("cacheId");
     const email = params.get("email");
@@ -123,7 +122,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
         const featuresEl = document.getElementById("features-list");
         if (config.features) {
           featuresEl.innerHTML = config.features.map(f =>
-            `<div style="display:flex;align-items:start;gap:0.5rem;padding:0.5rem;background:#faf3e8;border-radius:6px;font-size:0.8rem">
+            `<div style="display:flex;align-items:start;gap:0.5rem;padding:0.5rem;background:var(--color-bg);border-radius:6px;font-size:0.8rem">
               <span style="color:#0a0">&#10003;</span><span>${f}</span>
             </div>`
           ).join("");
@@ -216,7 +215,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
               window.location.href = `/download?orderId=${data.orderId}`;
             },
             prefill: data.prefill,
-            theme: { color: "#8b4513" },
+            theme: { color: "var(--color-primary)" },
           };
           const rzp = new window.Razorpay(options);
           rzp.on("payment.failed", function() {

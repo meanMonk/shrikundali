@@ -1,0 +1,21 @@
+{
+  "id": "A2",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A subtle, elegant line-art pattern of a Vedic kundli square birth-chart diagram (North Indian chart style, geometric diamond-and-triangle grid), rendered in thin single-weight gold (#C9A227) strokes on transparent/warm off-white (#FBF6EF) background, low contrast, minimal, suitable as a faint decorative background texture behind text. No numbers, no planetary symbols cluttering it, no text. Clean, premium, editorial — think fintech annual-report background texture, not mystical poster art.",
+    "negative_prompt": "zodiac wheel, planets illustration, stars, cosmic, cluttered symbols, text, numbers, bright colors, cartoonish",
+    "image_size": "square_hd",
+    "style": "vector_illustration"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aa9b34f/Mg7zF7RxzlTHUGhxENV9Z_IM6DhGOU.svg",
+        "content_type": "image/svg+xml",
+        "file_name": "Mg7zF7RxzlTHUGhxENV9Z_IM6DhGOU.svg",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-09T06:43:55.969Z"
+}

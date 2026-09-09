@@ -1,0 +1,21 @@
+{
+  "id": "B2",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A premium full-bleed document closing-page background, portrait orientation, warm off-white (#FBF6EF) base with a single small, elegant gold (#C9A227) line-art kundli-chart glyph positioned in the lower corner only (much smaller and lighter-weight than a cover page would use), rest of the page calm and nearly blank with a very subtle indigo (#241E4E) thin border frame. Generous open space through the vertical and horizontal center for a closing message, support contact details, and legal/footer text to be overlaid later. Aesthetic: premium document closing page, calm, understated, NOT busy or mystical.",
+    "negative_prompt": "zodiac wheel, cosmic swirl, cluttered pattern, dense graphics, dark heavy background, text, logo, low quality",
+    "image_size": "portrait_4_3",
+    "style": "vector_illustration"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aa9b341/B0iPfT2bqdYGSv5POJN8g_ChxJvyPu.svg",
+        "content_type": "image/svg+xml",
+        "file_name": "B0iPfT2bqdYGSv5POJN8g_ChxJvyPu.svg",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-09T06:45:34.439Z"
+}

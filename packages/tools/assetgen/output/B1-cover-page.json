@@ -1,0 +1,21 @@
+{
+  "id": "B1",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A premium full-bleed document cover-page background, portrait orientation, deep indigo (#241E4E) base gradating subtly toward warm off-white (#FBF6EF) at the vertical center, with a large, elegant, low-opacity gold (#C9A227) line-art Vedic kundli square-chart motif centered as a watermark-style graphic element — NOT a zodiac wheel, NOT cluttered with planetary glyphs. A thin gold border/frame line inset from the page edge. The upper-middle third of the composition must remain visually calm and high-contrast-safe (for dark indigo text or light text to be legibly overlaid later) — do not place dense pattern detail there. Aesthetic: premium legal/financial report cover, think high-end annual report or law-firm document cover, NOT mystical or spiritual poster art. No text, no numbers, no human figures.",
+    "negative_prompt": "zodiac wheel, tarot cards, crystal ball, stars, cosmic swirl, cartoonish, cluttered symbols, text, logo, low quality, watermark text",
+    "image_size": "portrait_4_3",
+    "style": "realistic_image"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aa9b33f/-J-gviqoauH-xuxXq9fZn_xVe8yjzL.webp",
+        "content_type": "image/webp",
+        "file_name": "-J-gviqoauH-xuxXq9fZn_xVe8yjzL.webp",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-09T06:45:22.463Z"
+}

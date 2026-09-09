@@ -1,0 +1,173 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "Home" [ref=e3] [cursor=pointer]:
+      - /url: /
+    - link "About" [ref=e4] [cursor=pointer]:
+      - /url: /about
+    - link "API Docs" [ref=e5] [cursor=pointer]:
+      - /url: /docs
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: 🔒 Secure • 100% Private
+      - heading "Financial Kundali Report" [level=1] [ref=e9]
+      - paragraph [ref=e10]: Discover your financial destiny with Vedic astrology. Get personalized insights on wealth, career, investments, and money management.
+      - paragraph [ref=e11]: Trusted by 10,000+ users • 4.8★ • Instant PDF
+      - link "Get My Kundli Report →" [ref=e12] [cursor=pointer]:
+        - /url: "#form-section"
+    - generic [ref=e13]:
+      - heading "Does this sound like you?" [level=2] [ref=e14]
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: 💸
+          - generic [ref=e18]: Salary comes in, but money doesn't stay
+        - generic [ref=e19]:
+          - generic [ref=e20]: 📉
+          - generic [ref=e21]: EMI / credit card pressure keeps growing
+        - generic [ref=e22]:
+          - generic [ref=e23]: 🤔
+          - generic [ref=e24]: Confused between business vs job?
+        - generic [ref=e25]:
+          - generic [ref=e26]: 🏠
+          - generic [ref=e27]: Can't time property / investment decisions
+      - paragraph [ref=e28]: The answer lies in your birth chart — fill the form below to find out
+    - generic [ref=e29]:
+      - heading "What's in Your Report" [level=2] [ref=e30]
+      - paragraph [ref=e31]: 6 key financial aspects — one personalized PDF
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]: 💰
+          - heading "Income Flow" [level=3] [ref=e35]
+          - paragraph [ref=e36]: Source stability & timing
+        - generic [ref=e37]:
+          - generic [ref=e38]: 💳
+          - heading "Savings & Expenses" [level=3] [ref=e39]
+          - paragraph [ref=e40]: Why money doesn't stay
+        - generic [ref=e41]:
+          - generic [ref=e42]: 🏦
+          - heading "Loan / EMI" [level=3] [ref=e43]
+          - paragraph [ref=e44]: Debt release windows
+        - generic [ref=e45]:
+          - generic [ref=e46]: 📈
+          - heading "Investment" [level=3] [ref=e47]
+          - paragraph [ref=e48]: Land, gold, stocks — what suits you
+        - generic [ref=e49]:
+          - generic [ref=e50]: 💼
+          - heading "Career & Business" [level=3] [ref=e51]
+          - paragraph [ref=e52]: Promotion timing + path
+        - generic [ref=e53]:
+          - generic [ref=e54]: 🔮
+          - heading "12-Month Outlook" [level=3] [ref=e55]
+          - paragraph [ref=e56]: When to act, when to wait
+    - generic [ref=e57]:
+      - heading "Your Money-Axis Scores" [level=2] [ref=e58]
+      - paragraph [ref=e59]: Free preview — full details in paid report
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - generic [ref=e62]: "--"
+          - generic [ref=e63]: Wealth
+        - generic [ref=e64]:
+          - generic [ref=e65]: "--"
+          - generic [ref=e66]: Career
+        - generic [ref=e67]:
+          - generic [ref=e68]: "--"
+          - generic [ref=e69]: Business
+        - generic [ref=e70]:
+          - generic [ref=e71]: "--"
+          - generic [ref=e72]: Property
+        - generic [ref=e73]:
+          - generic [ref=e74]: "--"
+          - generic [ref=e75]: Investment
+        - generic [ref=e76]:
+          - generic [ref=e77]: "--"
+          - generic [ref=e78]: Stability
+      - paragraph [ref=e79]: Fill the form below to see your scores
+    - generic [ref=e80]:
+      - heading "How It Works" [level=2] [ref=e81]
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]: "1"
+          - generic [ref=e85]:
+            - strong [ref=e86]: Fill your birth details
+            - text: Name, email, date, time & place of birth
+        - generic [ref=e87]:
+          - generic [ref=e88]: "2"
+          - generic [ref=e89]:
+            - strong [ref=e90]: Get your free preview
+            - text: See basic scores and chart summary
+        - generic [ref=e91]:
+          - generic [ref=e92]: "3"
+          - generic [ref=e93]:
+            - strong [ref=e94]: Download full PDF
+            - text: Instant delivery via email + download link
+    - generic [ref=e95]:
+      - heading "What People Say" [level=2] [ref=e96]
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - text: “
+          - paragraph [ref=e99]: The loan release timing was accurate. Saturn antardasha relief came exactly as predicted.
+          - generic [ref=e100]:
+            - strong [ref=e101]: Amit
+            - text: • Lucknow
+        - generic [ref=e102]:
+          - text: “
+          - paragraph [ref=e103]: Career diagnosis opened my eyes. Chart showed job stability over business. Got promotion after a year.
+          - generic [ref=e104]:
+            - strong [ref=e105]: Rahul
+            - text: • Pune
+        - generic [ref=e106]:
+          - text: “
+          - paragraph [ref=e107]: Property timing window was genuine. Waited in the right window, got better rate and loan sanctioned.
+          - generic [ref=e108]:
+            - strong [ref=e109]: Neha
+            - text: • Delhi
+    - generic [ref=e110]:
+      - heading "Get My Kundli Report" [level=2] [ref=e111]
+      - paragraph [ref=e112]: Step 1 of 3 • ~60 seconds left
+      - generic [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]: Full Name *
+          - textbox "Full Name * This appears as the title on your report." [ref=e119]:
+            - /placeholder: Your name
+          - generic [ref=e120]: This appears as the title on your report.
+        - button "Continue →" [ref=e122] [cursor=pointer]
+    - generic [ref=e123]:
+      - heading "Frequently Asked Questions" [level=2] [ref=e124]
+      - generic [ref=e125]:
+        - generic [ref=e127] [cursor=pointer]:
+          - text: What do I get in the Financial Kundali?
+          - generic [ref=e128]: +
+        - generic [ref=e130] [cursor=pointer]:
+          - text: Is this financial advice?
+          - generic [ref=e131]: +
+        - generic [ref=e133] [cursor=pointer]:
+          - text: What if I don't know my exact birth time?
+          - generic [ref=e134]: +
+        - generic [ref=e136] [cursor=pointer]:
+          - text: How fast is the report?
+          - generic [ref=e137]: +
+        - generic [ref=e139] [cursor=pointer]:
+          - text: What's the refund policy?
+          - generic [ref=e140]: +
+    - generic [ref=e141]:
+      - paragraph [ref=e142]: Ready to know your financial future?
+      - paragraph [ref=e143]: Dhan yog • Saturn timing • Personalized PDF
+      - link "Get My Kundli Report →" [ref=e144] [cursor=pointer]:
+        - /url: "#form-section"
+    - paragraph [ref=e146]: This is Vedic Financial Kundali guidance, not SEBI-registered financial advice. Outcomes vary by individual. For major loan/investment decisions, consult a qualified advisor.
+    - link "Get My Kundli Report →" [ref=e148] [cursor=pointer]:
+      - /url: "#form-section"
+  - contentinfo [ref=e149]:
+    - generic [ref=e150]:
+      - link "About" [ref=e151] [cursor=pointer]:
+        - /url: /about
+      - link "Refund" [ref=e152] [cursor=pointer]:
+        - /url: /refund
+      - link "Privacy" [ref=e153] [cursor=pointer]:
+        - /url: /privacy
+      - link "Terms" [ref=e154] [cursor=pointer]:
+        - /url: /terms
+      - link "Disclaimer" [ref=e155] [cursor=pointer]:
+        - /url: /disclaimer
+      - link "Sitemap" [ref=e156] [cursor=pointer]:
+        - /url: /sitemap
+    - paragraph [ref=e157]: © 2026 Shri Kundali. All rights reserved.

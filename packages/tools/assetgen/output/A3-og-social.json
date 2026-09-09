@@ -1,0 +1,21 @@
+{
+  "id": "A3",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A clean, premium social-share banner background, warm off-white (#FBF6EF) base with a deep indigo (#241E4E) geometric kundli-chart motif accent in one corner and a thin muted-gold (#C9A227) divider line, large empty central negative space reserved for overlaid headline text (added separately, do not render any text). Premium fintech/document-product aesthetic, not mystical.",
+    "negative_prompt": "text, logo, zodiac wheel, cosmic swirl, stock photo, cluttered, low quality",
+    "image_size": "landscape_16_9",
+    "style": "digital_illustration"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aa9b350/SGxSpH_4yFzQ-x48rRAFH_KB1IOo84.webp",
+        "content_type": "image/webp",
+        "file_name": "SGxSpH_4yFzQ-x48rRAFH_KB1IOo84.webp",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-09T06:44:04.972Z"
+}

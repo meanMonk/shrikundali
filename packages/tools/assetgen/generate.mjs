@@ -44,7 +44,7 @@ const ASSETS = {
     params: {
       prompt: `A premium, minimalist 3D-rendered mockup of an elegant printed astrology report document floating at a slight angle, cover page visible showing an abstract geometric Vedic birth chart (kundli square-chart motif, NOT a zodiac wheel) rendered in deep indigo (#241E4E) linework with muted gold (#C9A227) accent lines on a warm off-white (#FBF6EF) paper texture. Soft studio lighting, subtle drop shadow, shallow depth of field, clean negative space around the object suitable for compositing onto a website hero background. Style: modern fintech/legal-document product photography, premium editorial feel, NOT mystical or cosmic. No text, no logos, no human figures.`,
       negative_prompt: "zodiac wheel, tarot, crystal ball, cosmic swirl, stars background, cartoonish, stock photo watermark, text, logo, low quality, cluttered",
-      image_size: "portrait_4_5", // 1536x1920
+      image_size: "portrait_4_3", // recraft-v3 enum (was invalid: portrait_4_5)
       style: "realistic_image",
     },
     outputName: "A1-hero-mockup",
@@ -56,7 +56,7 @@ const ASSETS = {
     params: {
       prompt: `A subtle, elegant line-art pattern of a Vedic kundli square birth-chart diagram (North Indian chart style, geometric diamond-and-triangle grid), rendered in thin single-weight gold (#C9A227) strokes on transparent/warm off-white (#FBF6EF) background, low contrast, minimal, suitable as a faint decorative background texture behind text. No numbers, no planetary symbols cluttering it, no text. Clean, premium, editorial — think fintech annual-report background texture, not mystical poster art.`,
       negative_prompt: "zodiac wheel, planets illustration, stars, cosmic, cluttered symbols, text, numbers, bright colors, cartoonish",
-      image_size: "square_2000x2000", // 2000x2000
+      image_size: "square_hd", // recraft-v3 enum (was invalid: square_2000x2000)
       style: "vector_illustration",
     },
     outputName: "A2-kundli-motif",
@@ -68,7 +68,7 @@ const ASSETS = {
     params: {
       prompt: `A clean, premium social-share banner background, warm off-white (#FBF6EF) base with a deep indigo (#241E4E) geometric kundli-chart motif accent in one corner and a thin muted-gold (#C9A227) divider line, large empty central negative space reserved for overlaid headline text (added separately, do not render any text). Premium fintech/document-product aesthetic, not mystical.`,
       negative_prompt: "text, logo, zodiac wheel, cosmic swirl, stock photo, cluttered, low quality",
-      image_size: "landscape_1200x630", // OG standard
+      image_size: "landscape_16_9", // recraft-v3 enum (was invalid: landscape_1200x630)
       style: "digital_illustration",
     },
     outputName: "A3-og-social",
@@ -82,7 +82,7 @@ const ASSETS = {
     params: {
       prompt: `A premium full-bleed document cover-page background, portrait orientation, deep indigo (#241E4E) base gradating subtly toward warm off-white (#FBF6EF) at the vertical center, with a large, elegant, low-opacity gold (#C9A227) line-art Vedic kundli square-chart motif centered as a watermark-style graphic element — NOT a zodiac wheel, NOT cluttered with planetary glyphs. A thin gold border/frame line inset from the page edge. The upper-middle third of the composition must remain visually calm and high-contrast-safe (for dark indigo text or light text to be legibly overlaid later) — do not place dense pattern detail there. Aesthetic: premium legal/financial report cover, think high-end annual report or law-firm document cover, NOT mystical or spiritual poster art. No text, no numbers, no human figures.`,
       negative_prompt: "zodiac wheel, tarot cards, crystal ball, stars, cosmic swirl, cartoonish, cluttered symbols, text, logo, low quality, watermark text",
-      image_size: "portrait_3_4", // closest to A4 2480x3508
+      image_size: "portrait_4_3", // recraft-v3 enum, closest to A4 (was invalid: portrait_3_4)
       style: "realistic_image",
     },
     outputName: "B1-cover-page",
@@ -94,7 +94,7 @@ const ASSETS = {
     params: {
       prompt: `A premium full-bleed document closing-page background, portrait orientation, warm off-white (#FBF6EF) base with a single small, elegant gold (#C9A227) line-art kundli-chart glyph positioned in the lower corner only (much smaller and lighter-weight than a cover page would use), rest of the page calm and nearly blank with a very subtle indigo (#241E4E) thin border frame. Generous open space through the vertical and horizontal center for a closing message, support contact details, and legal/footer text to be overlaid later. Aesthetic: premium document closing page, calm, understated, NOT busy or mystical.`,
       negative_prompt: "zodiac wheel, cosmic swirl, cluttered pattern, dense graphics, dark heavy background, text, logo, low quality",
-      image_size: "portrait_3_4", // A4
+      image_size: "portrait_4_3", // recraft-v3 enum, closest to A4 (was invalid: portrait_3_4)
       style: "vector_illustration",
     },
     outputName: "B2-closing-page",
@@ -108,7 +108,7 @@ const ASSETS = {
     params: {
       prompt: `A calm, premium editorial photo of a young Indian professional (late 20s) sitting at a home desk at night, looking thoughtfully at a laptop screen with a soft warm desk lamp glow, expression pensive but not distressed — conveying quiet uncertainty about a career or financial decision, not despair. Warm off-white and deep indigo color grading matching a premium fintech-brand photoshoot, soft natural shadows, shallow depth of field. No visible screen content, no on-screen text, no logos, no astrology imagery in frame (no charts, no zodiac symbols) — this creative is pure emotional-hook photography.`,
       negative_prompt: "cartoonish, stock-photo cliché forced-smile, cosmic imagery, zodiac wheel, text, logo, low quality, overexposed",
-      image_size: "square_1024_1024",
+      aspect_ratio: "1:1", // flux-pro/v1.1-ultra uses aspect_ratio, not image_size
     },
     outputName: "C1-pain-hook",
   },
@@ -119,7 +119,7 @@ const ASSETS = {
     params: {
       prompt: `A premium, warm-toned editorial photo of an Indian professional (late 20s-30s) smiling with quiet confidence, looking slightly off-camera as if reading good news, seated in a bright naturally-lit room with warm off-white (#FBF6EF) tones and a hint of deep indigo (#241E4E) in the wardrobe or background décor for brand color consistency. Soft, optimistic, aspirational but not exaggerated/theatrical. No text, no logos, no astrology iconography in frame.`,
       negative_prompt: "cartoonish, cosmic imagery, zodiac wheel, tarot, exaggerated expression, text, logo, low quality",
-      image_size: "square_1024_1024",
+      aspect_ratio: "1:1", // flux-pro/v1.1-ultra uses aspect_ratio, not image_size
     },
     outputName: "C2-outcome",
   },
@@ -130,7 +130,7 @@ const ASSETS = {
     params: {
       prompt: `A premium flat-lay product photograph of a bound, elegant astrology report document (matching the cover design described in prompt B1: deep indigo cover with a subtle gold kundli-chart line-art motif) resting on a warm off-white desk surface next to a minimalist pen and a cup of tea, soft natural window light, styled like a premium financial/legal document product shoot. No human figures, no text overlays, no logos.`,
       negative_prompt: "cartoonish, cosmic imagery, zodiac wheel, tarot cards, crystal ball, cluttered desk, text, logo, low quality",
-      image_size: "landscape_1200x628",
+      aspect_ratio: "16:9", // flux-pro/v1.1-ultra uses aspect_ratio, not image_size
     },
     outputName: "C3-trust-authority",
   },
@@ -141,7 +141,7 @@ const ASSETS = {
     params: {
       prompt: `A warm, premium lifestyle photo of an Indian family or individual at home during a quiet Diwali evening with soft diya candlelight, color-graded toward warm off-white and gold tones consistent with the brand palette (#FBF6EF, #C9A227), calm and intimate mood, not a loud festival-poster aesthetic. No text, no logos, no astrology iconography, no zodiac imagery.`,
       negative_prompt: "loud festival poster style, fireworks clipart, cosmic imagery, zodiac wheel, text, logo, low quality, oversaturated",
-      image_size: "portrait_9_16", // 1080x1920
+      aspect_ratio: "9:16", // flux-pro/v1.1-ultra uses aspect_ratio, not image_size
     },
     outputName: "C4-festive",
   },
@@ -152,7 +152,7 @@ const ASSETS = {
     params: {
       prompt: `A clean, premium background graphic for a price-offer ad: warm off-white (#FBF6EF) base, a bold deep-indigo (#241E4E) diagonal ribbon/banner shape in one corner reserved for a "% OFF" badge overlay (leave that corner visually simple, not detailed — it will have text added), a single elegant gold (#C9A227) line-art kundli-chart accent graphic off to one side balancing the composition, generous clean negative space in the center-lower area for a CTA button overlay. Premium fintech-offer aesthetic, not a loud e-commerce sale banner.`,
       negative_prompt: "cluttered sale-banner clipart, cosmic imagery, zodiac wheel, starburst shapes, text, logo, low quality, oversaturated red/yellow sale colors",
-      image_size: "square_1024_1024",
+      image_size: "square_hd",
       style: "digital_illustration",
     },
     outputName: "C5-offer-discount",

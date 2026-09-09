@@ -39,24 +39,48 @@ const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
       </script>
     )}
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
     <style is:global>
+      :root {
+        --color-primary: #B5451C;
+        --color-primary-hover: #D45C2C;
+        --color-secondary: #241E4E;
+        --color-gold: #C9A227;
+        --color-bg: #FBF6EF;
+        --color-surface: #FFFFFF;
+        --color-text: #2B2620;
+        --color-text-muted: #7A7267;
+        --color-success: #3F6B4C;
+        --color-border: #E8DFD1;
+        --font-heading: 'Fraunces', 'Noto Sans Devanagari', serif;
+        --font-body: 'Inter', 'Noto Sans Devanagari', sans-serif;
+      }
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; background: #faf8f5; line-height: 1.6; }
-      a { color: #8b4513; }
+      html { scroll-behavior: smooth; }
+      body { font-family: var(--font-body); color: var(--color-text); background: var(--color-bg); line-height: 1.6; }
+      h1, h2, h3, .font-heading { font-family: var(--font-heading); }
+      a { color: var(--color-primary); }
       .container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
-      nav { background: #8b4513; color: #fff; padding: 0.75rem 1.5rem; }
+      nav { background: var(--color-secondary); color: #fff; padding: 0.75rem 1.5rem; }
       nav a { color: #fff; text-decoration: none; margin-right: 1.5rem; font-size: 0.95rem; }
       nav a:hover { text-decoration: underline; }
-      footer { text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid #f0e6d6; }
-      footer a { color: #888; font-size: 0.85rem; margin: 0 0.5rem; text-decoration: none; }
-      footer a:hover { color: #8b4513; }
-      footer p { color: #aaa; font-size: 0.75rem; margin-top: 0.5rem; }
+      footer { text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid var(--color-border); }
+      footer a { color: var(--color-text-muted); font-size: 0.85rem; margin: 0 0.5rem; text-decoration: none; }
+      footer a:hover { color: var(--color-primary); }
+      footer p { color: var(--color-text-muted); font-size: 0.75rem; margin-top: 0.5rem; }
+      @media (max-width: 480px) {
+        .container { padding: 1rem; }
+        nav { padding: 0.6rem 1rem; }
+        nav a { margin-right: 1rem; font-size: 0.85rem; }
+      }
     </style>
   </head>
   <body>
     <nav>
       <a href="/">Home</a>
-      <a href="/kundali">Kundali</a>
       <a href="/about">About</a>
       <a href="/docs" target="_blank">API Docs</a>
     </nav>

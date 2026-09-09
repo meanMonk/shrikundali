@@ -1,0 +1,326 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "kundaliapi API",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3400"
+    }
+  ],
+  "components": {
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/kundali/generate": {
+      "post": {
+        "tags": [
+          "Kundali"
+        ],
+        "summary": "Generate Kundali (JSON)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "coordinates": {
+                    "type": "string",
+                    "description": "lat,lon — e.g. 23.1765,75.7885"
+                  },
+                  "datetime": {
+                    "type": "string",
+                    "description": "ISO 8601 datetime with timezone offset — e.g. 2026-09-04T09:54:15+05:30"
+                  },
+                  "ayanamsa": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "1=Lahiri, 3=Raman, 5=KP"
+                  },
+                  "la": {
+                    "type": "string",
+                    "description": "Language: en, ta, ml, hi"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Name/title for the report"
+                  }
+                },
+                "required": [
+                  "coordinates",
+                  "datetime"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kundali data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kundali/markdown": {
+      "post": {
+        "tags": [
+          "Kundali"
+        ],
+        "summary": "Generate Kundali report as Markdown",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "coordinates": {
+                    "type": "string",
+                    "description": "lat,lon — e.g. 23.1765,75.7885"
+                  },
+                  "datetime": {
+                    "type": "string",
+                    "description": "ISO 8601 datetime with timezone offset — e.g. 2026-09-04T09:54:15+05:30"
+                  },
+                  "ayanamsa": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "1=Lahiri, 3=Raman, 5=KP"
+                  },
+                  "la": {
+                    "type": "string",
+                    "description": "Language: en, ta, ml, hi"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Name/title for the report"
+                  }
+                },
+                "required": [
+                  "coordinates",
+                  "datetime"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Markdown report",
+            "content": {
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kundali/pdf": {
+      "post": {
+        "tags": [
+          "Kundali"
+        ],
+        "summary": "Generate Kundali report as PDF",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "coordinates": {
+                    "type": "string",
+                    "description": "lat,lon — e.g. 23.1765,75.7885"
+                  },
+                  "datetime": {
+                    "type": "string",
+                    "description": "ISO 8601 datetime with timezone offset — e.g. 2026-09-04T09:54:15+05:30"
+                  },
+                  "ayanamsa": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "1=Lahiri, 3=Raman, 5=KP"
+                  },
+                  "la": {
+                    "type": "string",
+                    "description": "Language: en, ta, ml, hi"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Name/title for the report"
+                  }
+                },
+                "required": [
+                  "coordinates",
+                  "datetime"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF report",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Service health",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "uptime": {
+                      "type": "number"
+                    },
+                    "env": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "service",
+                    "uptime",
+                    "env"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/db/ping": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "DB ping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "db": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "db",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

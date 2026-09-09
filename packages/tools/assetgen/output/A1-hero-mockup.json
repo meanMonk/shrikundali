@@ -1,0 +1,21 @@
+{
+  "id": "A1",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A premium, minimalist 3D-rendered mockup of an elegant printed astrology report document floating at a slight angle, cover page visible showing an abstract geometric Vedic birth chart (kundli square-chart motif, NOT a zodiac wheel) rendered in deep indigo (#241E4E) linework with muted gold (#C9A227) accent lines on a warm off-white (#FBF6EF) paper texture. Soft studio lighting, subtle drop shadow, shallow depth of field, clean negative space around the object suitable for compositing onto a website hero background. Style: modern fintech/legal-document product photography, premium editorial feel, NOT mystical or cosmic. No text, no logos, no human figures.",
+    "negative_prompt": "zodiac wheel, tarot, crystal ball, cosmic swirl, stars background, cartoonish, stock photo watermark, text, logo, low quality, cluttered",
+    "image_size": "portrait_4_3",
+    "style": "realistic_image"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aa9b34e/EYkJCzQZ_u-1CVoEhRnAA_N9qGRtMF.webp",
+        "content_type": "image/webp",
+        "file_name": "EYkJCzQZ_u-1CVoEhRnAA_N9qGRtMF.webp",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-09T06:43:44.610Z"
+}
