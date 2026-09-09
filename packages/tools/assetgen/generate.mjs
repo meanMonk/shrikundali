@@ -18,10 +18,17 @@ import { readFileSync, mkdirSync, writeFileSync, existsSync, cpSync } from "node
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import "dotenv/config";
+import dotenv from "dotenv";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load .env: local package dir first, then project root (3 levels up)
+dotenv.config({ path: join(__dirname, ".env") });
+dotenv.config({ path: join(__dirname, "..", "..", "..", ".env") });
+
 const OUTPUT_DIR = join(__dirname, "output");
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const PROMPTS_SRC = join(__dirname, "..", "..", "..", "docs", "prd", "ai-image-generation-prompts.md");
 
 // ── Asset definitions ──────────────────────────────────────────────────────────
@@ -249,31 +256,38 @@ async function generateAsset(id, asset) {
     return;
   }
 
-  // Lazy import fal SDK (only when actually generating)
-  const { fal } = await import("@fal-ai/client");
-  if (process.env.FAL_KEY) {
-    fal.config({ credentials: process.env.FAL_KEY });
-  }
-
   console.log(`\n▶ Generating ${id}: ${asset.name}...`);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 300000);
+
   try {
-    const result = await fal.subscribe(asset.model, {
-      input: asset.params,
-      logs: true,
-      onLog: (msg) => console.log(`  [fal] ${msg}`),
+    const res = await fetch(`https://fal.run/${asset.model}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Key ${process.env.FAL_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(asset.params),
+      signal: controller.signal,
     });
 
-    // Download the image
-    const imageUrl = result?.images?.[0]?.url || result?.image?.url;
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`fal.ai ${res.status}: ${err}`);
+    }
+
+    const data = await res.json();
+    const imageUrl = data?.images?.[0]?.url || data?.image?.url;
     if (!imageUrl) {
       console.error(`  ✗ No image URL in response for ${id}`);
-      console.log(`  Response:`, JSON.stringify(result, null, 2));
+      console.log(`  Response:`, JSON.stringify(data, null, 2));
       return;
     }
 
-    const resp = await fetch(imageUrl);
-    const buffer = Buffer.from(await resp.arrayBuffer());
+    const img = await fetch(imageUrl);
+    if (!img.ok) throw new Error(`download failed: ${img.status}`);
+    const buffer = Buffer.from(await img.arrayBuffer());
     writeFileSync(outFile, buffer);
     console.log(`  ✓ Saved: ${outFile} (${(buffer.length / 1024).toFixed(0)} KB)`);
 
@@ -285,7 +299,7 @@ async function generateAsset(id, asset) {
           id,
           model: asset.model,
           params: asset.params,
-          response: result,
+          response: data,
           generatedAt: new Date().toISOString(),
         },
         null,
@@ -294,6 +308,8 @@ async function generateAsset(id, asset) {
     );
   } catch (err) {
     console.error(`  ✗ Failed ${id}:`, err.message || err);
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
