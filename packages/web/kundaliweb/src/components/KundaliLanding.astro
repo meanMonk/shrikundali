@@ -492,7 +492,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         const res = await fetch(`${API_URL}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang }),
+          body: JSON.stringify({ name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, email: `preview-${Date.now()}@shrikundali.in` }),
         });
         if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
         const data = await res.json();
@@ -501,10 +501,10 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         // Show teaser results on-page
         const t = data.teaser || {};
         const setTxt = (id: string, val: string) => { const el = document.getElementById(id); if (el) el.textContent = val || "\u2014"; };
-        setTxt("preview-lagna", t.lagna);
-        setTxt("preview-rashi", t.rashi);
-        setTxt("preview-nakshatra", t.nakshatra);
-        setTxt("preview-dosha", t.doshaFlag || t.dosha || "\u2014");
+        const lagna = t.lagna; setTxt("preview-lagna", typeof lagna === "object" ? lagna?.name : lagna);
+        const rashi = t.rashi; setTxt("preview-rashi", typeof rashi === "object" ? rashi?.name : rashi);
+        const nakshatra = t.nakshatra; setTxt("preview-nakshatra", typeof nakshatra === "object" ? nakshatra?.name : nakshatra);
+        setTxt("preview-dosha", t.mangalDosha ? "Mangal" : t.doshaFlag || t.dosha || "None");
 
         if (teaserResults) teaserResults.style.display = "block";
         if (statusEl) statusEl.textContent = "";

@@ -6,7 +6,8 @@ import { logGeneration, logError } from "../lib/logger.js";
 
 const checkoutApp = new OpenAPIHono();
 
-const REPORT_PRICE_INR = 199;
+// Must match config.ts DEFAULT_CONFIGS.financial_kundali.discountPrice
+const REPORT_PRICE_INR = Number(process.env.REPORT_PRICE_INR) || 99;
 
 const CheckoutInput = z.object({
   cacheId: z.string().describe("Cache ID from /teaser response"),
