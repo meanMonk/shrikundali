@@ -1,6 +1,7 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { logError } from "./logger.js";
+import type { BirthDetails } from "./cache.js";
 
 const PENDING_DIR = join(process.cwd(), "archive", "pending");
 
@@ -9,9 +10,11 @@ export interface PendingPayment {
   cacheId: string;
   email: string;
   name?: string;
+  gender?: string;
   amount: number;
   provider: string;
   reportLabel?: string;
+  birth?: BirthDetails;
   createdAt: string;
   paidAt?: string;
   archiveId?: string;

@@ -13,6 +13,8 @@ declare module "html-pdf-node" {
     displayHeaderFooter?: boolean;
     headerTemplate?: string;
     footerTemplate?: string;
+    args?: string[];
+    timeout?: number;
   }
   function generatePdf(file: File, options?: Options): Promise<Buffer>;
   function generatePdfs(files: File[], options?: Options): Promise<Buffer[]>;

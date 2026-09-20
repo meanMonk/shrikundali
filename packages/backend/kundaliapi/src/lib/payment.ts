@@ -28,6 +28,43 @@ export interface VerifyPaymentParams {
   signature: string;
 }
 
+export interface RazorpayOrderInfo {
+  id: string;
+  status: string;
+  amount: number;
+  receipt?: string;
+  paymentId?: string;
+}
+
+/** Fetch an order from Razorpay to confirm payment server-side (webhook-independent). */
+export async function getRazorpayOrder(orderId: string): Promise<RazorpayOrderInfo | null> {
+  const keyId = process.env.RAZORPAY_KEY_ID ?? "";
+  const keySecret = process.env.RAZORPAY_KEY_SECRET ?? "";
+  if (!keyId || !keySecret) return null;
+
+  const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+  try {
+    const res = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
+      headers: { Authorization: `Basic ${auth}` },
+    });
+    if (!res.ok) {
+      logError("razorpay/get-order", `${orderId}: ${res.status}`);
+      return null;
+    }
+    const data = await res.json() as Record<string, unknown>;
+    return {
+      id: String(data.id ?? orderId),
+      status: String(data.status ?? ""),
+      amount: Number(data.amount) || 0,
+      receipt: data.receipt ? String(data.receipt) : undefined,
+      paymentId: data.payment_id ? String(data.payment_id) : undefined,
+    };
+  } catch (e) {
+    logError("razorpay/get-order", e);
+    return null;
+  }
+}
+
 // ─── Razorpay ──────────────────────────────────────────────
 
 async function razorpayCreateOrder(params: CreateOrderParams): Promise<OrderResult> {

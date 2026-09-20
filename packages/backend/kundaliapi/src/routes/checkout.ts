@@ -2,6 +2,8 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   createPaymentOrder,
   verifyPayment,
+  getRazorpayOrder,
+  cashfreeVerifyPayment,
   type PaymentProvider,
 } from "../lib/payment.js";
 import { getCachedChart } from "../lib/cache.js";
@@ -89,6 +91,7 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
       amount: order.amount,
       provider: order.provider,
       reportLabel: cached.label,
+      birth: cached.birth,
       createdAt: new Date().toISOString(),
     });
 
@@ -115,6 +118,43 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
     return c.json({ error: String(e) }, 400);
   }
 });
+
+/* ── Self-heal helper ─────────────────────────────────────── */
+
+/**
+ * If an order is paid but its report was never generated (webhook not
+ * configured, or a transient render failure), generate it now. Payment is
+ * always re-confirmed against the provider before generating.
+ */
+async function ensureReportGenerated(orderId: string) {
+  const pending = await getPendingPayment(orderId);
+  if (!pending) return null;
+  if (pending.archiveId && pending.downloadUrl) {
+    return { archiveId: pending.archiveId, downloadUrl: pending.downloadUrl, alreadyGenerated: true };
+  }
+
+  let paid = false;
+  let paymentId: string | undefined;
+  if (pending.provider === "razorpay") {
+    const order = await getRazorpayOrder(orderId);
+    paid = order?.status === "paid";
+    paymentId = order?.paymentId;
+  } else if (pending.provider === "cashfree") {
+    paid = await cashfreeVerifyPayment({ provider: "cashfree", orderId, paymentId: "", signature: "" });
+  }
+
+  if (!paid) return null;
+
+  return generatePaidReport({
+    orderId,
+    provider: pending.provider,
+    paymentId,
+    cacheId: pending.cacheId,
+    email: pending.email,
+    name: pending.name,
+    amount: pending.amount,
+  });
+}
 
 /* ── Verify payment (client callback) ─────────────────────── */
 
@@ -215,8 +255,14 @@ checkoutApp.openapi(
   }),
   async (c) => {
     const orderId = c.req.param("orderId");
-    const pending = await getPendingPayment(orderId);
+    let pending = await getPendingPayment(orderId);
     if (!pending) return c.json({ error: "Unknown order" }, 404);
+
+    // Self-heal a paid order whose report never got generated.
+    if (!pending.archiveId) {
+      await ensureReportGenerated(orderId).catch((e) => logError("/payment/order", e));
+      pending = (await getPendingPayment(orderId)) ?? pending;
+    }
 
     return c.json({
       orderId,
@@ -249,9 +295,19 @@ checkoutApp.openapi(
     const endpoint = "/payment/download";
     try {
       const orderId = c.req.param("orderId");
-      const pending = await getPendingPayment(orderId);
+      let pending = await getPendingPayment(orderId);
 
-      if (!pending?.archiveId) {
+      if (!pending) {
+        return c.json({ error: "Unknown order" }, 404);
+      }
+
+      // Self-heal: generate on demand if the order is paid but not yet rendered.
+      if (!pending.archiveId) {
+        await ensureReportGenerated(orderId).catch((e) => logError(endpoint, e));
+        pending = (await getPendingPayment(orderId)) ?? pending;
+      }
+
+      if (!pending.archiveId) {
         return c.json({ error: "Report not ready yet", status: "processing" }, 404);
       }
 

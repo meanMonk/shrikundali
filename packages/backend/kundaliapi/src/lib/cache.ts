@@ -4,12 +4,23 @@ import type { KundliData } from "./prokerala.js";
 
 const CACHE_DIR = join(process.cwd(), "archive", "cache");
 
+export interface BirthDetails {
+  coordinates: string;
+  datetime: string;
+  ayanamsa?: number;
+  la?: string;
+  name?: string;
+  gender?: string;
+  place?: string;
+}
+
 export interface CachedChart {
   id: string;
   raw: Record<string, unknown>;
   parsed: KundliData;
   email: string;
   label?: string;
+  birth?: BirthDetails;
   createdAt: string;
   expiresAt: string;
 }
@@ -23,7 +34,8 @@ export async function cacheChart(
   parsed: KundliData,
   email: string,
   label?: string,
-  ttlMinutes = 60
+  ttlMinutes = 60,
+  birth?: BirthDetails,
 ): Promise<string> {
   const id = randomId();
   const dir = join(CACHE_DIR, id);
@@ -38,6 +50,7 @@ export async function cacheChart(
     parsed,
     email,
     label,
+    birth,
     createdAt: now.toISOString(),
     expiresAt: expires.toISOString(),
   };

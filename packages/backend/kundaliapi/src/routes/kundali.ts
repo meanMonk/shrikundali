@@ -84,7 +84,13 @@ kundaliApp.openapi(markdownRoute, async (c) => {
       ayanamsa: body.ayanamsa,
       la: body.la,
     });
-    const md = renderMarkdown(parsed, body.label);
+    const md = renderMarkdown(parsed, body.label, {
+      name: body.label,
+      datetime: body.datetime,
+      coordinates: body.coordinates,
+      ayanamsa: body.ayanamsa,
+      language: body.la,
+    });
     const archive = await archiveRaw(endpoint, body, "markdown", raw, md);
     return new Response(md, {
       headers: {
@@ -124,7 +130,13 @@ kundaliApp.openapi(pdfRoute, async (c) => {
       ayanamsa: body.ayanamsa,
       la: body.la,
     });
-    const pdf = await renderPDF(parsed, body.label);
+    const pdf = await renderPDF(parsed, body.label, {
+      name: body.label,
+      datetime: body.datetime,
+      coordinates: body.coordinates,
+      ayanamsa: body.ayanamsa,
+      language: body.la,
+    });
     const archive = await archiveRaw(endpoint, body, "pdf", raw, pdf);
     return new Response(new Uint8Array(pdf), {
       headers: {
