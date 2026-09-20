@@ -74,6 +74,15 @@ export async function updateOrderPayment(
   logInfo(`order ${orderId} updated: ${status}`);
 }
 
+export async function getOrderByOrderId(orderId: string): Promise<Order | null> {
+  try {
+    const col = await getCollection();
+    return (await col.findOne({ orderId })) as Order | null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getOrdersByDateRange(
   startDate: Date,
   endDate: Date,

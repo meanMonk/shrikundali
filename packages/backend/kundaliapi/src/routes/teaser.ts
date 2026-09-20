@@ -109,7 +109,7 @@ function calculateMoneyAxisScores(data: Record<string, unknown>): {
 
 const teaserRoute = createRoute({
   method: "post",
-  path: "/teaser",
+  path: "/",
   tags: ["Kundali"],
   summary: "Generate free teaser (locked preview)",
   request: { body: { content: { "application/json": { schema: TeaserInput } } } },

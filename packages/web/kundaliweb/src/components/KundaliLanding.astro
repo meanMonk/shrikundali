@@ -229,6 +229,10 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         <span id="modal-original-price" style="font-size:1rem;color:var(--color-text-muted);text-decoration:line-through;margin-right:0.5rem"></span>
         <span id="modal-price" style="font-size:1.5rem;font-weight:700;color:var(--color-primary)"></span>
       </div>
+      <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;text-align:left">
+        <p style="font-size:0.8rem;font-weight:600;color:var(--color-secondary);margin-bottom:0.4rem">What you get:</p>
+        <ul id="modal-features-list" style="list-style:none;display:grid;gap:0.3rem;font-size:0.82rem;color:var(--color-text-muted)"></ul>
+      </div>
       <form id="modal-payment-form">
         <label class="field-label">
           <span>Email Address</span>
@@ -241,6 +245,35 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         <p style="font-size:0.7rem;color:var(--color-text-muted);margin-top:0.75rem;text-align:center">&#x1F512; Secure payment via Razorpay &bull; Your birth details stay private</p>
       </form>
       <div id="modal-status" style="display:none;padding:0.5rem;border-radius:6px;margin-top:0.75rem;font-size:0.85rem;text-align:center"></div>
+    </div>
+  </div>
+
+  <!-- Post-payment success / download modal -->
+  <div id="success-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:#fff;border-radius:12px;padding:1.75rem;max-width:420px;width:100%;position:relative;max-height:92vh;overflow-y:auto">
+      <button id="success-close" type="button" style="position:absolute;top:0.75rem;right:0.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--color-text-muted)">&times;</button>
+      <div style="text-align:center;margin-bottom:1rem">
+        <div style="width:52px;height:52px;border-radius:50%;background:#e7f6ec;color:#1a7f37;font-size:1.6rem;display:flex;align-items:center;justify-content:center;margin:0 auto 0.6rem">&#10003;</div>
+        <h3 style="color:var(--color-primary);font-size:1.15rem;margin-bottom:0.25rem">Payment Successful</h3>
+        <p id="success-sub" style="font-size:0.85rem;color:var(--color-text-muted)">Preparing your Kundali report&hellip;</p>
+      </div>
+
+      <div style="background:#faf3e8;border:1px solid var(--color-border);border-radius:8px;padding:0.9rem 1rem;margin-bottom:1rem;font-size:0.85rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem"><span style="color:var(--color-text-muted)">Order ID</span><span id="success-order" style="font-weight:600;word-break:break-all;text-align:right;max-width:60%">&mdash;</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem"><span style="color:var(--color-text-muted)">Amount Paid</span><span id="success-amount" style="font-weight:600">&mdash;</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--color-text-muted)">Email</span><span id="success-email" style="font-weight:600;word-break:break-all;text-align:right;max-width:60%">&mdash;</span></div>
+      </div>
+
+      <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;text-align:left">
+        <p style="font-size:0.8rem;font-weight:600;color:var(--color-secondary);margin-bottom:0.4rem">Inside your PDF:</p>
+        <ul id="success-features-list" style="list-style:none;display:grid;gap:0.3rem;font-size:0.82rem;color:var(--color-text-muted)"></ul>
+      </div>
+
+      <button id="success-download-btn" type="button" class="cta-pulse" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1.05rem;font-weight:700;cursor:pointer;margin-bottom:0.5rem">
+        Download PDF
+      </button>
+      <div id="success-status" style="display:none;padding:0.5rem;border-radius:6px;font-size:0.82rem;text-align:center"></div>
+      <p style="font-size:0.72rem;color:var(--color-text-muted);text-align:center;margin-top:0.6rem">&#x1F512; A backup copy is also sent to your email. Your download link stays active for 7 days.</p>
     </div>
   </div>
 
@@ -362,6 +395,34 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     let formName = "";
     let formGender = "";
 
+    const DEFAULT_FEATURES = [
+      "Personalized report from your exact birth chart",
+      "Wealth, career & investment timing windows",
+      "Dasha & Antardasha timeline for 10+ years",
+      "Doshas and practical remedies",
+      "Print-ready, mobile & WhatsApp friendly PDF",
+      "Backup copy sent to your email",
+    ];
+
+    function renderFeatureLists(items: string[]) {
+      const features = items && items.length ? items : DEFAULT_FEATURES;
+      for (const id of ["modal-features-list", "success-features-list"]) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        el.innerHTML = features
+          .map(
+            (f) =>
+              `<li style="display:flex;align-items:flex-start;gap:0.4rem"><span style="color:var(--color-success);font-weight:700">&#10003;</span><span>${f}</span></li>`,
+          )
+          .join("");
+      }
+    }
+    renderFeatureLists(DEFAULT_FEATURES);
+
+    function formatINR(value: number | null | undefined): string {
+      return value == null ? "" : `\u20B9${value}`;
+    }
+
     // ---- Fetch config for price ----
     async function loadConfig() {
       try {
@@ -382,6 +443,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
           }
           const modalPayBtn = document.getElementById("modal-pay-btn");
           if (modalPayBtn) modalPayBtn.textContent = `Pay \u20B9${reportPrice} Securely`;
+          if (Array.isArray(cfg.features) && cfg.features.length) renderFeatureLists(cfg.features);
         }
       } catch {}
     }
@@ -535,6 +597,132 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     modalClose?.addEventListener("click", () => { modal.style.display = "none"; });
     modal?.addEventListener("click", (e) => { if (e.target === modal) modal.style.display = "none"; });
 
+    // ---- Post-payment: verify, generate, then download directly in the browser ----
+    const successModal = document.getElementById("success-modal") as HTMLDivElement | null;
+    const successStatus = document.getElementById("success-status");
+    const successDownloadBtn = document.getElementById("success-download-btn") as HTMLButtonElement | null;
+
+    function setSuccessStatus(text: string, kind: "info" | "error" | "ok" = "info") {
+      if (!successStatus) return;
+      successStatus.style.display = "block";
+      successStatus.textContent = text;
+      successStatus.style.background = kind === "error" ? "#fee" : kind === "ok" ? "#e7f6ec" : "#eef2ff";
+      successStatus.style.color = kind === "error" ? "#c00" : kind === "ok" ? "#1a7f37" : "#334";
+    }
+
+    function openSuccessModal(info: { orderId: string; amount?: number | null; email?: string }) {
+      if (!successModal) return;
+      const orderEl = document.getElementById("success-order");
+      const amountEl = document.getElementById("success-amount");
+      const emailEl = document.getElementById("success-email");
+      if (orderEl) orderEl.textContent = info.orderId;
+      if (amountEl) amountEl.textContent = formatINR(info.amount) || "\u2014";
+      if (emailEl) emailEl.textContent = info.email || "\u2014";
+      successModal.style.display = "flex";
+    }
+
+    function triggerBlobDownload(blob: Blob, filename: string) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function downloadReportFile(orderId: string): Promise<boolean> {
+      const res = await fetch(`${API_URL}/payment/download/${orderId}`);
+      if (!res.ok) return false;
+      const blob = await res.blob();
+      if (!blob || blob.size === 0) return false;
+      triggerBlobDownload(blob, `kundali-report-${orderId}.pdf`);
+      trackEvent("report_downloaded", { order_id: orderId });
+      return true;
+    }
+
+    async function waitForReport(orderId: string, attempts = 15, delayMs = 2000) {
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const res = await fetch(`${API_URL}/payment/order/${orderId}`);
+          if (res.ok) {
+            const d = await res.json();
+            if (d.status === "completed" && d.archiveId) return d;
+          }
+        } catch {}
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+      return null;
+    }
+
+    async function completePayment(
+      orderId: string,
+      verify: { paymentId?: string; signature?: string },
+      email: string,
+    ) {
+      if (modal) modal.style.display = "none";
+      openSuccessModal({ orderId, amount: reportPrice, email });
+      setSuccessStatus("Verifying payment and generating your report\u2026");
+
+      if (successDownloadBtn) {
+        successDownloadBtn.onclick = async () => {
+          setSuccessStatus("Downloading\u2026");
+          const ok = await downloadReportFile(orderId).catch(() => false);
+          setSuccessStatus(
+            ok ? "Downloaded \u2014 a backup copy has been emailed to you." : "Download failed. Please try the email link or retry.",
+            ok ? "ok" : "error",
+          );
+        };
+      }
+
+      let info: any = null;
+      try {
+        const res = await fetch(`${API_URL}/payment/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            cacheId,
+            provider: "razorpay",
+            paymentId: verify.paymentId,
+            signature: verify.signature,
+          }),
+        });
+        if (res.ok) {
+          info = await res.json();
+          openSuccessModal({ orderId, amount: info.amount, email: info.email || email });
+        }
+      } catch {}
+
+      if (!info?.archiveId) {
+        setSuccessStatus("Finalising your report\u2026");
+        info = await waitForReport(orderId);
+      }
+
+      if (!info?.archiveId) {
+        setSuccessStatus(
+          "Payment received. Your report is still being prepared \u2014 a download link will be emailed to you shortly.",
+          "error",
+        );
+        return;
+      }
+
+      setSuccessStatus("Downloading your PDF\u2026");
+      try {
+        const ok = await downloadReportFile(orderId);
+        setSuccessStatus(
+          ok ? "Downloaded \u2014 a backup copy has been emailed to you." : "Use the button below to download your PDF.",
+          ok ? "ok" : "info",
+        );
+      } catch {
+        setSuccessStatus("Couldn't start the download automatically. Tap the button below.", "error");
+      }
+    }
+
+    document.getElementById("success-close")?.addEventListener("click", () => { if (successModal) successModal.style.display = "none"; });
+    successModal?.addEventListener("click", (e) => { if (e.target === successModal) successModal.style.display = "none"; });
+
     // ---- Modal payment: call /payment/checkout + Razorpay ----
     const modalForm = document.getElementById("modal-payment-form") as HTMLFormElement;
     const modalPayBtn = document.getElementById("modal-pay-btn") as HTMLButtonElement;
@@ -568,7 +756,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         }
 
         const data = await res.json();
-        trackEvent("payment_success", { order_id: data.orderId, amount: data.amount });
+        trackEvent("payment_order_created", { order_id: data.orderId, amount: data.amount });
 
         if (data.key) {
           const options = {
@@ -579,7 +767,13 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
             description: "Kundali Report",
             order_id: data.orderId,
             handler: function (response: any) {
-              window.location.href = `/download?orderId=${data.orderId}`;
+              trackEvent("Purchase", { value: data.amount, currency: "INR", content_ids: [data.orderId], content_type: "product" });
+              trackEvent("payment_success", { order_id: data.orderId, amount: data.amount });
+              completePayment(
+                data.orderId,
+                { paymentId: response?.razorpay_payment_id, signature: response?.razorpay_signature },
+                email,
+              );
             },
             prefill: { email },
             theme: { color: "#B5451C" },

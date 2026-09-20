@@ -11,7 +11,7 @@ export interface SaleNotification {
   downloadUrl?: string;
 }
 
-export async function notifyAdminSale(data: SaleNotification): Promise<boolean> {
+async function sendTelegram(text: string): Promise<boolean> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN ?? "";
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID ?? "";
 
@@ -19,20 +19,6 @@ export async function notifyAdminSale(data: SaleNotification): Promise<boolean> 
     logError("telegram/notify", "TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID required");
     return false;
   }
-
-  const status = data.pdfGenerated ? "PDF generated ✅" : "PDF pending ⏳";
-  const downloadLine = data.downloadUrl ? `\n📥 [Download](${data.downloadUrl})` : "";
-
-  const message = `🔔 *New Sale*
-
-👤 ${data.name || "N/A"}
-📧 ${data.email}
-📋 ${data.reportType}
-💰 ₹${data.amount} via ${data.paymentProvider}
-🔑 \`${data.paymentId}\`
-${status}${downloadLine}
-
-⏰ ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`;
 
   try {
     const res = await fetch(
@@ -42,7 +28,7 @@ ${status}${downloadLine}
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          text: message,
+          text,
           parse_mode: "Markdown",
           disable_web_page_preview: true,
         }),
@@ -55,10 +41,58 @@ ${status}${downloadLine}
       return false;
     }
 
-    logInfo(`telegram/notify sent for payment ${data.paymentId}`);
     return true;
   } catch (e) {
     logError("telegram/notify", e);
     return false;
   }
+}
+
+function istNow(): string {
+  return new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+}
+
+export async function notifyAdminSale(data: SaleNotification): Promise<boolean> {
+  const status = data.pdfGenerated ? "PDF generated ✅" : "PDF pending ⏳";
+  const downloadLine = data.downloadUrl ? `\n📥 [Download](${data.downloadUrl})` : "";
+
+  const message = `🔔 *New Sale (Purchase)*
+
+👤 ${data.name || "N/A"}
+📧 ${data.email}
+📋 ${data.reportType}
+💰 ₹${data.amount} via ${data.paymentProvider}
+🔑 \`${data.paymentId}\`
+${status}${downloadLine}
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify sale sent for payment ${data.paymentId}`);
+  return ok;
+}
+
+export interface DownloadNotification {
+  name?: string;
+  email?: string;
+  reportType: string;
+  paymentId: string;
+  paymentProvider: string;
+  archiveId: string;
+}
+
+export async function notifyAdminDownload(data: DownloadNotification): Promise<boolean> {
+  const message = `📥 *Report Downloaded*
+
+👤 ${data.name || "N/A"}
+📧 ${data.email || "N/A"}
+📋 ${data.reportType}
+🔑 \`${data.paymentId}\` via ${data.paymentProvider}
+🗂 archive: \`${data.archiveId}\`
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify download sent for ${data.paymentId}`);
+  return ok;
 }

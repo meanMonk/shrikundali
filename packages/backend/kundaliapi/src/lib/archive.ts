@@ -125,6 +125,22 @@ export async function archiveRaw(
   return { id, dir };
 }
 
+export async function addArchiveFile(
+  archiveId: string,
+  filename: string,
+  data: Buffer | string,
+  contentType = "application/octet-stream",
+): Promise<void> {
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  if (minio) {
+    await uploadToMinio(`${archiveId}/${filename}`, buf, contentType);
+    return;
+  }
+  const dir = join(LOCAL_BASE, archiveId);
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, filename), buf);
+}
+
 export async function readArchiveFile(archiveId: string, filename: string): Promise<Buffer | null> {
   if (minio) {
     return downloadFromMinio(`${archiveId}/${filename}`);
