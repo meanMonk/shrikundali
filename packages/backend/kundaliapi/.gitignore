@@ -2,5 +2,7 @@ node_modules
 dist
 .env
 archive/uploads/*
+archive/cache/*
+archive/pending/*
 !archive/uploads/.gitkeep
 logs/*.log
