@@ -1,0 +1,38 @@
+<h2 style="position:absolute;left:-9999px">Twelve page layout of the 49 rupee Kundali PDF report</h2>
+<style>
+.g{display:grid;grid-template-columns:1fr 1fr;gap:18px 14px;padding:4px 0}
+.pg{aspect-ratio:1/1.414;background:#fff;border:1px solid #D9C9A8;padding:6px;box-sizing:border-box}
+.in{height:100%;border:1.5px solid #E07B00;padding:9px 8px;display:flex;flex-direction:column;gap:8px;overflow:hidden;box-sizing:border-box}
+.t{font-size:12px;font-weight:500;color:#7A1F2B;text-align:center;line-height:1.25}
+.n{font-size:11px;color:var(--text-secondary);margin-top:6px;line-height:1.35}
+.b{height:4px;background:#B8B8B8;border-radius:2px}
+.im{height:92px;border:1px dashed #7A1F2B;display:flex;align-items:center;justify-content:center;font-size:11px;color:#7A1F2B;text-align:center;flex-shrink:0}
+.m{font-size:12px;color:#7A1F2B;text-align:center;font-family:'Noto Serif Devanagari',serif}
+.pn{font-size:11px;color:var(--text-secondary)}
+</style>
+<div class="g" id="g"></div>
+<script>
+var S='#2E3A87';
+function L(a){return a.map(function(w){return '<div class="b" style="width:'+w+'%"></div>'}).join('')}
+function CH(){return '<svg viewBox="0 0 100 100" width="100%" style="flex-shrink:0"><rect x="1" y="1" width="98" height="98" fill="none" stroke="'+S+'" stroke-width="1.2"/><path d="M1 1L99 99M99 1L1 99M50 1L99 50L50 99L1 50Z" fill="none" stroke="'+S+'" stroke-width="1"/></svg>'}
+function TB(){var s='<svg viewBox="0 0 100 80" width="100%" style="flex-shrink:0"><rect x="1" y="1" width="98" height="78" fill="none" stroke="'+S+'" stroke-width="1.2"/>';for(var i=1;i<8;i++){s+='<line x1="1" y1="'+i*10+'" x2="99" y2="'+i*10+'" stroke="#999" stroke-width="0.7"/>'}[25,50,75].forEach(function(x){s+='<line x1="'+x+'" y1="1" x2="'+x+'" y2="79" stroke="#999" stroke-width="0.7"/>'});return s+'</svg>'}
+function TL(){var w=[70,45,90,60,80,35],s='<div style="display:flex;flex-direction:column;gap:6px">';w.forEach(function(x){s+='<div style="height:9px;width:'+x+'%;border:1px solid '+S+'"></div>'});return s+'</div>'}
+function BR(){return '<svg viewBox="0 0 100 60" width="100%" style="flex-shrink:0"><path d="M5 55H95M5 55V5" stroke="'+S+'" fill="none" stroke-width="1.2"/><rect x="15" y="35" width="12" height="20" fill="none" stroke="'+S+'"/><rect x="35" y="25" width="12" height="30" fill="none" stroke="'+S+'"/><rect x="55" y="15" width="12" height="40" fill="none" stroke="'+S+'"/><rect x="75" y="28" width="12" height="27" fill="none" stroke="'+S+'"/></svg>'}
+var IMG='<div class="im">Ganesh line art</div><div class="m">ॐ गं गणपतये नमः</div>';
+var P=[
+['Cover',IMG+L([70,50]).replace(/^/,'<div style="display:flex;flex-direction:column;gap:5px;align-items:center">')+'</div>','Ganesh art, mantra, name, DOB'],
+['Birth details',L([90,70,85,60,80,50,75]),'Details and basic Panchang'],
+['Lagna chart',CH()+L([80,60]),'North Indian Rashi chart'],
+['Planet positions',TB()+L([70,50]),'Sign, house, nakshatra'],
+['Navamsa chart',CH()+L([85,65,75]),'D9 chart with short note'],
+['Rashi and Nakshatra',L([90,70,85,60,90,55,80,65]),'Traits, lucky color, number'],
+['Dosha check',L([85,40,85,40,85,40,70]),'Mangal, Kaal Sarp, Sade Sati'],
+['Dasha table',TL(),'Vimshottari periods and dates'],
+['Current dasha',L([90,75,85,60,90,70,80,50]),'What this period means'],
+['Money snapshot',BR()+L([85,65,75]),'Short finance view, upsell hook'],
+['Upgrade page',L([70,90,60])+'<div style="border:1px solid #7A1F2B;padding:6px;font-size:11px;color:#7A1F2B;text-align:center">Full 40+ page report</div>'+L([80,55]),'Offer for the ₹199/299 report'],
+['Closing',IMG+'<div style="display:flex;flex-direction:column;gap:4px">'+L([95,90,95,70])+'</div>','Ganesh, mantra, disclaimer']
+];
+var h='';P.forEach(function(p,i){h+='<div><div class="pg"><div class="in"><div class="t">'+p[0]+'</div>'+p[1]+'</div></div><div class="n"><span class="pn">Page '+(i+1)+'</span><br>'+p[2]+'</div></div>'});
+document.getElementById('g').innerHTML=h;
+</script>
