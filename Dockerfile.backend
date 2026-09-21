@@ -19,6 +19,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/packages/backend/kundaliapi/dist ./dist
 COPY --from=build /app/packages/backend/kundaliapi/package.json ./
+COPY --from=build /app/assets ./assets
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 EXPOSE 3400
