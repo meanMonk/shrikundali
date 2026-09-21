@@ -1,3 +1,4 @@
+import { hostname } from "node:os";
 import { logInfo, logError } from "./logger.js";
 
 export interface SaleNotification {
@@ -13,10 +14,10 @@ export interface SaleNotification {
 
 async function sendTelegram(text: string): Promise<boolean> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN ?? "";
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID ?? "";
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || "";
 
   if (!botToken || !chatId) {
-    logError("telegram/notify", "TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID required");
+    logError("telegram/notify", "TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID (or TELEGRAM_CHAT_ID) required");
     return false;
   }
 
@@ -94,5 +95,26 @@ export async function notifyAdminDownload(data: DownloadNotification): Promise<b
 
   const ok = await sendTelegram(message);
   if (ok) logInfo(`telegram/notify download sent for ${data.paymentId}`);
+  return ok;
+}
+
+export interface ServiceStartInfo {
+  service: string;
+  port?: string | number;
+  env?: string;
+}
+
+export async function notifyAdminServiceStart(info: ServiceStartInfo): Promise<boolean> {
+  const message = `🚀 *Service Restarted*
+
+🛠 ${info.service}
+🌐 port: ${info.port ?? "N/A"}
+🧩 env: ${info.env ?? "N/A"}
+🖥 ${hostname()}
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo("telegram/notify startup sent");
   return ok;
 }

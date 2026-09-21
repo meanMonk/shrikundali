@@ -13,6 +13,7 @@ import { webhookApp } from "./routes/webhook.js";
 import { downloadApp } from "./routes/download.js";
 import { configApp } from "./routes/config.js";
 import { telegramBotApp } from "./routes/telegram-bot.js";
+import { notifyAdminServiceStart } from "./lib/telegram.js";
 
 const app = new Hono();
 
@@ -44,3 +45,10 @@ const port = Number(process.env.PORT ?? 3000);
 console.log(`kundaliapi listening on :${port}  (docs: http://localhost:${port}/docs)`);
 
 serve({ fetch: app.fetch, port });
+
+// Fire-and-forget admin alert so a (re)start is visible in Telegram.
+notifyAdminServiceStart({
+  service: process.env.SERVICE_NAME ?? "kundaliapi",
+  port,
+  env: process.env.NODE_ENV ?? "production",
+}).catch(() => {});

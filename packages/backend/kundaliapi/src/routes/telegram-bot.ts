@@ -77,7 +77,7 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       return c.json({ status: "error" });
     }
 
-    const allowedChats = (process.env.TELEGRAM_ADMIN_CHAT_ID ?? "").split(",").map(s => s.trim());
+    const allowedChats = (process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || "").split(",").map(s => s.trim());
     if (!allowedChats.includes(String(chatId))) {
       logInfo(`${endpoint} unauthorized chat: ${chatId}`);
       return c.json({ status: "ok" });
