@@ -1,9 +1,8 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { cashfreeVerifyPayment } from "../lib/payment.js";
-import { getPendingPayment } from "../lib/pending.js";
+import { getKundaliByOrderId, updateKundaliByOrderId } from "../lib/store.js";
 import { generatePaidReport } from "../lib/report.js";
 import { logInfo, logError } from "../lib/logger.js";
-import { createOrder, getOrderByOrderId } from "../lib/orders.js";
 
 const webhookApp = new OpenAPIHono();
 
@@ -118,36 +117,29 @@ async function processSuccessfulPayment(args: {
 }): Promise<void> {
   const endpoint = `/webhook/${args.provider}`;
   try {
-    const pending = await getPendingPayment(args.orderId);
-    const cacheId = pending?.cacheId ?? "";
-    const email = pending?.email ?? "";
-    const amount = pending?.amount ?? args.amount ?? 0;
-
-    // Record the order (best-effort; requires MongoDB when enabled).
-    const existing = await getOrderByOrderId(args.orderId);
-    if (!existing) {
-      await createOrder({
-        orderId: args.orderId,
-        cacheId,
-        email,
-        name: pending?.name,
-        reportType: pending?.reportLabel ?? "financial_kundali",
-        amount,
-        currency: "INR",
-        provider: args.provider,
-        paymentId: args.paymentId,
-        status: "pending",
-        createdAt: new Date(),
-      }).catch((e) => logError(`${endpoint}/createOrder`, e));
+    const doc = await getKundaliByOrderId(args.orderId);
+    if (!doc) {
+      logError(endpoint, `Unknown order ${args.orderId}`);
+      return;
     }
+
+    const amount = doc.amount ?? args.amount ?? 0;
+
+    await updateKundaliByOrderId(args.orderId, {
+      status: "paid",
+      provider: args.provider,
+      paymentId: args.paymentId,
+      amount,
+      paidAt: new Date(),
+    });
 
     const result = await generatePaidReport({
       orderId: args.orderId,
       provider: args.provider,
       paymentId: args.paymentId,
-      cacheId,
-      email,
-      name: pending?.name,
+      cacheId: doc.id,
+      email: doc.email,
+      name: doc.name,
       amount,
     });
 

@@ -1,19 +1,23 @@
-import { getCachedChart, deleteCachedChart, type CachedChart } from "./cache.js";
-import { getKundli, getPersonalReportPdf } from "./prokerala.js";
+import { getPersonalReportPdf } from "./prokerala.js";
 import { renderPDF, renderMarkdown, type ReportMeta } from "./render.js";
 import { archiveRaw, addArchiveFile } from "./archive.js";
 import { logInfo, logError } from "./logger.js";
 import { sendReportEmail } from "./email.js";
 import { notifyAdminSale } from "./telegram.js";
 import { updateOrderPayment, createOrder, getOrderByOrderId } from "./orders.js";
-import { getPendingPayment, updatePendingPayment, acquireReportLock, releaseReportLock } from "./pending.js";
+import {
+  getKundali,
+  getKundaliByOrderId,
+  claimKundaliForReport,
+  updateKundali,
+  REPORT_LABELS,
+  type KundaliDoc,
+} from "./store.js";
 
 const API_BASE = () => process.env.APP_URL ?? "http://localhost:3400";
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 export interface PaidReportArgs {
-  orderId: string;
+  orderId?: string;
   provider: string;
   paymentId?: string;
   cacheId?: string;
@@ -29,91 +33,54 @@ export interface PaidReportResult {
 }
 
 /**
- * Idempotently generate, archive, email and notify for a paid order.
- * Safe to call from both the Razorpay callback and the webhook.
+ * Idempotently generate the paid PDF from the stored kundali document,
+ * archive it, email it and notify. Safe to call from both the Razorpay
+ * callback and the webhook.
  */
 export async function generatePaidReport(
   args: PaidReportArgs,
 ): Promise<PaidReportResult | null> {
   const endpoint = "/report/generate";
-  const pending = await getPendingPayment(args.orderId);
 
-  if (pending?.archiveId && pending.downloadUrl) {
-    logInfo(`${endpoint} already generated for ${args.orderId}`);
-    return { archiveId: pending.archiveId, downloadUrl: pending.downloadUrl, alreadyGenerated: true };
-  }
-
-  const cacheId = pending?.cacheId ?? args.cacheId ?? "";
-  const email = pending?.email || args.email || "";
-  const name = pending?.name ?? args.name;
-  const amount = pending?.amount ?? args.amount ?? 0;
-  const paymentId = args.paymentId ?? args.orderId;
-
-  if (!cacheId) {
-    logError(endpoint, `No cacheId for order ${args.orderId}`);
+  let doc: KundaliDoc | null = null;
+  if (args.orderId) doc = await getKundaliByOrderId(args.orderId);
+  if (!doc && args.cacheId) doc = await getKundali(args.cacheId);
+  if (!doc) {
+    logError(endpoint, `No kundali for order ${args.orderId} / cache ${args.cacheId}`);
     return null;
   }
 
-  const cached0 = await getCachedChart(cacheId);
-  let cached: CachedChart | null = cached0;
-
-  // If the teaser cache expired, rebuild the chart from the stored birth
-  // details instead of failing the paid report.
-  if (!cached && pending?.birth) {
-    try {
-      logInfo(`${endpoint} cache ${cacheId} expired — regenerating from stored birth details`);
-      const { parsed, raw } = await getKundli({
-        coordinates: pending.birth.coordinates,
-        datetime: pending.birth.datetime,
-        ayanamsa: pending.birth.ayanamsa,
-        la: pending.birth.la,
-      });
-      cached = {
-        id: cacheId,
-        raw,
-        parsed,
-        email,
-        label: pending.reportLabel,
-        birth: pending.birth,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 3600_000).toISOString(),
-      };
-    } catch (e) {
-      logError(`${endpoint}/refetch`, e);
-    }
+  if (doc.archiveId && doc.downloadUrl) {
+    logInfo(`${endpoint} already generated for ${doc.id}`);
+    return { archiveId: doc.archiveId, downloadUrl: doc.downloadUrl, alreadyGenerated: true };
   }
 
-  if (!cached) {
-    logError(endpoint, `Cache expired for ${cacheId} (order ${args.orderId}) and no birth details to rebuild`);
+  const claimed = await claimKundaliForReport(doc.id);
+  if (!claimed) {
+    logInfo(`${endpoint} generation already in progress for ${doc.id}`);
     return null;
   }
+  doc = claimed;
 
-  // Another trigger (client callback or webhook) may already be generating.
-  const locked = await acquireReportLock(args.orderId);
-  if (!locked) {
-    for (let i = 0; i < 10; i++) {
-      await sleep(2000);
-      const p = await getPendingPayment(args.orderId);
-      if (p?.archiveId && p.downloadUrl) {
-        return { archiveId: p.archiveId, downloadUrl: p.downloadUrl, alreadyGenerated: true };
-      }
-    }
-    logInfo(`${endpoint} generation already in progress for ${args.orderId}`);
-    return null;
-  }
+  const orderId = args.orderId ?? doc.orderId ?? doc.id;
+  const provider = args.provider || doc.provider || "razorpay";
+  const paymentId = args.paymentId ?? doc.paymentId ?? orderId;
+  const email = doc.email || args.email || "";
+  const name = doc.name ?? args.name;
+  const amount = doc.amount ?? args.amount ?? 0;
+  const label = doc.reportLabel || REPORT_LABELS[doc.reportType];
+  const birth = doc.birth;
+  const meta: ReportMeta = {
+    name: name || "",
+    gender: doc.gender || birth?.gender,
+    datetime: birth?.datetime,
+    coordinates: birth?.coordinates,
+    ayanamsa: birth?.ayanamsa,
+    language: birth?.la,
+  };
 
   try {
-    const label = cached.label || "Financial Kundali";
-    const birth = pending?.birth ?? cached.birth;
-    const meta: ReportMeta = {
-      name: name || cached.label || "",
-      gender: pending?.gender || birth?.gender,
-      datetime: birth?.datetime,
-      coordinates: birth?.coordinates,
-      ayanamsa: birth?.ayanamsa,
-      language: birth?.la,
-    };
-    logInfo(`${endpoint} generating report for ${cacheId} (order ${args.orderId})`);
+    logInfo(`${endpoint} generating report for ${doc.id} (order ${orderId})`);
 
     // Prefer ProKerala's own full paragraph report. Fall back to our local
     // renderer when the report API is disabled or out of credits.
@@ -128,7 +95,7 @@ export async function generatePaidReport(
             datetime: birth.datetime,
             coordinates: birth.coordinates,
             place: birth.place,
-            gender: birth.gender || pending?.gender,
+            gender: birth.gender || doc.gender,
           },
           {
             language: birth.la,
@@ -146,63 +113,50 @@ export async function generatePaidReport(
     }
 
     if (!pdf) {
-      // Local fallback. Re-fetch a detailed chart if the cached one lacks dasha.
-      let renderData = cached;
-      if (birth && !(cached.parsed.data?.dasha_periods)) {
-        try {
-          const { parsed, raw } = await getKundli({
-            coordinates: birth.coordinates,
-            datetime: birth.datetime,
-            ayanamsa: birth.ayanamsa,
-            la: birth.la,
-            detailed: true,
-          });
-          renderData = { ...cached, parsed, raw };
-        } catch (e) {
-          logError(`${endpoint}/detailed-refetch`, e);
-        }
-      }
       logInfo(`${endpoint} rendering report locally (fallback)`);
-      pdf = await renderPDF(renderData.parsed, label, meta);
-      cached = renderData;
+      pdf = await renderPDF(doc.parsed, label, meta);
     }
 
-    const md = renderMarkdown(cached.parsed, label, meta);
+    const md = renderMarkdown(doc.parsed, label, meta);
 
     const archive = await archiveRaw(
       "/kundali/pdf",
-      { cacheId, orderId: args.orderId, provider: args.provider },
+      { cacheId: doc.id, orderId, provider },
       "pdf",
-      cached.raw,
+      doc.raw,
       pdf,
     );
     await addArchiveFile(archive.id, "report.md", Buffer.from(md), "text/markdown");
 
     const downloadUrl = `${API_BASE()}/download/${archive.id}/pdf`;
 
-    await updatePendingPayment(args.orderId, {
+    await updateKundali(doc.id, {
       archiveId: archive.id,
       downloadUrl,
+      status: "completed",
+      orderId,
+      provider,
+      paymentId,
       email,
       name,
       amount,
-      paidAt: new Date().toISOString(),
+      paidAt: new Date(),
     });
 
-    await updateOrderPayment(args.orderId, paymentId, "completed", archive.id, downloadUrl)
+    await updateOrderPayment(orderId, paymentId, "completed", archive.id, downloadUrl)
       .catch((e) => logError(`${endpoint}/updateOrder`, e));
 
-    const existing = await getOrderByOrderId(args.orderId);
-    if (!existing) {
+    const existingOrder = await getOrderByOrderId(orderId);
+    if (!existingOrder) {
       await createOrder({
-        orderId: args.orderId,
-        cacheId,
+        orderId,
+        cacheId: doc.id,
         email,
         name,
-        reportType: label,
+        reportType: doc.reportType,
         amount,
         currency: "INR",
-        provider: args.provider,
+        provider,
         paymentId,
         status: "completed",
         archiveId: archive.id,
@@ -212,28 +166,35 @@ export async function generatePaidReport(
       }).catch((e) => logError(`${endpoint}/createOrder`, e));
     }
 
-    sendReportEmail(email || cached.email, name || cached.label || "", downloadUrl, label, amount, paymentId, pdf)
-      .catch((e) => logError(`${endpoint}/email`, e));
+    // Notify the admin chat first — this must not depend on email delivery.
+    try {
+      const saleNotified = await notifyAdminSale({
+        name: name || "",
+        email,
+        reportType: label,
+        amount,
+        paymentId,
+        paymentProvider: provider,
+        pdfGenerated: true,
+        downloadUrl,
+      });
+      if (saleNotified) await updateKundali(doc.id, { purchaseNotified: true });
+    } catch (e) {
+      logError(`${endpoint}/telegram`, e);
+    }
 
-    const saleNotified = await notifyAdminSale({
-      name: name || "",
-      email: email || cached.email,
-      reportType: label,
-      amount,
-      paymentId,
-      paymentProvider: args.provider,
-      pdfGenerated: true,
-      downloadUrl,
-    }).catch(() => false);
-    if (saleNotified) await updatePendingPayment(args.orderId, { purchaseNotified: true });
+    // Email is best-effort; a failure here must never affect the sale notification.
+    try {
+      await sendReportEmail(email, name || "", downloadUrl, label, amount, paymentId, pdf);
+    } catch (e) {
+      logError(`${endpoint}/email`, e);
+    }
 
-    await deleteCachedChart(cacheId);
-    logInfo(`${endpoint} done for ${args.orderId}: ${archive.id}`);
+    logInfo(`${endpoint} done for ${orderId}: ${archive.id}`);
     return { archiveId: archive.id, downloadUrl, alreadyGenerated: false };
   } catch (e) {
     logError(endpoint, e);
+    await updateKundali(doc.id, { status: "paid" }).catch(() => {});
     return null;
-  } finally {
-    await releaseReportLock(args.orderId);
   }
 }

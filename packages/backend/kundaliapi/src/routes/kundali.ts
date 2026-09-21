@@ -3,6 +3,7 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { getKundli } from "../lib/prokerala.js";
 import { renderMarkdown, renderPDF } from "../lib/render.js";
 import { archiveKundali, archiveRaw } from "../lib/archive.js";
+import { saveKundali, newId, REPORT_LABELS } from "../lib/store.js";
 import { logGeneration, logError, rotateLogs } from "../lib/logger.js";
 
 const kundaliApp = new OpenAPIHono();
@@ -25,6 +26,33 @@ const KundliSchema = z.object({
   status: z.string(),
   data: z.record(z.unknown()),
 });
+
+/** Persist one kundali document so every generated chart is stored in Mongo. */
+async function persistKundali(
+  body: { coordinates: string; datetime: string; ayanamsa?: number; la?: string; label?: string },
+  raw: Record<string, unknown>,
+  parsed: { status: string; data: Record<string, unknown> },
+): Promise<string> {
+  const id = newId();
+  await saveKundali({
+    id,
+    reportType: "financial_kundali",
+    reportLabel: body.label || REPORT_LABELS.financial_kundali,
+    name: body.label,
+    birth: {
+      coordinates: body.coordinates,
+      datetime: body.datetime,
+      ayanamsa: body.ayanamsa,
+      la: body.la,
+      name: body.label,
+    },
+    raw,
+    parsed,
+    status: "teaser",
+    createdAt: new Date(),
+  });
+  return id;
+}
 
 /* ── POST /kundali/generate ───────────────────────────── */
 
@@ -52,7 +80,8 @@ kundaliApp.openapi(generateRoute, async (c) => {
       la: body.la,
     });
     const archive = await archiveKundali(endpoint, body, raw, parsed);
-    return c.json({ ...parsed, _archive: archive }, 200);
+    const kundaliId = await persistKundali(body, raw, parsed);
+    return c.json({ ...parsed, _archive: archive, _kundaliId: kundaliId }, 200);
   } catch (e) {
     logError(endpoint, e);
     return c.json({ error: String(e) }, 400);
@@ -92,11 +121,13 @@ kundaliApp.openapi(markdownRoute, async (c) => {
       language: body.la,
     });
     const archive = await archiveRaw(endpoint, body, "markdown", raw, md);
+    const kundaliId = await persistKundali(body, raw, parsed);
     return new Response(md, {
       headers: {
         "Content-Type": "text/markdown; charset=utf-8",
         "X-Archive-Id": archive.id,
         "X-Archive-Dir": archive.dir,
+        "X-Kundali-Id": kundaliId,
       },
     });
   } catch (e) {
@@ -138,12 +169,14 @@ kundaliApp.openapi(pdfRoute, async (c) => {
       language: body.la,
     });
     const archive = await archiveRaw(endpoint, body, "pdf", raw, pdf);
+    const kundaliId = await persistKundali(body, raw, parsed);
     return new Response(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="kundali-${archive.id}.pdf"`,
         "X-Archive-Id": archive.id,
         "X-Archive-Dir": archive.dir,
+        "X-Kundali-Id": kundaliId,
       },
     });
   } catch (e) {

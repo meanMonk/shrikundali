@@ -12,7 +12,6 @@ services:
     env_file: .env
     environment:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/app_kundaliapi}
-      PG_URI: ${PG_URI:-postgres://postgres:postgres@postgres:5432/app_kundaliapi}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-false}
       MINIO_HOST: ${MINIO_HOST:-host.docker.internal}
       MINIO_PORT: ${MINIO_PORT:-9000}

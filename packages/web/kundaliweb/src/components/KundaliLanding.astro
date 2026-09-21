@@ -212,6 +212,19 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         <div><div style="font-size:0.7rem;color:var(--color-text-muted)">Nakshatra</div><div id="preview-nakshatra" style="font-weight:700;color:var(--color-primary)">&mdash;</div></div>
         <div><div style="font-size:0.7rem;color:var(--color-text-muted)">Dosha</div><div id="preview-dosha" style="font-weight:700;color:var(--color-primary)">&mdash;</div></div>
       </div>
+      <div id="preview-scores" style="display:none;margin:1rem auto 0;max-width:420px;text-align:left">
+        <p style="font-size:0.72rem;color:var(--color-text-muted);font-weight:600;text-align:center;margin-bottom:0.5rem">Financial Money-Axis Preview</p>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.35rem 0.9rem;font-size:0.78rem;color:var(--color-text-muted)">
+          <div style="display:flex;justify-content:space-between"><span>Wealth</span><strong id="preview-score-wealth" style="color:var(--color-primary)">--</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>Career</span><strong id="preview-score-career" style="color:var(--color-primary)">--</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>Business</span><strong id="preview-score-business" style="color:var(--color-primary)">--</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>Property</span><strong id="preview-score-property" style="color:var(--color-primary)">--</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>Investment</span><strong id="preview-score-invest" style="color:var(--color-primary)">--</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>Stability</span><strong id="preview-score-stability" style="color:var(--color-primary)">--</strong></div>
+        </div>
+        <div style="margin-top:0.6rem;height:6px;border-radius:4px;background:var(--color-border);overflow:hidden"><div id="preview-score-bar" style="height:100%;width:0%;background:var(--color-primary);transition:width .6s ease"></div></div>
+        <p style="font-size:0.68rem;color:var(--color-text-muted);text-align:center;margin-top:0.35rem">Overall financial strength</p>
+      </div>
       <p style="font-size:0.75rem;color:var(--color-text-muted);margin-top:0.75rem">Unlock below for your full detailed Kundali PDF.</p>
       <button id="unlock-btn" type="button" class="cta-pulse" style="margin-top:1rem;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;padding:0.85rem 2rem;font-size:1.05rem;font-weight:700;cursor:pointer">
         Unlock Full Report
@@ -537,6 +550,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     const form = document.getElementById("kundali-form") as HTMLFormElement | null;
     const statusEl = document.getElementById("form-status");
     const teaserResults = document.getElementById("teaser-results");
+    const previewScores = document.getElementById("preview-scores");
     const submitBtn = document.getElementById("form-submit-btn") as HTMLButtonElement | null;
 
     form?.addEventListener("submit", async (e) => {
@@ -558,7 +572,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         const res = await fetch(`${API_URL}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, place: (document.getElementById("birthplace") as HTMLInputElement | null)?.value || "", email: `preview-${Date.now()}@shrikundali.in` }),
+          body: JSON.stringify({ reportType: "financial_kundali", name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, place: (document.getElementById("birthplace") as HTMLInputElement | null)?.value || "", email: `preview-${Date.now()}@shrikundali.in` }),
         });
         if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
         const data = await res.json();
@@ -571,6 +585,28 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         const rashi = t.rashi; setTxt("preview-rashi", typeof rashi === "object" ? rashi?.name : rashi);
         const nakshatra = t.nakshatra; setTxt("preview-nakshatra", typeof nakshatra === "object" ? nakshatra?.name : nakshatra);
         setTxt("preview-dosha", t.mangalDosha ? "Mangal" : t.doshaFlag || t.dosha || "None");
+
+        // Financial money-axis preview (only present for financial_kundali)
+        const scores = t.moneyAxisScores;
+        if (scores) {
+          const setScore = (id: string, v: number) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = typeof v === "number" ? `${v}/10` : "--";
+          };
+          setScore("preview-score-wealth", scores.wealthPotential);
+          setScore("preview-score-career", scores.careerGrowth);
+          setScore("preview-score-business", scores.businessLuck);
+          setScore("preview-score-property", scores.propertyAssets);
+          setScore("preview-score-invest", scores.investmentSense);
+          setScore("preview-score-stability", scores.financialStability);
+          const vals = [scores.wealthPotential, scores.careerGrowth, scores.businessLuck, scores.propertyAssets, scores.investmentSense, scores.financialStability].filter((n) => typeof n === "number");
+          const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+          const bar = document.getElementById("preview-score-bar");
+          if (bar) bar.style.width = `${Math.round((avg / 10) * 100)}%`;
+          if (previewScores) previewScores.style.display = "block";
+        } else if (previewScores) {
+          previewScores.style.display = "none";
+        }
 
         if (teaserResults) teaserResults.style.display = "block";
         if (statusEl) statusEl.textContent = "";

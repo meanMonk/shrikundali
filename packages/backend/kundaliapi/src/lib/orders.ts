@@ -1,5 +1,6 @@
+import type { Collection } from "mongodb";
+import { getDb } from "./mongo.js";
 import { logInfo, logError } from "./logger.js";
-import type { Collection, MongoClient } from "mongodb";
 
 export interface Order {
   _id?: string;
@@ -20,26 +21,18 @@ export interface Order {
 }
 
 let col: Collection<Order> | null = null;
-let client: MongoClient | null = null;
 
 async function getCollection(): Promise<Collection<Order>> {
   if (col) return col;
-
-  const type = process.env.DB_TYPE ?? "none";
-  if (type !== "mongo") {
-    throw new Error("Orders require MongoDB (DB_TYPE=mongo)");
-  }
-
-  const { MongoClient } = await import("mongodb");
-  client = new MongoClient(process.env.MONGODB_URI ?? "");
-  const db = client.db(process.env.DB_NAME ?? "app_kundaliapi");
-  col = db.collection<Order>("orders");
-
-  await col.createIndex({ orderId: 1 }, { unique: true });
-  await col.createIndex({ email: 1 });
-  await col.createIndex({ createdAt: -1 });
-  await col.createIndex({ status: 1 });
-
+  const db = await getDb();
+  const c = db.collection<Order>("orders");
+  await Promise.all([
+    c.createIndex({ orderId: 1 }, { unique: true }),
+    c.createIndex({ email: 1 }),
+    c.createIndex({ createdAt: -1 }),
+    c.createIndex({ status: 1 }),
+  ]);
+  col = c;
   logInfo("orders collection initialized");
   return col;
 }
@@ -78,7 +71,8 @@ export async function getOrderByOrderId(orderId: string): Promise<Order | null> 
   try {
     const col = await getCollection();
     return (await col.findOne({ orderId })) as Order | null;
-  } catch {
+  } catch (e) {
+    logError("orders/get", e);
     return null;
   }
 }

@@ -6,12 +6,12 @@ import {
   cashfreeVerifyPayment,
   type PaymentProvider,
 } from "../lib/payment.js";
-import { getCachedChart } from "../lib/cache.js";
 import {
-  getPendingPayment,
-  savePendingPayment,
-  updatePendingPayment,
-} from "../lib/pending.js";
+  getKundali,
+  getKundaliByOrderId,
+  updateKundali,
+  updateKundaliByOrderId,
+} from "../lib/store.js";
 import { generatePaidReport } from "../lib/report.js";
 import { readArchiveFile } from "../lib/archive.js";
 import { notifyAdminDownload } from "../lib/telegram.js";
@@ -60,9 +60,9 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
   try {
     const body = c.req.valid("json");
 
-    const cached = await getCachedChart(body.cacheId);
-    if (!cached) {
-      return c.json({ error: "Invalid or expired cache ID. Please generate a new teaser." }, 400);
+    const doc = await getKundali(body.cacheId);
+    if (!doc) {
+      return c.json({ error: "Invalid cache ID. Please generate a new teaser." }, 400);
     }
 
     const receipt = `kundali_${body.cacheId}_${Date.now()}`;
@@ -77,22 +77,19 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
       customerName: body.name,
       metadata: {
         cacheId: body.cacheId,
-        reportType: "financial_kundali",
+        reportType: doc.reportType,
       },
     });
 
-    // Remember the mapping so the webhook / verify step can recover the chart
-    // and the real customer email, without trusting anything from the client.
-    await savePendingPayment({
+    // Attach the order to the kundali doc so the webhook / verify step can
+    // recover the chart and the real customer email without trusting the client.
+    await updateKundali(body.cacheId, {
       orderId: order.orderId,
-      cacheId: body.cacheId,
-      email: body.email,
-      name: body.name,
-      amount: order.amount,
       provider: order.provider,
-      reportLabel: cached.label,
-      birth: cached.birth,
-      createdAt: new Date().toISOString(),
+      amount: order.amount,
+      email: body.email,
+      name: body.name ?? doc.name,
+      status: doc.status === "completed" ? "completed" : "ordered",
     });
 
     logGeneration(endpoint, { ...body, orderId: order.orderId });
@@ -127,19 +124,19 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
  * always re-confirmed against the provider before generating.
  */
 async function ensureReportGenerated(orderId: string) {
-  const pending = await getPendingPayment(orderId);
-  if (!pending) return null;
-  if (pending.archiveId && pending.downloadUrl) {
-    return { archiveId: pending.archiveId, downloadUrl: pending.downloadUrl, alreadyGenerated: true };
+  const doc = await getKundaliByOrderId(orderId);
+  if (!doc) return null;
+  if (doc.archiveId && doc.downloadUrl) {
+    return { archiveId: doc.archiveId, downloadUrl: doc.downloadUrl, alreadyGenerated: true };
   }
 
   let paid = false;
   let paymentId: string | undefined;
-  if (pending.provider === "razorpay") {
+  if (doc.provider === "razorpay") {
     const order = await getRazorpayOrder(orderId);
     paid = order?.status === "paid";
     paymentId = order?.paymentId;
-  } else if (pending.provider === "cashfree") {
+  } else if (doc.provider === "cashfree") {
     paid = await cashfreeVerifyPayment({ provider: "cashfree", orderId, paymentId: "", signature: "" });
   }
 
@@ -147,12 +144,12 @@ async function ensureReportGenerated(orderId: string) {
 
   return generatePaidReport({
     orderId,
-    provider: pending.provider,
+    provider: doc.provider ?? "razorpay",
     paymentId,
-    cacheId: pending.cacheId,
-    email: pending.email,
-    name: pending.name,
-    amount: pending.amount,
+    cacheId: doc.id,
+    email: doc.email,
+    name: doc.name,
+    amount: doc.amount,
   });
 }
 
@@ -182,9 +179,9 @@ checkoutApp.openapi(
     const endpoint = "/payment/verify";
     try {
       const body = c.req.valid("json");
-      const pending = await getPendingPayment(body.orderId);
+      const doc = await getKundaliByOrderId(body.orderId);
 
-      if (!pending) {
+      if (!doc) {
         return c.json({ error: "Unknown order. Please contact support." }, 400);
       }
 
@@ -202,7 +199,7 @@ checkoutApp.openapi(
             logError(endpoint, `Signature mismatch for ${body.orderId}`);
             return c.json({ error: "Payment signature verification failed." }, 400);
           }
-        } else if (!pending.archiveId) {
+        } else if (!doc.archiveId) {
           return c.json({ error: "Payment is not verified yet. Please wait a moment." }, 400);
         }
       }
@@ -211,26 +208,26 @@ checkoutApp.openapi(
         orderId: body.orderId,
         provider: body.provider,
         paymentId: body.paymentId,
-        cacheId: pending.cacheId,
-        email: pending.email,
-        name: pending.name,
-        amount: pending.amount,
+        cacheId: doc.id,
+        email: doc.email,
+        name: doc.name,
+        amount: doc.amount,
       });
 
       if (!report) {
         return c.json({ error: "Report is being generated. Please retry in a moment." }, 400);
       }
 
-      const updated = await getPendingPayment(body.orderId);
+      const updated = await getKundaliByOrderId(body.orderId);
       return c.json({
         success: true,
         orderId: body.orderId,
         archiveId: report.archiveId,
         downloadUrl: report.downloadUrl,
-        email: updated?.email ?? pending.email,
-        name: updated?.name ?? pending.name,
-        amount: updated?.amount ?? pending.amount,
-        reportLabel: updated?.reportLabel ?? pending.reportLabel ?? "Financial Kundali",
+        email: updated?.email ?? doc.email,
+        name: updated?.name ?? doc.name,
+        amount: updated?.amount ?? doc.amount,
+        reportLabel: updated?.reportLabel ?? doc.reportLabel ?? "Financial Kundali Report",
       }, 200);
     } catch (e) {
       logError(endpoint, e);
@@ -255,24 +252,24 @@ checkoutApp.openapi(
   }),
   async (c) => {
     const orderId = c.req.param("orderId");
-    let pending = await getPendingPayment(orderId);
-    if (!pending) return c.json({ error: "Unknown order" }, 404);
+    let doc = await getKundaliByOrderId(orderId);
+    if (!doc) return c.json({ error: "Unknown order" }, 404);
 
     // Self-heal a paid order whose report never got generated.
-    if (!pending.archiveId) {
+    if (!doc.archiveId) {
       await ensureReportGenerated(orderId).catch((e) => logError("/payment/order", e));
-      pending = (await getPendingPayment(orderId)) ?? pending;
+      doc = (await getKundaliByOrderId(orderId)) ?? doc;
     }
 
     return c.json({
       orderId,
-      status: pending.archiveId ? "completed" : "processing",
-      archiveId: pending.archiveId ?? null,
-      downloadUrl: pending.downloadUrl ?? null,
-      email: pending.email,
-      name: pending.name ?? null,
-      amount: pending.amount,
-      reportLabel: pending.reportLabel ?? "Financial Kundali",
+      status: doc.archiveId ? "completed" : "processing",
+      archiveId: doc.archiveId ?? null,
+      downloadUrl: doc.downloadUrl ?? null,
+      email: doc.email,
+      name: doc.name ?? null,
+      amount: doc.amount,
+      reportLabel: doc.reportLabel ?? "Financial Kundali Report",
     }, 200);
   },
 );
@@ -295,43 +292,41 @@ checkoutApp.openapi(
     const endpoint = "/payment/download";
     try {
       const orderId = c.req.param("orderId");
-      let pending = await getPendingPayment(orderId);
+      let doc = await getKundaliByOrderId(orderId);
 
-      if (!pending) {
+      if (!doc) {
         return c.json({ error: "Unknown order" }, 404);
       }
 
       // Self-heal: generate on demand if the order is paid but not yet rendered.
-      if (!pending.archiveId) {
+      if (!doc.archiveId) {
         await ensureReportGenerated(orderId).catch((e) => logError(endpoint, e));
-        pending = (await getPendingPayment(orderId)) ?? pending;
+        doc = (await getKundaliByOrderId(orderId)) ?? doc;
       }
 
-      if (!pending.archiveId) {
+      if (!doc.archiveId) {
         return c.json({ error: "Report not ready yet", status: "processing" }, 404);
       }
 
-      const data = await readArchiveFile(pending.archiveId, "report.pdf");
+      const data = await readArchiveFile(doc.archiveId, "report.pdf");
       if (!data) {
         return c.json({ error: "Report file missing" }, 404);
       }
 
       // Notify admin once per order that the user actually downloaded.
-      if (!pending.downloadNotified) {
-        const marked = await updatePendingPayment(orderId, { downloadNotified: true });
-        if (marked) {
-          notifyAdminDownload({
-            name: pending.name,
-            email: pending.email,
-            reportType: pending.reportLabel ?? "Financial Kundali",
-            paymentId: orderId,
-            paymentProvider: pending.provider,
-            archiveId: pending.archiveId,
-          }).catch((e) => logError(`${endpoint}/telegram`, e));
-        }
+      if (!doc.downloadNotified) {
+        await updateKundaliByOrderId(orderId, { downloadNotified: true });
+        notifyAdminDownload({
+          name: doc.name,
+          email: doc.email,
+          reportType: doc.reportLabel ?? "Financial Kundali Report",
+          paymentId: orderId,
+          paymentProvider: doc.provider ?? "razorpay",
+          archiveId: doc.archiveId,
+        }).catch((e) => logError(`${endpoint}/telegram`, e));
       }
 
-      logInfo(`${endpoint} serving ${pending.archiveId} for ${orderId}`);
+      logInfo(`${endpoint} serving ${doc.archiveId} for ${orderId}`);
       return new Response(new Uint8Array(data), {
         headers: {
           "Content-Type": "application/pdf",

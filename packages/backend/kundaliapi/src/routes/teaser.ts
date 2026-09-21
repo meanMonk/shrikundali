@@ -1,61 +1,65 @@
-import { Hono } from "hono";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { getKundli } from "../lib/prokerala.js";
-import { cacheChart } from "../lib/cache.js";
-import { calculateMoneyAxisScores, val, str } from "../lib/scores.js";
+import { buildTeaser, LOCKED_SECTIONS } from "../lib/teaser.js";
+import {
+  getKundali,
+  saveKundali,
+  newId,
+  REPORT_LABELS,
+  type BirthDetails,
+  type ReportType,
+} from "../lib/store.js";
 import { logGeneration, logError } from "../lib/logger.js";
 
 const teaserApp = new OpenAPIHono();
 
+const ReportTypeEnum = z.enum(["financial_kundali", "match_kundali"]);
+
 const TeaserInput = z.object({
-  coordinates: z.string().describe("lat,lon — e.g. 23.1765,75.7885"),
-  datetime: z.string().describe("ISO 8601 datetime with timezone offset"),
+  reportType: ReportTypeEnum.optional().default("financial_kundali")
+    .describe("Which kundali this teaser is for"),
+  cacheId: z.string().optional()
+    .describe("Return the stored teaser for an existing kundali instead of regenerating"),
+  coordinates: z.string().optional().describe("lat,lon — e.g. 23.1765,75.7885"),
+  datetime: z.string().optional().describe("ISO 8601 datetime with timezone offset"),
   ayanamsa: z.number().optional().default(1),
   la: z.string().optional().describe("Language: en, ta, ml, hi"),
   label: z.string().optional().describe("Name for the report"),
   name: z.string().optional().describe("Name for the report (alias of label)"),
   gender: z.string().optional(),
   place: z.string().optional().describe("Human-readable birthplace"),
-  email: z.string().email().describe("Required — used for report delivery"),
+  email: z.string().email().optional().describe("Used for report delivery"),
+});
+
+const MoneyAxisScoresSchema = z.object({
+  wealthPotential: z.number().describe("1-10 score"),
+  careerGrowth: z.number(),
+  businessLuck: z.number(),
+  propertyAssets: z.number(),
+  investmentSense: z.number(),
+  financialStability: z.number(),
+});
+
+const TeaserSchema = z.object({
+  name: z.string(),
+  birthDetails: z.object({
+    date: z.string(),
+    time: z.string(),
+    location: z.string(),
+  }),
+  lagna: z.object({ name: z.string(), lord: z.string() }),
+  rashi: z.object({ name: z.string(), lord: z.string() }),
+  nakshatra: z.object({ name: z.string(), lord: z.string(), pada: z.number() }),
+  planetSummary: z.array(z.object({ name: z.string(), sign: z.string() })),
+  moneyAxisScores: MoneyAxisScoresSchema.optional(),
+  mangalDosha: z.boolean(),
+  majorYogas: z.number(),
 });
 
 const TeaserResponse = z.object({
   cacheId: z.string().describe("Use this ID after payment to get full report"),
-  teaser: z.object({
-    name: z.string(),
-    birthDetails: z.object({
-      date: z.string(),
-      time: z.string(),
-      location: z.string(),
-    }),
-    lagna: z.object({
-      name: z.string(),
-      lord: z.string(),
-    }),
-    rashi: z.object({
-      name: z.string(),
-      lord: z.string(),
-    }),
-    nakshatra: z.object({
-      name: z.string(),
-      lord: z.string(),
-      pada: z.number(),
-    }),
-    planetSummary: z.array(z.object({
-      name: z.string(),
-      sign: z.string(),
-    })),
-    moneyAxisScores: z.object({
-      wealthPotential: z.number().describe("1-10 score"),
-      careerGrowth: z.number(),
-      businessLuck: z.number(),
-      propertyAssets: z.number(),
-      investmentSense: z.number(),
-      financialStability: z.number(),
-    }),
-    mangalDosha: z.boolean(),
-    majorYogas: z.number(),
-  }),
+  reportType: ReportTypeEnum,
+  teaser: TeaserSchema,
   locked: z.array(z.string()).describe("List of locked sections available after payment"),
 });
 
@@ -77,6 +81,25 @@ teaserApp.openapi(teaserRoute, async (c) => {
     const body = c.req.valid("json");
     logGeneration(endpoint, body);
 
+    const reportType = body.reportType as ReportType;
+
+    // Existing kundali: serve the stored teaser, no ProKerala call.
+    if (body.cacheId) {
+      const existing = await getKundali(body.cacheId);
+      if (existing) {
+        return c.json({
+          cacheId: existing.id,
+          reportType: existing.reportType,
+          teaser: (existing.teaser ?? {}) as z.infer<typeof TeaserSchema>,
+          locked: existing.locked ?? LOCKED_SECTIONS[existing.reportType],
+        }, 200);
+      }
+    }
+
+    if (!body.coordinates || !body.datetime) {
+      return c.json({ error: "coordinates and datetime are required to generate a teaser" }, 400);
+    }
+
     const { parsed, raw } = await getKundli({
       coordinates: body.coordinates,
       datetime: body.datetime,
@@ -85,88 +108,37 @@ teaserApp.openapi(teaserRoute, async (c) => {
     });
 
     const reportName = body.name || body.label || "Janam Kundali";
+    const birth: BirthDetails = {
+      coordinates: body.coordinates,
+      datetime: body.datetime,
+      ayanamsa: body.ayanamsa,
+      la: body.la,
+      name: reportName,
+      gender: body.gender,
+      place: body.place,
+    };
 
-    const cacheId = await cacheChart(
+    const { teaser, locked } = buildTeaser(reportType, parsed, reportName, birth);
+    const cacheId = newId();
+
+    await saveKundali({
+      id: cacheId,
+      reportType,
+      reportLabel: REPORT_LABELS[reportType],
+      email: body.email,
+      name: reportName,
+      gender: body.gender,
+      place: body.place,
+      birth,
       raw,
       parsed,
-      body.email,
-      reportName,
-      60,
-      {
-        coordinates: body.coordinates,
-        datetime: body.datetime,
-        ayanamsa: body.ayanamsa,
-        la: body.la,
-        name: reportName,
-        gender: body.gender,
-        place: body.place,
-      },
-    );
+      teaser: teaser as unknown as Record<string, unknown>,
+      locked,
+      status: "teaser",
+      createdAt: new Date(),
+    });
 
-    const d = parsed.data;
-    const nd = val(d, "nakshatra_details") as Record<string, unknown> | undefined;
-    const nakshatra = val(nd, "nakshatra") as Record<string, unknown> | undefined;
-    const chandraRasi = val(nd, "chandra_rasi") as Record<string, unknown> | undefined;
-    const nakLord = val(nakshatra, "lord") as Record<string, unknown> | undefined;
-    const rasiLord = val(chandraRasi, "lord") as Record<string, unknown> | undefined;
-    const md = val(d, "mangal_dosha") as Record<string, unknown> | undefined;
-    const yogas = (d.yoga_details ?? []) as Record<string, unknown>[];
-
-    const planets = ((d.planet_positions ?? d.planets) ?? []) as Record<string, unknown>[];
-    const ascendant = planets.find(
-      (p) => str(val(p, "name")).toLowerCase() === "ascendant",
-    );
-    const ascRasi = val(ascendant, "rasi") as Record<string, unknown> | undefined;
-    const ascLord = val(ascRasi, "lord") as Record<string, unknown> | undefined;
-
-    const planetSummary = planets
-      .filter((p) => str(val(p, "name")).toLowerCase() !== "ascendant")
-      .slice(0, 9)
-      .map((p) => {
-        const rasi = val(p, "rasi") as Record<string, unknown> | undefined;
-        return {
-          name: str(val(p, "planet_name") ?? val(p, "name")),
-          sign: str(val(rasi, "name") ?? val(p, "sign_name")),
-        };
-      });
-
-    return c.json({
-      cacheId,
-      teaser: {
-        name: reportName,
-        birthDetails: {
-          date: body.datetime.split("T")[0] ?? "",
-          time: body.datetime.split("T")[1]?.split("+")[0] ?? body.datetime,
-          location: body.coordinates,
-        },
-        lagna: {
-          name: str(val(ascRasi, "name")),
-          lord: str(val(ascLord, "name")),
-        },
-        rashi: {
-          name: str(val(chandraRasi, "name")),
-          lord: str(val(rasiLord, "name")),
-        },
-        nakshatra: {
-          name: str(val(nakshatra, "name")),
-          lord: str(val(nakLord, "name")),
-          pada: Number(val(nakshatra, "pada")) || 0,
-        },
-        planetSummary,
-        moneyAxisScores: calculateMoneyAxisScores(d as Record<string, unknown>),
-        mangalDosha: Boolean(val(md, "has_dosha")),
-        majorYogas: yogas.length,
-      },
-      locked: [
-        "Detailed planet positions & degrees",
-        "House (Bhava) analysis",
-        "Dasha periods & timing",
-        "Complete yoga interpretations",
-        "Dosha analysis & remedies",
-        "Numerology insights",
-        "Full PDF report download",
-      ],
-    }, 200);
+    return c.json({ cacheId, reportType, teaser, locked }, 200);
   } catch (e) {
     logError(endpoint, e);
     return c.json({ error: String(e) }, 400);
