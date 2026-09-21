@@ -1,5 +1,5 @@
-import { getPersonalReportPdf } from "./prokerala.js";
-import { renderPDF, renderMarkdown, type ReportMeta } from "./render.js";
+import { getKundli, getPersonalReportPdf } from "./prokerala.js";
+import { renderReportPDF, renderMarkdown, type ReportMeta } from "./render.js";
 import { archiveRaw, addArchiveFile } from "./archive.js";
 import { logInfo, logError } from "./logger.js";
 import { sendReportEmail } from "./email.js";
@@ -99,6 +99,7 @@ export async function generatePaidReport(
     gender: doc.gender || birth?.gender,
     datetime: birth?.datetime,
     coordinates: birth?.coordinates,
+    place: doc.place || birth?.place,
     ayanamsa: birth?.ayanamsa,
     language: birth?.la,
   };
@@ -106,9 +107,42 @@ export async function generatePaidReport(
   try {
     logInfo(`${endpoint} generating report for ${doc.id} (order ${orderId})`);
 
-    // Prefer ProKerala's own full paragraph report. Fall back to our local
-    // renderer when the report API is disabled or out of credits.
-    const useProkeralaReport = (process.env.PROKERALA_PDF_REPORT ?? "true") !== "false";
+    // The teaser chart is lean; the paid report needs dasha/timing. Fetch the
+    // detailed chart once (and cache it on the doc) rather than shipping a
+    // report whose timing pages are empty.
+    let renderData = doc.parsed;
+    if (doc.reportType === "financial_kundali") {
+      const current = (doc.parsed.data as Record<string, unknown> | undefined)?.dasha_periods;
+      const needsDasha = !Array.isArray(current) || current.length === 0;
+      if (needsDasha && birth) {
+        try {
+          const detailed = await getKundli({
+            coordinates: birth.coordinates,
+            datetime: birth.datetime,
+            ayanamsa: birth.ayanamsa,
+            la: birth.la,
+            detailed: true,
+          });
+          renderData = detailed.parsed;
+          await updateKundali(doc.id, { parsed: detailed.parsed, raw: detailed.raw }).catch((e) =>
+            logError(`${endpoint}/cache-detailed`, e),
+          );
+        } catch (e) {
+          logError(`${endpoint}/report-refetch`, e);
+        }
+      }
+      const dasha = (renderData.data as Record<string, unknown> | undefined)?.dasha_periods;
+      if (!Array.isArray(dasha) || dasha.length === 0) {
+        throw new Error("Financial report requires dasha periods; ProKerala data incomplete");
+      }
+    }
+
+    // Prefer ProKerala's own full paragraph report for non-financial types.
+    // Financial Kundali always uses our branded 12-page template so it stays
+    // self-contained, cheap, and finance-focused.
+    const useProkeralaReport =
+      (process.env.PROKERALA_PDF_REPORT ?? "true") !== "false" &&
+      doc.reportType !== "financial_kundali";
     let pdf: Buffer | null = null;
 
     if (useProkeralaReport && birth) {
@@ -137,11 +171,11 @@ export async function generatePaidReport(
     }
 
     if (!pdf) {
-      logInfo(`${endpoint} rendering report locally (fallback)`);
-      pdf = await renderPDF(doc.parsed, label, meta);
+      logInfo(`${endpoint} rendering ${doc.reportType} report with local template`);
+      pdf = await renderReportPDF(doc.reportType, renderData, label, meta);
     }
 
-    const md = renderMarkdown(doc.parsed, label, meta);
+    const md = renderMarkdown(renderData, label, meta);
 
     const archive = await archiveRaw(
       "/kundali/pdf",

@@ -2,6 +2,7 @@ node_modules
 dist
 .env
 .env.prod
+sample-*
 archive/uploads/*
 archive/cache/*
 archive/pending/*

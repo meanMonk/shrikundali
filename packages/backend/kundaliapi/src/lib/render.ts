@@ -10,6 +10,7 @@ export interface ReportMeta {
   gender?: string;
   datetime?: string;
   coordinates?: string;
+  place?: string;
   ayanamsa?: number;
   language?: string;
 }
@@ -194,22 +195,37 @@ interface PlanetRow {
 }
 
 function buildPlanets(d: Record<string, unknown>): PlanetRow[] {
-  return listOf(d, "planet_positions").map((p) => {
+  const map = (p: Record<string, unknown>, forced?: string): PlanetRow => {
     const rasi = val(p, "rasi") as Record<string, unknown> | undefined;
-    const lord = val(rasi, "lord") as Record<string, unknown> | undefined;
-    const rasiId = Number(val(rasi, "id")) || 0;
-    const name = str(val(p, "name") ?? val(p, "planet_name"));
+    const rawLon = val(p, "longitude");
+    const lon = Number(rawLon);
+    let idx: number;
+    if (rawLon != null && Number.isFinite(lon)) {
+      idx = Math.floor((((lon % 360) + 360) % 360) / 30) % 12;
+    } else {
+      const byId = Number(val(rasi, "id")) - 1;
+      const byName = SIGNS.findIndex((s) => s.toLowerCase() === str(val(rasi, "name")).toLowerCase());
+      idx = byId >= 0 && byId <= 11 ? byId : byName >= 0 ? byName : 0;
+    }
+    const rasiId = idx + 1;
+    const name = forced ?? str(val(p, "name") ?? val(p, "planet_name"));
     return {
       name,
       display: PLANET_META[name.toLowerCase()]?.display ?? name,
       rasiId,
-      rasiName: str(val(rasi, "name"), signName(rasiId)),
+      rasiName: signName(rasiId),
       degree: Number(val(p, "degree")) || 0,
       house: Number(val(p, "position") ?? val(p, "house")) || 0,
       retrograde: Boolean(val(p, "is_retrograde")),
-      lord: str(val(lord, "name"), signLord(rasiId)),
+      lord: signLord(rasiId),
     };
-  });
+  };
+  const rows = listOf(d, "planet_positions").map((p) => map(p));
+  if (!rows.some((r) => r.name.toLowerCase() === "ascendant")) {
+    const ascRaw = val(d, "ascendant");
+    if (ascRaw && typeof ascRaw === "object") rows.unshift(map(ascRaw as Record<string, unknown>, "Ascendant"));
+  }
+  return rows;
 }
 
 function planetByHouse(planets: PlanetRow[], house: number): PlanetRow[] {
@@ -699,13 +715,8 @@ const PDF_ARGS = [
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export async function renderPDF(
-  data: KundliData,
-  label?: string,
-  meta: ReportMeta = {},
-  attempts = 3,
-): Promise<Buffer> {
-  const html = renderHTML(data, label, meta);
+/** Render any HTML string to a PDF buffer (shared by all report templates). */
+export async function htmlToPdf(html: string, attempts = 3): Promise<Buffer> {
   const htmlPdf = (await import("html-pdf-node")).default;
 
   let lastError: unknown;
@@ -716,7 +727,7 @@ export async function renderPDF(
         { content: html },
         {
           format: "A4",
-          margin: { top: "18mm", bottom: "18mm", left: "16mm", right: "16mm" },
+          margin: { top: "0mm", bottom: "0mm", left: "0mm", right: "0mm" },
           printBackground: true,
           args: PDF_ARGS,
         },
@@ -730,4 +741,40 @@ export async function renderPDF(
   }
 
   throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
+export async function renderPDF(
+  data: KundliData,
+  label?: string,
+  meta: ReportMeta = {},
+  attempts = 3,
+): Promise<Buffer> {
+  return htmlToPdf(renderHTML(data, label, meta), attempts);
+}
+
+/**
+ * Type-aware report HTML. `financial_kundali` uses the 12-page branded template
+ * (lib/financial-report.ts); anything else falls back to the generic renderer.
+ */
+export async function renderReportHTML(
+  reportType: string,
+  data: KundliData,
+  label?: string,
+  meta: ReportMeta = {},
+): Promise<string> {
+  if (reportType === "financial_kundali") {
+    const { buildFinancialReportHTML } = await import("./financial-report.js");
+    return buildFinancialReportHTML(data, label || "Janam Kundali Report", meta);
+  }
+  return renderHTML(data, label, meta);
+}
+
+/** Type-aware report PDF (see renderReportHTML). */
+export async function renderReportPDF(
+  reportType: string,
+  data: KundliData,
+  label?: string,
+  meta: ReportMeta = {},
+): Promise<Buffer> {
+  return htmlToPdf(await renderReportHTML(reportType, data, label, meta));
 }

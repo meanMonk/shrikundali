@@ -125,13 +125,24 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   const baseData = (parsed.data ?? {}) as Record<string, unknown>;
 
   const planetPositions: unknown[] = planets.json?.data?.planet_position ?? [];
+  const basicPositions: unknown[] = ((basic.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
+  const advancedPositions: unknown[] = ((advanced?.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
+  const kundliPositions: unknown[] = ((baseData as Record<string, unknown>).planet_positions ?? []) as unknown[];
+  const hasAscendant = (list: unknown[]) =>
+    list.some((p) => String((p as Record<string, unknown>)?.name ?? "").toLowerCase() === "ascendant");
+  // Prefer whichever planet list carries the Ascendant row (the advanced chart
+  // can omit it; the basic chart and kundli payload include it). Fall back to
+  // the first non-empty list so we never blank the lagna/chart.
+  const candidates = [kundliPositions, basicPositions, advancedPositions, planetPositions];
+  const mergedPositions = candidates.find(hasAscendant) ?? candidates.find((l) => l.length) ?? [];
+
   const panchangData = panchang.json?.data ?? null;
   const kaalSarpData = kaalSarp?.json?.data ?? null;
   const sadeSatiData = sadeSati?.json?.data ?? null;
 
   parsed.data = {
     ...baseData,
-    ...(planetPositions.length ? { planet_positions: planetPositions } : {}),
+    ...(mergedPositions.length ? { planet_positions: mergedPositions } : {}),
     ...(panchangData ? { panchang: panchangData } : {}),
     ...(kaalSarpData ? { kaal_sarp_dosha: kaalSarpData } : {}),
     ...(sadeSatiData ? { sade_sati: sadeSatiData } : {}),
@@ -141,7 +152,7 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
     parsed,
     raw: {
       ...raw,
-      planet_position: planetPositions,
+      planet_position: mergedPositions,
       panchang: panchangData,
       kaal_sarp_dosha: kaalSarpData,
       sade_sati: sadeSatiData,
