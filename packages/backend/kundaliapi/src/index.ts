@@ -1,19 +1,19 @@
-import "dotenv/config";
 import { serve } from "@hono/node-server";
+import "dotenv/config";
 import { Hono } from "hono";
-import { logger } from "hono/logger";
 import { cors } from "hono/cors";
-import { healthRoutes } from "./routes/health.js";
+import { logger } from "hono/logger";
 import { setupDocs } from "./docs.js";
+import { notifyAdminServiceStart } from "./lib/telegram.js";
+import { checkoutApp } from "./routes/checkout.js";
+import { configApp } from "./routes/config.js";
 import { dbRoutes } from "./routes/db.js";
+import { downloadApp } from "./routes/download.js";
+import { healthRoutes } from "./routes/health.js";
 import { kundaliApp } from "./routes/kundali.js";
 import { teaserApp } from "./routes/teaser.js";
-import { checkoutApp } from "./routes/checkout.js";
-import { webhookApp } from "./routes/webhook.js";
-import { downloadApp } from "./routes/download.js";
-import { configApp } from "./routes/config.js";
 import { telegramBotApp } from "./routes/telegram-bot.js";
-import { notifyAdminServiceStart } from "./lib/telegram.js";
+import { webhookApp } from "./routes/webhook.js";
 
 const app = new Hono();
 

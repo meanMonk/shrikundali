@@ -10,7 +10,7 @@ import {
   getKundali,
   getKundaliByOrderId,
   updateKundali,
-  updateKundaliByOrderId,
+  markKundaliDownloadNotified,
 } from "../lib/store.js";
 import { generatePaidReport } from "../lib/report.js";
 import { readArchiveFile } from "../lib/archive.js";
@@ -313,9 +313,8 @@ checkoutApp.openapi(
         return c.json({ error: "Report file missing" }, 404);
       }
 
-      // Notify admin once per order that the user actually downloaded.
-      if (!doc.downloadNotified) {
-        await updateKundaliByOrderId(orderId, { downloadNotified: true });
+      // Notify admin once per kundali that the user actually downloaded.
+      if (await markKundaliDownloadNotified(doc.id)) {
         notifyAdminDownload({
           name: doc.name,
           email: doc.email,

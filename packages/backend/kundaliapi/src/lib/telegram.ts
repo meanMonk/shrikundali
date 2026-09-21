@@ -1,5 +1,5 @@
 import { hostname } from "node:os";
-import { logInfo, logError } from "./logger.js";
+import { logError, logInfo } from "./logger.js";
 
 export interface SaleNotification {
   name: string;

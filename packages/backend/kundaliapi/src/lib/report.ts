@@ -33,6 +33,29 @@ export interface PaidReportResult {
 }
 
 /**
+ * Send the admin sale alert at most once per kundali. Retries on the next
+ * call if a previous attempt failed, since `purchaseNotified` stays false.
+ */
+async function notifySaleOnce(doc: KundaliDoc): Promise<void> {
+  if (doc.purchaseNotified) return;
+  try {
+    const ok = await notifyAdminSale({
+      name: doc.name || "",
+      email: doc.email || "",
+      reportType: doc.reportLabel || REPORT_LABELS[doc.reportType],
+      amount: doc.amount ?? 0,
+      paymentId: doc.paymentId || doc.orderId || doc.id,
+      paymentProvider: doc.provider || "razorpay",
+      pdfGenerated: true,
+      downloadUrl: doc.downloadUrl,
+    });
+    if (ok) await updateKundali(doc.id, { purchaseNotified: true });
+  } catch (e) {
+    logError("/report/generate/telegram", e);
+  }
+}
+
+/**
  * Idempotently generate the paid PDF from the stored kundali document,
  * archive it, email it and notify. Safe to call from both the Razorpay
  * callback and the webhook.
@@ -52,6 +75,7 @@ export async function generatePaidReport(
 
   if (doc.archiveId && doc.downloadUrl) {
     logInfo(`${endpoint} already generated for ${doc.id}`);
+    await notifySaleOnce(doc);
     return { archiveId: doc.archiveId, downloadUrl: doc.downloadUrl, alreadyGenerated: true };
   }
 
@@ -167,21 +191,7 @@ export async function generatePaidReport(
     }
 
     // Notify the admin chat first — this must not depend on email delivery.
-    try {
-      const saleNotified = await notifyAdminSale({
-        name: name || "",
-        email,
-        reportType: label,
-        amount,
-        paymentId,
-        paymentProvider: provider,
-        pdfGenerated: true,
-        downloadUrl,
-      });
-      if (saleNotified) await updateKundali(doc.id, { purchaseNotified: true });
-    } catch (e) {
-      logError(`${endpoint}/telegram`, e);
-    }
+    await notifySaleOnce({ ...doc, archiveId: archive.id, downloadUrl });
 
     // Email is best-effort; a failure here must never affect the sale notification.
     try {

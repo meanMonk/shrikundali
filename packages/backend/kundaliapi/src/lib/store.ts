@@ -149,3 +149,17 @@ export async function deleteKundali(id: string): Promise<void> {
   const c = await getCollection();
   await c.deleteOne({ id });
 }
+
+/**
+ * Atomically mark the first download for a kundali. Returns true only for the
+ * caller that flipped the flag, so the admin download alert fires exactly once.
+ */
+export async function markKundaliDownloadNotified(id: string): Promise<boolean> {
+  const c = await getCollection();
+  const res = await c.findOneAndUpdate(
+    { id, downloadNotified: { $ne: true } },
+    { $set: { downloadNotified: true } },
+    { returnDocument: "after" },
+  );
+  return !!res;
+}

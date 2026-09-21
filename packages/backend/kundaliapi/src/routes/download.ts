@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { logInfo, logError } from "../lib/logger.js";
 import { readArchiveFile, archiveExists, listArchiveFiles } from "../lib/archive.js";
+import { getKundaliByArchiveId, markKundaliDownloadNotified } from "../lib/store.js";
+import { notifyAdminDownload } from "../lib/telegram.js";
 
 const downloadApp = new OpenAPIHono();
 
@@ -46,6 +48,21 @@ downloadApp.openapi(downloadRoute, async (c) => {
     };
 
     logInfo(`${endpoint} serving ${format} for ${archiveId}`);
+
+    // Admin download alert, once per kundali, for the PDF report.
+    if (format === "pdf") {
+      const doc = await getKundaliByArchiveId(archiveId);
+      if (doc && (await markKundaliDownloadNotified(doc.id))) {
+        notifyAdminDownload({
+          name: doc.name,
+          email: doc.email,
+          reportType: doc.reportLabel ?? "Financial Kundali Report",
+          paymentId: doc.orderId ?? archiveId,
+          paymentProvider: doc.provider ?? "razorpay",
+          archiveId,
+        }).catch((e) => logError(`${endpoint}/telegram`, e));
+      }
+    }
 
     return new Response(new Uint8Array(data), {
       headers: {
