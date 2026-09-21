@@ -8,3 +8,4 @@ build/
 coverage/
 nginx/generated/
 archive/uploads/*
+.tmp_pdfreview/
