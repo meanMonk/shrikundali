@@ -1,0 +1,21 @@
+{
+  "id": "D2",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A minimalist, premium line-art illustration of a terracotta piggy bank with a single thin gold (#C9A227) coin stream leaking from a small crack, set against a warm off-white (#FBF6EF) background with deep indigo (#241E4E) accent shadow beneath it. Clean, editorial, fintech-infographic style — not cute or cartoonish. Generous negative space above and below for headline and CTA text to be added separately. No text, no logos, no zodiac or mystical symbols.",
+    "negative_prompt": "cute cartoon character, cosmic imagery, zodiac wheel, cluttered, text, logo, low quality, oversaturated",
+    "image_size": "square_hd",
+    "style": "vector_illustration"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab812f/VzXrLAy-Cu6JGTg5fBAN3_zhuttPcZ.svg",
+        "content_type": "image/svg+xml",
+        "file_name": "VzXrLAy-Cu6JGTg5fBAN3_zhuttPcZ.svg",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:14:42.129Z"
+}

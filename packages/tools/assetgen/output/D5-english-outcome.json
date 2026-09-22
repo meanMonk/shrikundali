@@ -1,0 +1,26 @@
+{
+  "id": "D5",
+  "model": "fal-ai/flux-pro/v1.1-ultra",
+  "params": {
+    "prompt": "A premium, warm-toned editorial photo of an Indian professional (late 20s-30s) in a bright, naturally-lit modern apartment, exhaling with quiet relief while looking at a laptop, one hand relaxed on a coffee cup — conveying the moment financial clarity replaces low-grade money anxiety. Warm off-white (#FBF6EF) tones with a hint of deep indigo (#241E4E) in wardrobe/décor for brand consistency. Calm, understated, aspirational — not theatrical. No text, no logos, no astrology iconography in frame.",
+    "negative_prompt": "cartoonish, cosmic imagery, zodiac wheel, exaggerated expression, text, logo, low quality",
+    "aspect_ratio": "1:1"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab8133/EwwKW38BuDfUpl-mXfHBa_71e90e0e5fc6417c891fc6f215c2740f.jpg",
+        "width": 2048,
+        "height": 2048,
+        "content_type": "image/jpeg"
+      }
+    ],
+    "timings": {},
+    "seed": 1632335678,
+    "has_nsfw_concepts": [
+      false
+    ],
+    "prompt": "A premium, warm-toned editorial photo of an Indian professional (late 20s-30s) in a bright, naturally-lit modern apartment, exhaling with quiet relief while looking at a laptop, one hand relaxed on a coffee cup — conveying the moment financial clarity replaces low-grade money anxiety. Warm off-white (#FBF6EF) tones with a hint of deep indigo (#241E4E) in wardrobe/décor for brand consistency. Calm, understated, aspirational — not theatrical. No text, no logos, no astrology iconography in frame."
+  },
+  "generatedAt": "2026-09-22T23:15:19.953Z"
+}

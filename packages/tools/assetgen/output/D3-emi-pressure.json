@@ -1,0 +1,26 @@
+{
+  "id": "D3",
+  "model": "fal-ai/flux-pro/v1.1-ultra",
+  "params": {
+    "prompt": "A premium, symbolic editorial photograph: a neat stack of coins on a warm off-white (#FBF6EF) surface, with a soft, diffuse dark indigo (#241E4E) shadow shaped like a gentle overhead weight or cloud cast across the top of the stack, suggesting quiet financial pressure without being literal or ominous. Soft directional light, shallow depth of field, minimalist product-photography styling. No text, no logos, no astrology iconography, no human figures.",
+    "negative_prompt": "cartoonish, cosmic imagery, zodiac wheel, dark/scary mood, text, logo, low quality",
+    "aspect_ratio": "4:5"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab8131/HWOuSrgCTzpQB4fvHRWj2_c323ee4c477e4ea9966c1215795112fe.jpg",
+        "width": 1856,
+        "height": 2304,
+        "content_type": "image/jpeg"
+      }
+    ],
+    "timings": {},
+    "seed": 2303669837,
+    "has_nsfw_concepts": [
+      false
+    ],
+    "prompt": "A premium, symbolic editorial photograph: a neat stack of coins on a warm off-white (#FBF6EF) surface, with a soft, diffuse dark indigo (#241E4E) shadow shaped like a gentle overhead weight or cloud cast across the top of the stack, suggesting quiet financial pressure without being literal or ominous. Soft directional light, shallow depth of field, minimalist product-photography styling. No text, no logos, no astrology iconography, no human figures."
+  },
+  "generatedAt": "2026-09-22T23:14:53.593Z"
+}

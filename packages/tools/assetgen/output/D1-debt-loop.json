@@ -1,0 +1,26 @@
+{
+  "id": "D1",
+  "model": "fal-ai/flux-pro/v1.1-ultra",
+  "params": {
+    "prompt": "A calm, premium editorial photo of an Indian professional (late 20s-30s) at a kitchen table at night, looking at a phone showing a banking app with a slightly worried but composed expression — conveying the quiet, recurring stress of money coming in and going straight back out, not dramatic despair. A stack of bill-like papers sits softly out of focus in the foreground. Warm off-white and deep indigo (#241E4E) color grading matching a premium fintech-brand photoshoot, soft desk-lamp lighting, shallow depth of field. No visible screen content, no text, no logos, no astrology imagery in frame.",
+    "negative_prompt": "cartoonish, stock-photo cliché forced distress, cosmic imagery, zodiac wheel, text, logo, low quality, overexposed",
+    "aspect_ratio": "4:5"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab812e/BjJ0KQovtDrOgA2i8uktI_7a161f2798ba4603beeb9e91352ba1a2.jpg",
+        "width": 1856,
+        "height": 2304,
+        "content_type": "image/jpeg"
+      }
+    ],
+    "timings": {},
+    "seed": 3765825145,
+    "has_nsfw_concepts": [
+      false
+    ],
+    "prompt": "A calm, premium editorial photo of an Indian professional (late 20s-30s) at a kitchen table at night, looking at a phone showing a banking app with a slightly worried but composed expression — conveying the quiet, recurring stress of money coming in and going straight back out, not dramatic despair. A stack of bill-like papers sits softly out of focus in the foreground. Warm off-white and deep indigo (#241E4E) color grading matching a premium fintech-brand photoshoot, soft desk-lamp lighting, shallow depth of field. No visible screen content, no text, no logos, no astrology imagery in frame."
+  },
+  "generatedAt": "2026-09-22T23:14:24.942Z"
+}

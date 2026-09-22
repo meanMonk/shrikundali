@@ -157,6 +157,131 @@ const ASSETS = {
     },
     outputName: "C5-offer-discount",
   },
+
+  // D. Money/Debt sprint creatives (2-week focus, see docs/ads/money-debt-sprint-copy.md)
+  D1: {
+    name: "Debt-loop pain point (V1, V8)",
+    category: "campaign",
+    model: "fal-ai/flux-pro/v1.1-ultra",
+    params: {
+      prompt: `A calm, premium editorial photo of an Indian professional (late 20s-30s) at a kitchen table at night, looking at a phone showing a banking app with a slightly worried but composed expression — conveying the quiet, recurring stress of money coming in and going straight back out, not dramatic despair. A stack of bill-like papers sits softly out of focus in the foreground. Warm off-white and deep indigo (#241E4E) color grading matching a premium fintech-brand photoshoot, soft desk-lamp lighting, shallow depth of field. No visible screen content, no text, no logos, no astrology imagery in frame.`,
+      negative_prompt: "cartoonish, stock-photo cliché forced distress, cosmic imagery, zodiac wheel, text, logo, low quality, overexposed",
+      aspect_ratio: "4:5",
+    },
+    outputName: "D1-debt-loop",
+  },
+  D2: {
+    name: "Savings leak (V2)",
+    category: "campaign",
+    model: "fal-ai/recraft-v3",
+    params: {
+      prompt: `A minimalist, premium line-art illustration of a terracotta piggy bank with a single thin gold (#C9A227) coin stream leaking from a small crack, set against a warm off-white (#FBF6EF) background with deep indigo (#241E4E) accent shadow beneath it. Clean, editorial, fintech-infographic style — not cute or cartoonish. Generous negative space above and below for headline and CTA text to be added separately. No text, no logos, no zodiac or mystical symbols.`,
+      negative_prompt: "cute cartoon character, cosmic imagery, zodiac wheel, cluttered, text, logo, low quality, oversaturated",
+      image_size: "square_hd",
+      style: "vector_illustration",
+    },
+    outputName: "D2-savings-leak",
+  },
+  D3: {
+    name: "EMI / financial pressure (V3, V5, V9)",
+    category: "campaign",
+    model: "fal-ai/flux-pro/v1.1-ultra",
+    params: {
+      prompt: `A premium, symbolic editorial photograph: a neat stack of coins on a warm off-white (#FBF6EF) surface, with a soft, diffuse dark indigo (#241E4E) shadow shaped like a gentle overhead weight or cloud cast across the top of the stack, suggesting quiet financial pressure without being literal or ominous. Soft directional light, shallow depth of field, minimalist product-photography styling. No text, no logos, no astrology iconography, no human figures.`,
+      negative_prompt: "cartoonish, cosmic imagery, zodiac wheel, dark/scary mood, text, logo, low quality",
+      aspect_ratio: "4:5",
+    },
+    outputName: "D3-emi-pressure",
+  },
+  D4: {
+    name: "Flagship anchor offer ₹499→₹199 (V4, V6)",
+    category: "campaign",
+    model: "fal-ai/recraft-v3",
+    params: {
+      prompt: `A clean, premium price-offer graphic on a flat warm off-white (#FBF6EF) background. Top-right: a simple deep-indigo (#241E4E) rounded price-tag shape reserved for a struck-through "₹499 → ₹199" price overlay (leave that tag area visually blank/simple — text added separately). Center-left: a single closed hardcover document/booklet rendered as flat gold (#C9A227) line-art icon (a simple rectangle with a bookmark ribbon, NOT an open book, NOT any architecture), floating at a slight angle with a soft drop shadow. Generous clean negative space in the lower third for a CTA button overlay. Flat 2D vector graphic design only, premium fintech-offer aesthetic, calm and trustworthy.`,
+      negative_prompt: "cluttered sale-banner clipart, cosmic imagery, zodiac wheel, starburst shapes, text, logo, low quality, oversaturated red/yellow sale colors, open book, mosque, temple, church, religious building, religious iconography, lantern, crescent moon, architecture, photorealistic, 3D render",
+      image_size: "square_hd",
+      style: "digital_illustration",
+    },
+    outputName: "D4-anchor-offer",
+  },
+  D5: {
+    name: "English/urban outcome creative (V7)",
+    category: "campaign",
+    model: "fal-ai/flux-pro/v1.1-ultra",
+    params: {
+      prompt: `A premium, warm-toned editorial photo of an Indian professional (late 20s-30s) in a bright, naturally-lit modern apartment, exhaling with quiet relief while looking at a laptop, one hand relaxed on a coffee cup — conveying the moment financial clarity replaces low-grade money anxiety. Warm off-white (#FBF6EF) tones with a hint of deep indigo (#241E4E) in wardrobe/décor for brand consistency. Calm, understated, aspirational — not theatrical. No text, no logos, no astrology iconography in frame.`,
+      negative_prompt: "cartoonish, cosmic imagery, zodiac wheel, exaggerated expression, text, logo, low quality",
+      aspect_ratio: "1:1",
+    },
+    outputName: "D5-english-outcome",
+  },
+  D6: {
+    name: "Career + money decision fork (V10)",
+    category: "campaign",
+    model: "fal-ai/recraft-v3",
+    params: {
+      prompt: `A minimalist, premium line-art illustration of a single path splitting into two: one branch leading to a small briefcase icon, the other to a small rupee-coin icon, rendered in thin gold (#C9A227) linework on a warm off-white (#FBF6EF) background with a subtle deep-indigo (#241E4E) horizon shadow. Clean, editorial, fintech-infographic style. Generous negative space for headline and CTA text to be added separately. No text, no logos, no zodiac or mystical symbols.`,
+      negative_prompt: "cluttered, cosmic imagery, zodiac wheel, cute cartoon, text, logo, low quality, oversaturated",
+      image_size: "square_hd",
+      style: "vector_illustration",
+    },
+    outputName: "D6-career-money-fork",
+  },
+
+  // E. Money/Debt sprint — gpt-image-1 replicas of scraped competitor layouts.
+  // flux-pro/recraft-v3 render fake/garbled text — gpt-image-1 (OpenAI, proxied via
+  // the same FAL_KEY) renders real legible in-image text, which is the point here:
+  // these poster layouts carry price tags, badges and a book title as actual pixels,
+  // not overlay text added later. See docs/ads/money-debt-creatives/README.md.
+  E1: {
+    name: "Anchor offer + book cover (replicates Astro Arun Pandit layout)",
+    category: "campaign",
+    model: "fal-ai/gpt-image-1/text-to-image",
+    params: {
+      prompt: `A clean, premium vertical poster-style ad creative for an astrology report brand. Warm off-white (#FBF6EF) background. Small clean sans-serif brand wordmark "ShriKundali" centered at the very top. Below it, bold dark indigo headline text reading "The Answers Are Already In Your Kundali" and smaller gray subtext "Finding them costs less than a consultation." In the upper-right area, a deep-indigo rounded price tag/badge with two lines of bold white text clearly rendered: small crossed-out line "Astrologer consult: ₹500+" above a large bold line "₹199 Only". Center-left, a photorealistic 3D-rendered closed hardcover book standing upright at a slight angle, its cover deep indigo (#241E4E) with gold (#C9A227) foil-stamped title text clearly reading "YOUR MONEY KUNDALI" on one line and smaller subtitle text "Personalized Financial Report" below it, with a small minimalist gold line-art kundli-chart emblem beneath the title. Soft studio lighting, realistic shadow. Bottom third left clean and empty for a CTA button to be added later. Poster layout, sober and premium, not mystical or cluttered, all text crisp and legible.`,
+      image_size: "1024x1536",
+      quality: "high",
+      output_format: "png",
+    },
+    outputName: "E1-anchor-book-cover",
+  },
+  E2: {
+    name: "Premium Kundli PDF template replica (V4, V6, V8)",
+    category: "campaign",
+    model: "fal-ai/gpt-image-1/text-to-image",
+    params: {
+      prompt: `A vertical mobile ad poster for an astrology report brand. Deep purple-to-indigo gradient background with a subtle gold mandala line-art pattern in the corners. Bold large gold gradient headline text at the top clearly reading "MONEY KUNDALI REPORT". Below it, a red-orange pill-shaped badge with bold white text clearly reading "SIRF ₹199 ONLY". Below that, a vertical checklist of five rows, each with a small gold checkmark icon and clear bold white text: "Money & Wealth", "Karz (Debt) Analysis", "EMI Timing", "Career & Business", "Financial Planning". On the right side, a small 3D illustration of an open astrology birth-chart book. Near the bottom, three small badge icons with clear text underneath: "Deliver in 2 Hours", "100% Confidential", "Instant PDF Report". At the very bottom, a rounded green button with bold white text clearly reading "GET YOUR REPORT NOW". Clean poster design, legible bold sans-serif typography throughout, premium, not cluttered.`,
+      image_size: "1024x1536",
+      quality: "high",
+      output_format: "png",
+    },
+    outputName: "E2-premium-pdf-template",
+  },
+  E3: {
+    name: "Magazine cover replica (replicates Surabhi Astrology layout)",
+    category: "campaign",
+    model: "fal-ai/gpt-image-1/text-to-image",
+    params: {
+      prompt: `A premium magazine-cover style ad creative for an astrology report brand, portrait orientation. Cream/ivory background. At the top, a small elegant masthead in refined serif type clearly reading "SHRIKUNDALI". Below it, a bold headline in large dark-indigo serif type clearly reading "Your Money Clarity, Today". Smaller gray subheadline text below reading "Your Kundali already has the answers." On the right side, a soft studio-lit photograph of a closed premium hardcover book resting at an angle on a wooden desk, its cover with gold foil title text clearly reading "MONEY KUNDALI". Near the bottom, a deep-indigo ribbon banner with bold white text clearly reading "₹199 Only" and small text below it reading "Instant PDF · 100% Private". Clean editorial poster layout, generous white space, sober and trustworthy tone, all text crisp and legible, not mystical or cluttered.`,
+      image_size: "1024x1536",
+      quality: "high",
+      output_format: "png",
+    },
+    outputName: "E3-magazine-cover",
+  },
+  E4: {
+    name: "Book-only hero product shot",
+    category: "campaign",
+    model: "fal-ai/gpt-image-1/text-to-image",
+    params: {
+      prompt: `A clean, premium product photograph of a single closed hardcover book standing upright at a slight angle on a soft warm off-white surface. The book's cover is deep indigo (#241E4E) with elegant gold (#C9A227) foil-stamped title text clearly reading "YOUR PERSONALIZED MONEY KUNDALI" across two lines, with a small minimalist gold line-art Vedic kundli-chart emblem beneath the title. Soft directional studio lighting, subtle realistic shadow, shallow depth of field, poster-ready composition with generous clean negative space above and below the book for a headline and price/CTA to be added separately. Photorealistic product photography, sober and premium, not mystical or cluttered, title text crisp and legible.`,
+      image_size: "1024x1536",
+      quality: "high",
+      output_format: "png",
+    },
+    outputName: "E4-book-hero",
+  },
 };
 
 // ── CLI ────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,23 @@
+{
+  "id": "E3",
+  "model": "fal-ai/gpt-image-1/text-to-image",
+  "params": {
+    "prompt": "A premium magazine-cover style ad creative for an astrology report brand, portrait orientation. Cream/ivory background. At the top, a small elegant masthead in refined serif type clearly reading \"SHRIKUNDALI\". Below it, a bold headline in large dark-indigo serif type clearly reading \"Your Money Clarity, Today\". Smaller gray subheadline text below reading \"Your Kundali already has the answers.\" On the right side, a soft studio-lit photograph of a closed premium hardcover book resting at an angle on a wooden desk, its cover with gold foil title text clearly reading \"MONEY KUNDALI\". Near the bottom, a deep-indigo ribbon banner with bold white text clearly reading \"₹199 Only\" and small text below it reading \"Instant PDF · 100% Private\". Clean editorial poster layout, generous white space, sober and trustworthy tone, all text crisp and legible, not mystical or cluttered.",
+    "image_size": "1024x1536",
+    "quality": "high",
+    "output_format": "png"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab81a8/521TZoecLOUdRxiyka89h_Qjx5GIOp.png",
+        "content_type": "image/png",
+        "file_name": "521TZoecLOUdRxiyka89h_Qjx5GIOp.png",
+        "file_size": null,
+        "width": 1024,
+        "height": 1536
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:35:24.035Z"
+}

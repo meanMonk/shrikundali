@@ -1,0 +1,21 @@
+{
+  "id": "D4",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A clean, premium price-offer graphic on a flat warm off-white (#FBF6EF) background. Top-right: a simple deep-indigo (#241E4E) rounded price-tag shape reserved for a struck-through \"₹499 → ₹199\" price overlay (leave that tag area visually blank/simple — text added separately). Center-left: a single closed hardcover document/booklet rendered as flat gold (#C9A227) line-art icon (a simple rectangle with a bookmark ribbon, NOT an open book, NOT any architecture), floating at a slight angle with a soft drop shadow. Generous clean negative space in the lower third for a CTA button overlay. Flat 2D vector graphic design only, premium fintech-offer aesthetic, calm and trustworthy.",
+    "negative_prompt": "cluttered sale-banner clipart, cosmic imagery, zodiac wheel, starburst shapes, text, logo, low quality, oversaturated red/yellow sale colors, open book, mosque, temple, church, religious building, religious iconography, lantern, crescent moon, architecture, photorealistic, 3D render",
+    "image_size": "square_hd",
+    "style": "digital_illustration"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab813b/lugIwPdvPrAPT1_R0fAII_Y6TD1xOd.webp",
+        "content_type": "image/webp",
+        "file_name": "lugIwPdvPrAPT1_R0fAII_Y6TD1xOd.webp",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:16:36.309Z"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "E2",
+  "model": "fal-ai/gpt-image-1/text-to-image",
+  "params": {
+    "prompt": "A vertical mobile ad poster for an astrology report brand. Deep purple-to-indigo gradient background with a subtle gold mandala line-art pattern in the corners. Bold large gold gradient headline text at the top clearly reading \"MONEY KUNDALI REPORT\". Below it, a red-orange pill-shaped badge with bold white text clearly reading \"SIRF ₹199 ONLY\". Below that, a vertical checklist of five rows, each with a small gold checkmark icon and clear bold white text: \"Money & Wealth\", \"Karz (Debt) Analysis\", \"EMI Timing\", \"Career & Business\", \"Financial Planning\". On the right side, a small 3D illustration of an open astrology birth-chart book. Near the bottom, three small badge icons with clear text underneath: \"Deliver in 2 Hours\", \"100% Confidential\", \"Instant PDF Report\". At the very bottom, a rounded green button with bold white text clearly reading \"GET YOUR REPORT NOW\". Clean poster design, legible bold sans-serif typography throughout, premium, not cluttered.",
+    "image_size": "1024x1536",
+    "quality": "high",
+    "output_format": "png"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab81a3/jJcLNaYhfZBOppnpwFQ9M_00gfibGx.png",
+        "content_type": "image/png",
+        "file_name": "jJcLNaYhfZBOppnpwFQ9M_00gfibGx.png",
+        "file_size": null,
+        "width": 1024,
+        "height": 1536
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:34:43.566Z"
+}

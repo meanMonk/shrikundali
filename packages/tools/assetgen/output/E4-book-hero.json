@@ -1,0 +1,23 @@
+{
+  "id": "E4",
+  "model": "fal-ai/gpt-image-1/text-to-image",
+  "params": {
+    "prompt": "A clean, premium product photograph of a single closed hardcover book standing upright at a slight angle on a soft warm off-white surface. The book's cover is deep indigo (#241E4E) with elegant gold (#C9A227) foil-stamped title text clearly reading \"YOUR PERSONALIZED MONEY KUNDALI\" across two lines, with a small minimalist gold line-art Vedic kundli-chart emblem beneath the title. Soft directional studio lighting, subtle realistic shadow, shallow depth of field, poster-ready composition with generous clean negative space above and below the book for a headline and price/CTA to be added separately. Photorealistic product photography, sober and premium, not mystical or cluttered, title text crisp and legible.",
+    "image_size": "1024x1536",
+    "quality": "high",
+    "output_format": "png"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab81ac/MXMIanQ6yNeoHt1chwQwS_dA2tvJKG.png",
+        "content_type": "image/png",
+        "file_name": "MXMIanQ6yNeoHt1chwQwS_dA2tvJKG.png",
+        "file_size": null,
+        "width": 1024,
+        "height": 1536
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:36:04.142Z"
+}

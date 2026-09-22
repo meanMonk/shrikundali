@@ -1,0 +1,23 @@
+{
+  "id": "E1",
+  "model": "fal-ai/gpt-image-1/text-to-image",
+  "params": {
+    "prompt": "A clean, premium vertical poster-style ad creative for an astrology report brand. Warm off-white (#FBF6EF) background. Small clean sans-serif brand wordmark \"ShriKundali\" centered at the very top. Below it, bold dark indigo headline text reading \"The Answers Are Already In Your Kundali\" and smaller gray subtext \"Finding them costs less than a consultation.\" In the upper-right area, a deep-indigo rounded price tag/badge with two lines of bold white text clearly rendered: small crossed-out line \"Astrologer consult: ₹500+\" above a large bold line \"₹199 Only\". Center-left, a photorealistic 3D-rendered closed hardcover book standing upright at a slight angle, its cover deep indigo (#241E4E) with gold (#C9A227) foil-stamped title text clearly reading \"YOUR MONEY KUNDALI\" on one line and smaller subtitle text \"Personalized Financial Report\" below it, with a small minimalist gold line-art kundli-chart emblem beneath the title. Soft studio lighting, realistic shadow. Bottom third left clean and empty for a CTA button to be added later. Poster layout, sober and premium, not mystical or cluttered, all text crisp and legible.",
+    "image_size": "1024x1536",
+    "quality": "high",
+    "output_format": "png"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab81a0/METqdffuZSgKTijGwXMja_NraXXdPm.png",
+        "content_type": "image/png",
+        "file_name": "METqdffuZSgKTijGwXMja_NraXXdPm.png",
+        "file_size": null,
+        "width": 1024,
+        "height": 1536
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:33:58.237Z"
+}

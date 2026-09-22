@@ -1,0 +1,21 @@
+{
+  "id": "D6",
+  "model": "fal-ai/recraft-v3",
+  "params": {
+    "prompt": "A minimalist, premium line-art illustration of a single path splitting into two: one branch leading to a small briefcase icon, the other to a small rupee-coin icon, rendered in thin gold (#C9A227) linework on a warm off-white (#FBF6EF) background with a subtle deep-indigo (#241E4E) horizon shadow. Clean, editorial, fintech-infographic style. Generous negative space for headline and CTA text to be added separately. No text, no logos, no zodiac or mystical symbols.",
+    "negative_prompt": "cluttered, cosmic imagery, zodiac wheel, cute cartoon, text, logo, low quality, oversaturated",
+    "image_size": "square_hd",
+    "style": "vector_illustration"
+  },
+  "response": {
+    "images": [
+      {
+        "url": "https://v3b.fal.media/files/b/0aab8135/Uoke2Oh27zzeENfQuI8BH_FVN3xAJD.svg",
+        "content_type": "image/svg+xml",
+        "file_name": "Uoke2Oh27zzeENfQuI8BH_FVN3xAJD.svg",
+        "file_size": null
+      }
+    ]
+  },
+  "generatedAt": "2026-09-22T23:15:33.298Z"
+}
