@@ -20,7 +20,7 @@ rsync -avz --delete \
 
 # Deploy to VPS
 echo "[2/4] Building and deploying on VPS..."
-ssh "$REMOTE_HOST" << 'DEPLOY'
+ssh "$REMOTE_HOST" SERVICE="$SERVICE" bash -s << 'DEPLOY'
 set -euo pipefail
 cd /root/workspace/shrikundali
 
