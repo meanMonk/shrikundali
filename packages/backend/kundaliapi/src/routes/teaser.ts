@@ -29,6 +29,8 @@ const TeaserInput = z.object({
   gender: z.string().optional(),
   place: z.string().optional().describe("Human-readable birthplace"),
   email: z.string().email().optional().describe("Used for report delivery"),
+  attribution: z.record(z.string()).optional()
+    .describe("UTM / gclid / fbclid / fbp / fbc for ad attribution"),
 });
 
 const MoneyAxisScoresSchema = z.object({
@@ -134,6 +136,7 @@ teaserApp.openapi(teaserRoute, async (c) => {
       parsed,
       teaser: teaser as unknown as Record<string, unknown>,
       locked,
+      attribution: body.attribution,
       status: "teaser",
       createdAt: new Date(),
     });

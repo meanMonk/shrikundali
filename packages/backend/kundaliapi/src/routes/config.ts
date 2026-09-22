@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { logInfo } from "../lib/logger.js";
+import { REPORT_PRICING } from "../lib/pricing.js";
 
 const configApp = new OpenAPIHono();
 
@@ -23,8 +24,8 @@ const DEFAULT_CONFIGS: Record<string, z.infer<typeof ReportConfigSchema>> = {
     reportType: "financial_kundali",
     title: "Financial Kundali Report",
     description: "Unlock your financial destiny with Vedic astrology. Get personalized insights on wealth, career, investments, and money management based on your birth chart.",
-    price: 199,
-    discountPrice: 99,
+    price: REPORT_PRICING.financial_kundali.listPrice,
+    discountPrice: REPORT_PRICING.financial_kundali.discountPrice,
     currency: "INR",
     ctaText: "Download Full Report",
     countdownMinutes: 15,
@@ -45,8 +46,8 @@ const DEFAULT_CONFIGS: Record<string, z.infer<typeof ReportConfigSchema>> = {
     reportType: "match_kundali",
     title: "Match Kundali Report",
     description: "Compare two birth charts for compatibility analysis. Get detailed insights on mental, physical, and financial compatibility.",
-    price: 299,
-    discountPrice: 149,
+    price: REPORT_PRICING.match_kundali.listPrice,
+    discountPrice: REPORT_PRICING.match_kundali.discountPrice,
     currency: "INR",
     ctaText: "Download Match Report",
     countdownMinutes: 15,

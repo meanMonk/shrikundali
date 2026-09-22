@@ -91,6 +91,14 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
     </p>
   </div>
 
+  <script>
+    import { initTracking, trackBeginCheckout, trackAddPaymentInfo, trackPurchaseOnce } from "../lib/tracking";
+    import { checkoutAttribution } from "../lib/attribution";
+    const angle = new URLSearchParams(window.location.search).get("angle") || "money";
+    initTracking({ angle, reportType: "financial_kundali" });
+    Object.assign(window, { trackBeginCheckout, trackAddPaymentInfo, trackPurchaseOnce, checkoutAttribution });
+  </script>
+
   <script define:vars={{ API }}>
     const params = new URLSearchParams(window.location.search);
     const cacheId = params.get("cacheId");
@@ -100,10 +108,6 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
     if (!cacheId || !email) {
       window.location.href = "/";
     }
-
-    // Track page view
-    if (typeof fbq === "function") fbq("track", "PageView");
-    if (typeof gtag === "function") gtag("event", "page_view", { page_title: "Checkout" });
 
     let config = null;
     let scores = null;
@@ -115,7 +119,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
         document.getElementById("report-title").textContent = config.title;
         document.getElementById("report-desc").textContent = config.description;
         document.getElementById("report-price").textContent = `₹${config.discountPrice || config.price}`;
-        if (config.discountPrice) {
+        if (config.discountPrice && config.price > config.discountPrice) {
           document.getElementById("report-original").textContent = `₹${config.price}`;
           document.getElementById("report-save").textContent = `Save ${Math.round((1 - config.discountPrice / config.price) * 100)}%`;
         }
@@ -175,8 +179,8 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
       btn.disabled = true;
       btn.textContent = "Processing...";
 
-      if (typeof fbq === "function") fbq("track", "InitiateCheckout", { value: config?.discountPrice || config?.price || 199, currency: "INR" });
-      if (typeof gtag === "function") gtag("event", "payment_initiated", { event_category: "funnel", value: config?.discountPrice || config?.price || 199 });
+      const amount = config?.discountPrice || config?.price || 199;
+      (window as any).trackBeginCheckout({ value: amount, currency: "INR" });
 
       const provider = document.getElementById("pay-provider").value;
 
@@ -184,7 +188,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
         const res = await fetch(`${API}/payment/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cacheId, provider, email, name }),
+          body: JSON.stringify({ cacheId, provider, email, name, attribution: (window as any).checkoutAttribution?.() }),
         });
 
         if (!res.ok) {
@@ -200,8 +204,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 
         const data = await res.json();
 
-        if (typeof fbq === "function") fbq("track", "Purchase", { value: data.amount, currency: data.currency, content_ids: [data.orderId] });
-        if (typeof gtag === "function") gtag("event", "payment_success", { event_category: "funnel", transaction_id: data.orderId, value: data.amount });
+        (window as any).trackAddPaymentInfo({ transaction_id: data.orderId, value: data.amount, currency: data.currency, content_ids: [data.orderId] });
 
         if (provider === "razorpay" && data.key) {
           const options = {
@@ -212,6 +215,7 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
             description: `Financial Kundali Report`,
             order_id: data.orderId,
             handler: function(response) {
+              (window as any).trackPurchaseOnce(data.orderId, { value: data.amount, currency: data.currency, content_type: "product" });
               window.location.href = `/download?orderId=${data.orderId}`;
             },
             prefill: data.prefill,

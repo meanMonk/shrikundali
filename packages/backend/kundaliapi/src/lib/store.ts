@@ -59,6 +59,8 @@ export interface KundaliDoc {
   downloadUrl?: string;
   purchaseNotified?: boolean;
   downloadNotified?: boolean;
+  conversionSent?: boolean;
+  attribution?: Record<string, string>;
   generatingAt?: Date;
   createdAt: Date;
   paidAt?: Date;
@@ -154,6 +156,16 @@ export async function deleteKundali(id: string): Promise<void> {
  * Atomically mark the first download for a kundali. Returns true only for the
  * caller that flipped the flag, so the admin download alert fires exactly once.
  */
+export async function markKundaliConversionSent(id: string): Promise<boolean> {
+  const c = await getCollection();
+  const res = await c.findOneAndUpdate(
+    { id, conversionSent: { $ne: true } },
+    { $set: { conversionSent: true } },
+    { returnDocument: "after" },
+  );
+  return !!res;
+}
+
 export async function markKundaliDownloadNotified(id: string): Promise<boolean> {
   const c = await getCollection();
   const res = await c.findOneAndUpdate(

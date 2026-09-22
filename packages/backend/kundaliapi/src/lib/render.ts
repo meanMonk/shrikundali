@@ -13,6 +13,7 @@ export interface ReportMeta {
   place?: string;
   ayanamsa?: number;
   language?: string;
+  reportNo?: string;
 }
 
 /* ────────────────────────────────────────────────────────────

@@ -7,6 +7,17 @@ services:
     build:
       context: ../../..
       dockerfile: Dockerfile.frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+        PUBLIC_API_URL: ${PUBLIC_API_URL:-}
+        PUBLIC_META_PIXEL_ID: ${PUBLIC_META_PIXEL_ID:-}
+        PUBLIC_GA_MEASUREMENT_ID: ${PUBLIC_GA_MEASUREMENT_ID:-}
+        PUBLIC_GOOGLE_ADS_ID: ${PUBLIC_GOOGLE_ADS_ID:-}
+        PUBLIC_GOOGLE_ADS_LEAD_LABEL: ${PUBLIC_GOOGLE_ADS_LEAD_LABEL:-}
+        PUBLIC_GOOGLE_ADS_CHECKOUT_LABEL: ${PUBLIC_GOOGLE_ADS_CHECKOUT_LABEL:-}
+        PUBLIC_GOOGLE_ADS_PURCHASE_LABEL: ${PUBLIC_GOOGLE_ADS_PURCHASE_LABEL:-}
+        PUBLIC_CLARITY_PROJECT_ID: ${PUBLIC_CLARITY_PROJECT_ID:-}
+        PUBLIC_GOOGLE_MAPS_API_KEY: ${PUBLIC_GOOGLE_MAPS_API_KEY:-}
     image: kundaliweb:latest
     restart: unless-stopped
     env_file: .env

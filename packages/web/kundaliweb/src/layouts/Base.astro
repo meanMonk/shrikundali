@@ -9,6 +9,9 @@ const DEFAULT_DESCRIPTION =
 const pageDescription = description ?? DEFAULT_DESCRIPTION;
 const META_PIXEL_ID = import.meta.env.PUBLIC_META_PIXEL_ID ?? "";
 const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
+const GOOGLE_ADS_ID = import.meta.env.PUBLIC_GOOGLE_ADS_ID ?? "";
+const CLARITY_PROJECT_ID = import.meta.env.PUBLIC_CLARITY_PROJECT_ID ?? "";
+const GTAG_ID = GA_MEASUREMENT_ID || GOOGLE_ADS_ID;
 ---
 <!doctype html>
 <html lang="en">
@@ -30,24 +33,35 @@ const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
     <meta name="apple-mobile-web-app-title" content="shrikundali" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Meta Pixel -->
-    {META_PIXEL_ID && (
-      <script is:inline>
-        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '{META_PIXEL_ID}');
-        fbq('track', 'PageView');
-      </script>
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://connect.facebook.net" />
+    <link rel="preconnect" href="https://www.clarity.ms" />
+
+    <!-- Google tag (GA4 + Google Ads) -->
+    {GTAG_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GTAG_ID}`}></script>
+        <script
+          is:inline
+          set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());${GA_MEASUREMENT_ID ? `gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:true});` : ""}${GOOGLE_ADS_ID ? `gtag('config','${GOOGLE_ADS_ID}',{allow_enhanced_conversions:true});` : ""}`}
+        />
+      </>
     )}
 
-    <!-- Google Analytics -->
-    {GA_MEASUREMENT_ID && (
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
-      <script is:inline>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '{GA_MEASUREMENT_ID}', { page_path: window.location.pathname });
-      </script>
+    <!-- Microsoft Clarity -->
+    {CLARITY_PROJECT_ID && (
+      <script
+        is:inline
+        set:html={`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_PROJECT_ID}");`}
+      />
+    )}
+
+    <!-- Meta Pixel -->
+    {META_PIXEL_ID && (
+      <script
+        is:inline
+        set:html={`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`}
+      />
     )}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

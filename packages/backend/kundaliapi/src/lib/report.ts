@@ -10,9 +10,11 @@ import {
   getKundaliByOrderId,
   claimKundaliForReport,
   updateKundali,
+  markKundaliConversionSent,
   REPORT_LABELS,
   type KundaliDoc,
 } from "./store.js";
+import { sendPurchaseConversion } from "./conversions.js";
 
 const API_BASE = () => process.env.APP_URL ?? "http://localhost:3400";
 
@@ -102,6 +104,7 @@ export async function generatePaidReport(
     place: doc.place || birth?.place,
     ayanamsa: birth?.ayanamsa,
     language: birth?.la,
+    reportNo: doc.id.toUpperCase(),
   };
 
   try {
@@ -219,9 +222,30 @@ export async function generatePaidReport(
         status: "completed",
         archiveId: archive.id,
         downloadUrl,
+        attribution: doc.attribution,
         createdAt: new Date(),
         paidAt: new Date(),
       }).catch((e) => logError(`${endpoint}/createOrder`, e));
+    }
+
+    // Server-side conversion (Meta CAPI + GA4 Measurement Protocol) exactly
+    // once per kundali. The client also sends Purchase with the same
+    // transaction_id / event_id so both sides deduplicate.
+    if (await markKundaliConversionSent(doc.id)) {
+      sendPurchaseConversion({
+        orderId,
+        value: amount,
+        currency: "INR",
+        email,
+        name: name ?? undefined,
+        reportType: doc.reportType,
+        gaClientId: doc.attribution?.ga_client_id,
+        eventSourceUrl: doc.attribution?.landing_page,
+        fbp: doc.attribution?.fbp,
+        fbc: doc.attribution?.fbc,
+        clientIp: doc.attribution?.client_ip,
+        userAgent: doc.attribution?.user_agent,
+      }).catch((e) => logError(`${endpoint}/conversion`, e));
     }
 
     // Notify the admin chat first — this must not depend on email delivery.

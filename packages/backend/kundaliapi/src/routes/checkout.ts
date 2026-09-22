@@ -16,11 +16,9 @@ import { generatePaidReport } from "../lib/report.js";
 import { readArchiveFile } from "../lib/archive.js";
 import { notifyAdminDownload } from "../lib/telegram.js";
 import { logGeneration, logInfo, logError } from "../lib/logger.js";
+import { getReportAmount } from "../lib/pricing.js";
 
 const checkoutApp = new OpenAPIHono();
-
-// Must match config.ts DEFAULT_CONFIGS.financial_kundali.discountPrice
-const REPORT_PRICE_INR = Number(process.env.REPORT_PRICE_INR) || 99;
 
 const CheckoutInput = z.object({
   cacheId: z.string().describe("Cache ID from /teaser response"),
@@ -28,6 +26,8 @@ const CheckoutInput = z.object({
   email: z.string().email(),
   phone: z.string().optional(),
   name: z.string().optional(),
+  attribution: z.record(z.string()).optional()
+    .describe("UTM / gclid / fbclid / fbp / fbc for ad attribution"),
 });
 
 const CheckoutResponse = z.object({
@@ -66,10 +66,16 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
     }
 
     const receipt = `kundali_${body.cacheId}_${Date.now()}`;
+    const amount = getReportAmount(doc.reportType);
+    const clientIp =
+      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
+      c.req.header("x-real-ip") ||
+      "";
+    const userAgent = c.req.header("user-agent") || "";
 
     const order = await createPaymentOrder({
       provider: body.provider as PaymentProvider,
-      amount: REPORT_PRICE_INR,
+      amount,
       currency: "INR",
       receipt,
       customerEmail: body.email,
@@ -89,6 +95,12 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
       amount: order.amount,
       email: body.email,
       name: body.name ?? doc.name,
+      attribution: {
+        ...(doc.attribution ?? {}),
+        ...(body.attribution ?? {}),
+        ...(clientIp ? { client_ip: clientIp } : {}),
+        ...(userAgent ? { user_agent: userAgent } : {}),
+      },
       status: doc.status === "completed" ? "completed" : "ordered",
     });
 

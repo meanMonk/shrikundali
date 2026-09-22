@@ -12,6 +12,8 @@ export interface Props {
   pageCount?: string;
   features?: string[];
   aboutCopy?: string;
+  angle?: string;
+  reportType?: string;
 }
 
 const {
@@ -22,6 +24,8 @@ const {
   seoDescription,
   heroImageSrc = "/images/hero-kundali.svg",
   pageCount = "40+",
+  angle = "money",
+  reportType = "financial_kundali",
   features = [
     "Full Vedic birth chart (Rasi & Navamsa) with planetary positions",
     "Detailed analysis of all 12 houses of life",
@@ -39,6 +43,8 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 ---
 <Base title={seoTitle} description={seoDescription}>
+  <script is:inline set:html={`window.__SK_TRACKING=${JSON.stringify({ angle, reportType })};`} />
+
   {GOOGLE_MAPS_API_KEY && (
     <script
       is:inline
@@ -401,7 +407,20 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   <script>
     import { staticLookup, nominatimSearch, debounce, DEFAULT_COORDS } from "../lib/geocoding";
-    import { trackEvent } from "../lib/tracking";
+    import { checkoutAttribution } from "../lib/attribution";
+    import {
+      initTracking,
+      trackLead,
+      trackBeginCheckout,
+      trackAddPaymentInfo,
+      trackPurchaseOnce,
+      trackDownload,
+      trackCustom,
+    } from "../lib/tracking";
+
+    const trackingCtx = (window as any).__SK_TRACKING || {};
+    const REPORT_TYPE: string = trackingCtx.reportType || "financial_kundali";
+    initTracking({ angle: trackingCtx.angle, reportType: REPORT_TYPE });
 
     const API_URL = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:3400";
     const GOOGLE_MAPS_API_KEY = (import.meta as any).env?.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
@@ -443,7 +462,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
     // ---- Fetch config for price ----
     async function loadConfig() {
       try {
-        const res = await fetch(`${API_URL}/api/config/financial_kundali`);
+        const res = await fetch(`${API_URL}/api/config/${REPORT_TYPE}`);
         if (res.ok) {
           const cfg = await res.json();
           reportPrice = cfg.discountPrice || cfg.price || 499;
@@ -566,17 +585,16 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       if (statusEl) { statusEl.textContent = "Generating your preview..."; statusEl.style.color = "var(--color-text-muted)"; }
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Generating..."; }
 
-      trackEvent("teaser_submitted", { name: formName, gender: formGender });
-
       try {
         const res = await fetch(`${API_URL}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reportType: "financial_kundali", name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, place: (document.getElementById("birthplace") as HTMLInputElement | null)?.value || "", email: `preview-${Date.now()}@shrikundali.in` }),
+          body: JSON.stringify({ reportType: REPORT_TYPE, name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, place: (document.getElementById("birthplace") as HTMLInputElement | null)?.value || "", email: `preview-${Date.now()}@shrikundali.in`, attribution: checkoutAttribution() }),
         });
         if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
         const data = await res.json();
         cacheId = data.cacheId;
+        trackLead({ content_name: "financial_kundali_preview", form_name: formName, gender: formGender });
 
         // Show teaser results on-page
         const t = data.teaser || {};
@@ -610,7 +628,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
         if (teaserResults) teaserResults.style.display = "block";
         if (statusEl) statusEl.textContent = "";
-        trackEvent("teaser_viewed", { cache_id: cacheId });
+        trackCustom("teaser_viewed", { cache_id: cacheId });
 
         // Scroll to teaser results
         teaserResults?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -631,7 +649,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       if (!cacheId) { alert("Please submit the form first."); return; }
       modal.style.display = "flex";
       if (modalEmail) modalEmail.focus();
-      trackEvent("payment_modal_opened", { cache_id: cacheId });
+      trackBeginCheckout({ value: reportPrice, currency: "INR" });
     });
 
     modalClose?.addEventListener("click", () => { modal.style.display = "none"; });
@@ -707,7 +725,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       const blob = await res.blob();
       if (!blob || blob.size === 0) return false;
       triggerBlobDownload(blob, `kundali-report-${orderId}.pdf`);
-      trackEvent("report_downloaded", { order_id: orderId });
+      trackDownload({ transaction_id: orderId, content_ids: [orderId] });
       return true;
     }
 
@@ -785,6 +803,12 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         return;
       }
 
+      trackPurchaseOnce(orderId, {
+        value: info.amount ?? reportPrice,
+        currency: "INR",
+        content_type: "product",
+      });
+
       await finishDownload(orderId);
     }
 
@@ -806,13 +830,13 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
       modalPayBtn.textContent = "Processing...";
       if (modalStatus) { modalStatus.style.display = "none"; }
 
-      trackEvent("payment_initiated", { cache_id: cacheId, email });
+      trackAddPaymentInfo({ value: reportPrice, currency: "INR" });
 
       try {
         const res = await fetch(`${API_URL}/payment/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cacheId, provider: "razorpay", email, name: formName }),
+          body: JSON.stringify({ cacheId, provider: "razorpay", email, name: formName, attribution: checkoutAttribution() }),
         });
 
         if (!res.ok) {
@@ -824,7 +848,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         }
 
         const data = await res.json();
-        trackEvent("payment_order_created", { order_id: data.orderId, amount: data.amount });
+        trackCustom("payment_order_created", { order_id: data.orderId, value: data.amount, currency: data.currency });
 
         if (data.key) {
           const options = {
@@ -835,8 +859,6 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
             description: "Kundali Report",
             order_id: data.orderId,
             handler: function (response: any) {
-              trackEvent("Purchase", { value: data.amount, currency: "INR", content_ids: [data.orderId], content_type: "product" });
-              trackEvent("payment_success", { order_id: data.orderId, amount: data.amount });
               completePayment(
                 data.orderId,
                 { paymentId: response?.razorpay_payment_id, signature: response?.razorpay_signature },

@@ -16,6 +16,7 @@ export interface Order {
   status: "pending" | "completed" | "failed" | "refunded";
   archiveId?: string;
   downloadUrl?: string;
+  attribution?: Record<string, string>;
   createdAt: Date;
   paidAt?: Date;
 }

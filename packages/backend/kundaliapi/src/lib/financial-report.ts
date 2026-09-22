@@ -607,6 +607,7 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
         <div style="color:#555;font-size:9px;margin-top:4px">— ${esc(lang === "hi" ? "विघ्नहर्ता इस पठन को शुभ करें।" : "May the remover of obstacles bless this reading.")}</div>
       </div>
     </div>`;
+  const coverPage = page(cover);
 
   /* ── Page 2: Birth details + Panchang ── */
   const birthRows: (string | number)[][] = [
@@ -867,7 +868,7 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
   `;
 
   return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><style>${css}</style></head><body>
-    ${page(cover)}
+    ${coverPage}
     ${page2}
     ${page3}
     ${page4}
