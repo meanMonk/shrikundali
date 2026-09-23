@@ -17,6 +17,7 @@ import { readArchiveFile } from "../lib/archive.js";
 import { notifyAdminDownload } from "../lib/telegram.js";
 import { logGeneration, logInfo, logError } from "../lib/logger.js";
 import { getReportAmount } from "../lib/pricing-store.js";
+import { createOrder, markOrderPaid } from "../lib/orders.js";
 
 const checkoutApp = new OpenAPIHono();
 
@@ -87,6 +88,13 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
       },
     });
 
+    const attribution = {
+      ...(doc.attribution ?? {}),
+      ...(body.attribution ?? {}),
+      ...(clientIp ? { client_ip: clientIp } : {}),
+      ...(userAgent ? { user_agent: userAgent } : {}),
+    };
+
     // Attach the order to the kundali doc so the webhook / verify step can
     // recover the chart and the real customer email without trusting the client.
     await updateKundali(body.cacheId, {
@@ -95,14 +103,26 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
       amount: order.amount,
       email: body.email,
       name: body.name ?? doc.name,
-      attribution: {
-        ...(doc.attribution ?? {}),
-        ...(body.attribution ?? {}),
-        ...(clientIp ? { client_ip: clientIp } : {}),
-        ...(userAgent ? { user_agent: userAgent } : {}),
-      },
+      attribution,
       status: doc.status === "completed" ? "completed" : "ordered",
     });
+
+    // Save the order to the `orders` collection immediately, status "pending" —
+    // so it's tracked (and visible in stats/Telegram) even if payment never
+    // completes or report generation fails downstream.
+    await createOrder({
+      orderId: order.orderId,
+      cacheId: body.cacheId,
+      email: body.email,
+      name: body.name ?? doc.name,
+      reportType: doc.reportType,
+      amount: order.amount,
+      currency: order.currency,
+      provider: order.provider,
+      status: "pending",
+      attribution,
+      createdAt: new Date(),
+    }).catch((e) => logError(endpoint, e));
 
     logGeneration(endpoint, { ...body, orderId: order.orderId });
 
@@ -211,6 +231,9 @@ checkoutApp.openapi(
             logError(endpoint, `Signature mismatch for ${body.orderId}`);
             return c.json({ error: "Payment signature verification failed." }, 400);
           }
+          await markOrderPaid(body.orderId, body.paymentId, doc.amount).catch((e) =>
+            logError(endpoint, e),
+          );
         } else if (!doc.archiveId) {
           return c.json({ error: "Payment is not verified yet. Please wait a moment." }, 400);
         }

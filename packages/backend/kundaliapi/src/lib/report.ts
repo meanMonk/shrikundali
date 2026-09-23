@@ -4,7 +4,7 @@ import { archiveRaw, addArchiveFile } from "./archive.js";
 import { logInfo, logError } from "./logger.js";
 import { sendReportEmail } from "./email.js";
 import { notifyAdminSale } from "./telegram.js";
-import { updateOrderPayment, createOrder, getOrderByOrderId } from "./orders.js";
+import { markOrderCompleted } from "./orders.js";
 import {
   getKundali,
   getKundaliByOrderId,
@@ -250,29 +250,20 @@ export async function generatePaidReport(
       paidAt: new Date(),
     });
 
-    await updateOrderPayment(orderId, paymentId, "completed", archive.id, downloadUrl)
-      .catch((e) => logError(`${endpoint}/updateOrder`, e));
-
-    const existingOrder = await getOrderByOrderId(orderId);
-    if (!existingOrder) {
-      await createOrder({
-        orderId,
-        cacheId: doc.id,
-        email,
-        name,
-        reportType: doc.reportType,
-        amount,
-        currency: "INR",
-        provider,
-        paymentId,
-        status: "completed",
-        archiveId: archive.id,
-        downloadUrl,
-        attribution: doc.attribution,
-        createdAt: new Date(),
-        paidAt: new Date(),
-      }).catch((e) => logError(`${endpoint}/createOrder`, e));
-    }
+    // Upserts, so the order row is created here even for legacy/edge paths
+    // where checkout's createOrder never ran (e.g. an order predating this flow).
+    await markOrderCompleted(orderId, archive.id, downloadUrl, {
+      cacheId: doc.id,
+      email,
+      name,
+      reportType: doc.reportType,
+      amount,
+      currency: "INR",
+      provider,
+      paymentId,
+      attribution: doc.attribution,
+      createdAt: doc.createdAt ?? new Date(),
+    }).catch((e) => logError(`${endpoint}/updateOrder`, e));
 
     // Server-side conversion (Meta CAPI + GA4 Measurement Protocol) exactly
     // once per kundali. The client also sends Purchase with the same

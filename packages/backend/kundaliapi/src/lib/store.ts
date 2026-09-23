@@ -171,6 +171,96 @@ export async function deleteKundali(id: string): Promise<void> {
   await c.deleteOne({ id });
 }
 
+/* ── Lead / user stats for the admin bot ──────────────────── */
+
+export interface LeadRow {
+  id: string;
+  name?: string;
+  email?: string;
+  place?: string;
+  reportType: ReportType;
+  status: KundaliStatus;
+  createdAt: Date;
+}
+
+export interface LeadStats {
+  /** Every kundali doc saved from a submitted form (teaser onwards). */
+  total: number;
+  /** Docs that carry an email address. */
+  withEmail: number;
+  /** Distinct, non-empty emails captured. */
+  uniqueEmails: number;
+  byStatus: Record<string, number>;
+  byReportType: Record<string, number>;
+}
+
+function dateFilter(startDate?: Date, endDate?: Date): Record<string, unknown> {
+  if (!startDate && !endDate) return {};
+  const createdAt: Record<string, Date> = {};
+  if (startDate) createdAt.$gte = startDate;
+  if (endDate) createdAt.$lte = endDate;
+  return { createdAt };
+}
+
+/** Counts of users who submitted their details, optionally within a window. */
+export async function getKundaliStats(startDate?: Date, endDate?: Date): Promise<LeadStats> {
+  const c = await getCollection();
+  const filter = dateFilter(startDate, endDate);
+  const emailFilter = { ...filter, email: { $exists: true, $nin: [""] } };
+
+  const [total, withEmail, emails, byStatusAgg, byReportTypeAgg] = await Promise.all([
+    c.countDocuments(filter),
+    c.countDocuments(emailFilter),
+    c.distinct("email", emailFilter),
+    c.aggregate<{ _id: string; count: number }>([
+      { $match: filter },
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+    ]).toArray(),
+    c.aggregate<{ _id: string; count: number }>([
+      { $match: filter },
+      { $group: { _id: "$reportType", count: { $sum: 1 } } },
+    ]).toArray(),
+  ]);
+
+  const byStatus: Record<string, number> = {};
+  for (const r of byStatusAgg) if (r._id) byStatus[r._id] = r.count;
+  const byReportType: Record<string, number> = {};
+  for (const r of byReportTypeAgg) if (r._id) byReportType[r._id] = r.count;
+
+  return {
+    total,
+    withEmail,
+    uniqueEmails: emails.filter((e) => typeof e === "string" && e.trim() !== "").length,
+    byStatus,
+    byReportType,
+  };
+}
+
+/** Most recent submitted users, newest first. */
+export async function listKundaliLeads(
+  limit = 30,
+  options: { onlyWithEmail?: boolean } = {},
+): Promise<LeadRow[]> {
+  const c = await getCollection();
+  const filter = options.onlyWithEmail ? { email: { $exists: true, $nin: [""] } } : {};
+  const docs = await c
+    .find(filter, {
+      projection: {
+        id: 1,
+        name: 1,
+        email: 1,
+        place: 1,
+        reportType: 1,
+        status: 1,
+        createdAt: 1,
+      },
+    })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .toArray();
+  return docs as LeadRow[];
+}
+
 /**
  * Atomically mark the first download for a kundali. Returns true only for the
  * caller that flipped the flag, so the admin download alert fires exactly once.

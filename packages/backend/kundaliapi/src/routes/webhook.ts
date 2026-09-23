@@ -2,6 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { cashfreeVerifyPayment } from "../lib/payment.js";
 import { getKundaliByOrderId, updateKundaliByOrderId } from "../lib/store.js";
 import { generatePaidReport } from "../lib/report.js";
+import { markOrderPaid, markOrderFailed } from "../lib/orders.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const webhookApp = new OpenAPIHono();
@@ -54,6 +55,13 @@ webhookApp.openapi(razorpayRoute, async (c) => {
         provider: "razorpay",
         amount: payment.amount != null ? Number(payment.amount) / 100 : undefined,
       });
+    } else if (body.event === "payment.failed") {
+      const payment = body.payload?.payment?.entity;
+      if (payment?.order_id) {
+        await markOrderFailed(payment.order_id, payment.error_description).catch((e) =>
+          logError(endpoint, e),
+        );
+      }
     }
 
     return c.json({ status: "ok" });
@@ -100,6 +108,13 @@ webhookApp.openapi(cashfreeRoute, async (c) => {
           });
         }
       }
+    } else if (body.type === "PAYMENT_FAILED_WEBHOOK" || body.type === "PAYMENT_USER_DROPPED_WEBHOOK") {
+      const order = body.data?.order;
+      if (order?.order_id) {
+        await markOrderFailed(order.order_id, body.data?.payment?.payment_message).catch((e) =>
+          logError(endpoint, e),
+        );
+      }
     }
 
     return c.json({ status: "ok" });
@@ -132,6 +147,8 @@ async function processSuccessfulPayment(args: {
       amount,
       paidAt: new Date(),
     });
+
+    await markOrderPaid(args.orderId, args.paymentId, amount).catch((e) => logError(endpoint, e));
 
     const result = await generatePaidReport({
       orderId: args.orderId,
