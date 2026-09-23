@@ -165,16 +165,21 @@ export async function generatePaidReport(
     if (doc.reportType === "match_kundali" && doc.matching) {
       try {
         const { renderMatchReportPDF } = await import("./match-report.js");
-        pdf = await renderMatchReportPDF(doc.matching as never, {
-          girlName: name,
-          boyName: doc.partner?.name,
-          girlDatetime: birth?.datetime,
-          boyDatetime: doc.partner?.birth?.datetime,
-          girlPlace: doc.place || birth?.place,
-          boyPlace: doc.partner?.birth?.place,
-          language: birth?.la,
-          reportNo: doc.id.toUpperCase(),
-        });
+        const nativeIsBoy = (doc.gender ?? "").toLowerCase().startsWith("m");
+        const nativePlace = doc.place || birth?.place;
+        pdf = await renderMatchReportPDF(
+          { status: "ok", data: doc.matching } as never,
+          {
+            girlName: nativeIsBoy ? doc.partner?.name : name,
+            boyName: nativeIsBoy ? name : doc.partner?.name,
+            girlDatetime: nativeIsBoy ? doc.partner?.birth?.datetime : birth?.datetime,
+            boyDatetime: nativeIsBoy ? birth?.datetime : doc.partner?.birth?.datetime,
+            girlPlace: nativeIsBoy ? doc.partner?.birth?.place : nativePlace,
+            boyPlace: nativeIsBoy ? nativePlace : doc.partner?.birth?.place,
+            language: birth?.la,
+            reportNo: doc.id.toUpperCase(),
+          },
+        );
         logInfo(`${endpoint} match report ready (${pdf.length} bytes)`);
       } catch (e) {
         logError(`${endpoint}/match-report`, e);
