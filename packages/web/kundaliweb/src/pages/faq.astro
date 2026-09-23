@@ -1,0 +1,97 @@
+---
+import Base from "../layouts/Base.astro";
+
+const faqs = [
+  {
+    q: "How is my Kundali generated online?",
+    a: "We use your exact date, time and place of birth with the Lahiri ayanamsa (Vedic sidereal system) to compute your birth chart, then generate a personalized PDF report from it — no manual astrologer involved.",
+  },
+  {
+    q: "Is an online Kundali report accurate?",
+    a: "Yes. Charts are computed from precise astronomical ephemeris data and matched against classical Parashari principles — the same rules a traditional astrologer applies, without manual calculation errors. The more accurate your birth time, the more precise the house and Dasha timing.",
+  },
+  {
+    q: "Is my birth data kept private?",
+    a: "Yes. Your birth details are used only to generate your report and are never shared with third parties. See our Privacy Policy for details.",
+  },
+  {
+    q: "How fast will I receive my Kundali PDF report?",
+    a: "Your full report is generated automatically the moment payment is confirmed — usually within a couple of minutes. You can download it immediately, and we also email you a copy.",
+  },
+  {
+    q: "What if I don't know my exact birth time?",
+    a: "Tick \"I don't know the exact time\" on the form and we'll use 12:00 PM as a reasonable default. An exact time gives the most precise house placements and Dasha timeline, so use it if you can find it on a birth certificate or hospital record.",
+  },
+  {
+    q: "Can I get a refund on my Kundali report?",
+    a: "Since this is an instantly-delivered digital report, we don't offer refunds once generation has started, except for duplicate or failed payments. See our Refund Policy for the full process.",
+  },
+  {
+    q: "Is this a computer-generated or hand-written Kundali?",
+    a: "It's software-generated using verified astronomical ephemeris data and classical Vedic rules. That means zero calculation errors and consistent, unbiased predictions — unlike manually cast charts, which can vary astrologer to astrologer.",
+  },
+  {
+    q: "Which language is the report available in?",
+    a: "Reports are delivered in clear, simple language (English, with Hindi available for the financial report) so anyone can understand their predictions without needing to know astrological jargon.",
+  },
+  {
+    q: "Do I need to pay anything to see my free Kundali preview?",
+    a: "No. The initial preview — your Lagna, Rashi, Nakshatra and key indicators — is completely free. You only pay if you choose to unlock the full report.",
+  },
+  {
+    q: "What payment methods are accepted?",
+    a: "We accept cards, UPI, netbanking and wallets via Razorpay, India's leading payment gateway — all transactions are encrypted and secure.",
+  },
+  {
+    q: "What's the difference between the reports (money, marriage, career, health, dosha, matching)?",
+    a: "Each report focuses its house and Dasha analysis on a specific life area — Dhan Yoga and income timing for the Financial report, compatibility and Guna Milan score for Kundali Matching, marriage timing and Mangal/Kaal Sarp dosha for the Marriage report, and so on — but all are built from the same accurate birth chart calculation.",
+  },
+  {
+    q: "How does Kundali Matching (Guna Milan) work?",
+    a: "Enter both partners' birth details and we calculate the Ashtakoot Guna Milan score out of 36, along with Mangal Dosha and Nadi compatibility checks — the traditional method used for marriage matching in Vedic astrology.",
+  },
+  {
+    q: "Can I download my Kundali report again later?",
+    a: "Yes — your PDF is emailed to you and available to re-download from the confirmation link, so you can revisit it anytime without generating a new report.",
+  },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+---
+<Base
+  title="FAQ — Vedic Kundali Report Questions Answered"
+  description="Answers to common questions about online Kundali reports: accuracy, privacy, pricing, delivery time, payment methods, refunds, and how Kundali Matching works."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+  <div style="max-width:700px;margin:0 auto;padding:2rem 0">
+    <h1 style="color:var(--color-primary);margin-bottom:0.5rem">Frequently Asked Questions</h1>
+    <p style="color:var(--color-text-muted);line-height:1.8;margin-bottom:2rem">
+      Everything you need to know before getting your Vedic Kundali report — accuracy, privacy,
+      pricing, delivery, and how matching &amp; dosha reports work.
+    </p>
+
+    <div>
+      {faqs.map((f) => (
+        <div style="border-bottom:1px solid var(--color-border);padding:1.1rem 0">
+          <h2 style="color:var(--color-secondary);font-size:1rem;font-family:var(--font-body);font-weight:600;margin-bottom:0.5rem">{f.q}</h2>
+          <p style="color:var(--color-text-muted);line-height:1.7;font-size:0.95rem">{f.a}</p>
+        </div>
+      ))}
+    </div>
+
+    <div style="text-align:center;padding:2rem;margin-top:2rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:12px">
+      <h2 style="color:var(--color-primary);font-size:1.2rem;margin-bottom:0.75rem">Still have a question?</h2>
+      <p style="color:var(--color-text-muted);margin-bottom:1.25rem">See how the report is generated step by step, or start your free preview.</p>
+      <a href="/how-it-works" style="display:inline-block;color:var(--color-primary);padding:0.6rem 1rem;font-weight:600">How It Works →</a>
+      <a href="/#form-section" style="display:inline-block;background:var(--color-primary);color:#fff;padding:0.85rem 2rem;border-radius:8px;text-decoration:none;font-weight:600;margin-left:0.5rem">Get My Free Preview</a>
+    </div>
+  </div>
+</Base>
