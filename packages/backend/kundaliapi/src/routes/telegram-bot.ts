@@ -280,19 +280,19 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       const start = new Date(now);
       start.setDate(start.getDate() - 7);
       reply = formatTransactions("Last 7 Days", await getOrderStatusBreakdown(start, now));
-    } else if (text === "/txns-today" || text === "/transactions-today") {
+    } else if (text === "/txns_today" || text === "/transactions_today" || text === "/txnstoday") {
       const start = startOfDay(now);
       const end = new Date(start);
       end.setDate(end.getDate() + 1);
       reply = formatTransactions("Today", await getOrderStatusBreakdown(start, end));
-    } else if (text === "/current-pricing" || text === "/current_pricing" || text === "/pricing") {
+    } else if (text === "/current_pricing" || text === "/pricing" || text === "/currentpricing") {
       reply = formatPricing(await getAllPricingDocs());
-    } else if (text === "/test-price" || text === "/test_price" || text === "/testprice") {
+    } else if (text === "/test_price" || text === "/testprice") {
       const who = msg.from?.username ?? String(chatId);
       await applyPricingPreset("test", `telegram:${who}`);
       logInfo(`${endpoint} TEST pricing applied by ${who}`);
       reply = `🧪 *Test pricing applied* — every report now charges ₹${TEST_PRICE}.\n\n${formatPricing(await getAllPricingDocs())}`;
-    } else if (text === "/actual-price" || text === "/actual_price" || text === "/actualprice") {
+    } else if (text === "/actual_price" || text === "/actualprice") {
       const who = msg.from?.username ?? String(chatId);
       await applyPricingPreset("actual", `telegram:${who}`);
       logInfo(`${endpoint} launch pricing restored by ${who}`);
@@ -300,7 +300,7 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
     } else if (text === "/feedback") {
       reply = "💬 *Feedback*\n\nNo feedback collection is wired up yet — there's no ratings/feedback schema in the DB. Ask if you'd like one added (e.g. a post-download rating prompt).";
     } else if (text === "/start" || text === "/help") {
-      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales + users\n/yesterday — Yesterday's sales + users\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month\n/overall — All-time totals\n\n*Users*\n/users — Users who submitted details (count + recent)\n/emails — Captured email addresses (unique count + list)\n\n*Ops*\n/txns — Transaction breakdown (pending/paid/completed/failed) — last 7 days\n/txns-today — Same, for today only\n/failed — Paid orders stuck without a completed report (last 7 days)\n/current-pricing — Show current prices\n/test-price — Set all reports to ₹9 (testing)\n/actual-price — Restore launch prices\n\n/feedback — Feedback stats (not tracked yet)";
+      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales + users\n/yesterday — Yesterday's sales + users\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month\n/overall — All-time totals\n\n*Users*\n/users — Users who submitted details (count + recent)\n/emails — Captured email addresses (unique count + list)\n\n*Ops*\n/txns — Transaction breakdown (pending/paid/completed/failed) — last 7 days\n/txns_today — Same, for today only\n/failed — Paid orders stuck without a completed report (last 7 days)\n/current_pricing — Show current prices\n/test_price — Set all reports to ₹9 (testing)\n/actual_price — Restore launch prices\n\n/feedback — Feedback stats (not tracked yet)";
     }
 
     if (reply) {

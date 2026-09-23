@@ -165,7 +165,7 @@ export function buildMatchReportHTML(data: MatchingData, meta: MatchMeta = {}): 
 <title>Kundali Matching Report</title>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: Georgia, "Times New Roman", serif; color: #1a1a1a; line-height: 1.7; margin: 0; padding: 0 22mm; font-size: 12pt; }
+  body { font-family: 'Noto Sans Devanagari', Georgia, "Times New Roman", serif; color: #1a1a1a; line-height: 1.7; margin: 0; padding: 0 22mm; font-size: 12pt; }
   h1 { font-size: 24pt; color: #8b4513; border-bottom: 3px solid #d4a373; padding-bottom: 8px; margin: 28px 0 16px; }
   h2 { font-size: 15pt; color: #6b3a0e; margin: 22px 0 8px; }
   p { margin: 8px 0; text-align: justify; }
