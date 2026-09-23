@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { setupDocs } from "./docs.js";
+import { closeBrowser } from "./lib/render.js";
 import { notifyAdminServiceStart } from "./lib/telegram.js";
 import { checkoutApp } from "./routes/checkout.js";
 import { configApp } from "./routes/config.js";
@@ -47,6 +48,16 @@ const port = Number(process.env.PORT ?? 3000);
 console.log(`kundaliapi listening on :${port}  (docs: http://localhost:${port}/docs)`);
 
 serve({ fetch: app.fetch, port });
+
+// Ensure the Puppeteer browser process is always closed on restart/redeploy —
+// left running, it leaks Chromium processes and grows container memory over time.
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  process.on(signal, async () => {
+    console.log(`[Server] ${signal} received, closing browser and shutting down...`);
+    await closeBrowser();
+    process.exit(0);
+  });
+}
 
 // Fire-and-forget admin alert so a (re)start is visible in Telegram.
 notifyAdminServiceStart({

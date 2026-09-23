@@ -724,7 +724,7 @@ ${body.join("\n")}
 }
 
 /* ────────────────────────────────────────────────────────────
-   PDF (via html-pdf-node dynamic import)
+   PDF (direct puppeteer, singleton browser reused across requests)
    ──────────────────────────────────────────────────────────── */
 
 const PDF_ARGS = [
@@ -732,33 +732,73 @@ const PDF_ARGS = [
   "--disable-setuid-sandbox",
   "--disable-dev-shm-usage",
   "--disable-gpu",
+  "--disable-software-rasterizer",
+  "--disable-extensions",
   "--font-render-hinting=none",
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+let browserPromise: ReturnType<typeof launchBrowser> | null = null;
+
+async function launchBrowser() {
+  const puppeteer = (await import("puppeteer")).default;
+  console.log("[PDF] Launching browser...");
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: PDF_ARGS,
+    ...(process.env.PUPPETEER_EXECUTABLE_PATH
+      ? { executablePath: process.env.PUPPETEER_EXECUTABLE_PATH }
+      : {}),
+  });
+  browser.on("disconnected", () => {
+    console.log("[PDF] Browser disconnected");
+    browserPromise = null;
+  });
+  console.log("[PDF] Browser launched successfully");
+  return browser;
+}
+
+/** Reuses a single browser instance across requests instead of launching one per PDF. */
+async function getBrowser() {
+  if (!browserPromise) browserPromise = launchBrowser();
+  const browser = await browserPromise;
+  if (!browser.connected) {
+    browserPromise = launchBrowser();
+    return browserPromise;
+  }
+  return browser;
+}
+
+export async function closeBrowser(): Promise<void> {
+  if (!browserPromise) return;
+  const browser = await browserPromise.catch(() => null);
+  browserPromise = null;
+  if (browser) await browser.close().catch(() => {});
+}
+
 /** Render any HTML string to a PDF buffer (shared by all report templates). */
 export async function htmlToPdf(html: string, attempts = 3): Promise<Buffer> {
-  const htmlPdf = (await import("html-pdf-node")).default;
-
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt++) {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
     try {
-      // html-pdf-node mutates/deletes options.args, so pass a fresh object each try.
-      const pdf = await htmlPdf.generatePdf(
-        { content: html },
-        {
-          format: "A4",
-          margin: { top: "0mm", bottom: "0mm", left: "0mm", right: "0mm" },
-          printBackground: true,
-          args: PDF_ARGS,
-        },
-      );
+      // Content is a fully self-contained HTML string (no external fetches), so
+      // domcontentloaded is sufficient — no need to wait on network idle.
+      await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 30000 });
+      const pdf = await page.pdf({
+        format: "A4",
+        margin: { top: "0mm", bottom: "0mm", left: "0mm", right: "0mm" },
+        printBackground: true,
+      });
       return Buffer.from(pdf);
     } catch (e) {
       lastError = e;
       console.error(`[PDF] attempt ${attempt}/${attempts} failed:`, e);
       if (attempt < attempts) await sleep(1000 * attempt);
+    } finally {
+      await page.close().catch(() => {});
     }
   }
 

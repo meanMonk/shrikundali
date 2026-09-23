@@ -1,6 +1,9 @@
 FROM node:20-slim AS base
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
+# Skip puppeteer's own Chromium download at install time too — the runtime
+# stage installs system chromium and points PUPPETEER_EXECUTABLE_PATH at it.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 FROM base AS deps
 COPY package.json ./
