@@ -175,6 +175,41 @@ function formatFailed(hours: number, stuck: Awaited<ReturnType<typeof getStuckKu
   return lines.join("\n");
 }
 
+/**
+ * Bot command reference. Telegram command names allow only a-z, 0-9 and "_",
+ * so multi-word commands use underscores and short joined aliases (e.g.
+ * `/test_price` or `/testprice`) — never hyphens.
+ */
+const HELP_TEXT = [
+  "📊 *Kundali Stats Bot*",
+  "",
+  "*Sales*",
+  "/today — Today's sales + users",
+  "/yesterday — Yesterday's sales + users",
+  "/week — Last 7 days",
+  "/month — Last 30 days",
+  "/lastmonth — Previous calendar month",
+  "/overall — All-time totals",
+  "",
+  "*Transactions*",
+  "/txns — pending/paid/completed/failed (last 7 days)",
+  "/txns_today — same, for today only",
+  "",
+  "*Users*",
+  "/users — users who submitted details (count + recent)",
+  "/emails — captured emails (unique count + list)",
+  "",
+  "*Pricing*",
+  "/current_pricing — show current prices",
+  "/test_price — set all reports to ₹9 (testing)",
+  "/actual_price — restore launch prices",
+  "",
+  "*Ops*",
+  "/failed — paid orders stuck without a completed report (last 7 days)",
+  "",
+  "/feedback — feedback stats (not tracked yet)",
+].join("\n");
+
 const webhookRoute = createRoute({
   method: "post",
   path: "/",
@@ -300,7 +335,7 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
     } else if (text === "/feedback") {
       reply = "💬 *Feedback*\n\nNo feedback collection is wired up yet — there's no ratings/feedback schema in the DB. Ask if you'd like one added (e.g. a post-download rating prompt).";
     } else if (text === "/start" || text === "/help") {
-      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales + users\n/yesterday — Yesterday's sales + users\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month\n/overall — All-time totals\n\n*Users*\n/users — Users who submitted details (count + recent)\n/emails — Captured email addresses (unique count + list)\n\n*Ops*\n/txns — Transaction breakdown (pending/paid/completed/failed) — last 7 days\n/txns_today — Same, for today only\n/failed — Paid orders stuck without a completed report (last 7 days)\n/current_pricing — Show current prices\n/test_price — Set all reports to ₹9 (testing)\n/actual_price — Restore launch prices\n\n/feedback — Feedback stats (not tracked yet)";
+      reply = HELP_TEXT;
     }
 
     if (reply) {
