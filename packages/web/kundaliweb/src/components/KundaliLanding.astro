@@ -357,30 +357,38 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
   </section>
 
   <!-- Payment Modal -->
-  <div id="payment-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:1rem">
-    <div style="background:#fff;border-radius:12px;padding:1.75rem;max-width:420px;width:100%;position:relative">
-      <button id="modal-close" type="button" style="position:absolute;top:0.75rem;right:0.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--color-text-muted)">&times;</button>
-      <h3 style="color:var(--color-primary);font-size:1.15rem;text-align:center;margin-bottom:1rem">Unlock Your Full Kundli Report</h3>
-      <div style="text-align:center;margin-bottom:1rem">
-        <span id="modal-original-price" style="font-size:1rem;color:var(--color-text-muted);text-decoration:line-through;margin-right:0.5rem"></span>
-        <span id="modal-price" style="font-size:1.5rem;font-weight:700;color:var(--color-primary)"></span>
+  <div id="payment-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;padding:0.75rem">
+    <div class="pay-card">
+      <div class="pay-head">
+        <h3 id="modal-title">Unlock Your Full Report</h3>
+        <button id="modal-close" type="button" aria-label="Close">&times;</button>
       </div>
-      <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;text-align:left">
-        <p style="font-size:0.8rem;font-weight:600;color:var(--color-secondary);margin-bottom:0.4rem">What you get:</p>
-        <ul id="modal-features-list" style="list-style:none;display:grid;gap:0.3rem;font-size:0.82rem;color:var(--color-text-muted)"></ul>
+
+      <div class="pay-price-box">
+        <div class="pay-price-main">
+          <span id="modal-price" class="pay-price-now">&#8377;249</span>
+          <span id="modal-original-price" class="pay-price-was">&#8377;999</span>
+        </div>
+        <div class="pay-price-total"><span>Total</span><span id="modal-total">&#8377;249</span></div>
       </div>
+
       <form id="modal-payment-form">
-        <label class="field-label">
-          <span>Email Address</span>
-          <input type="email" id="modal-email" name="email" placeholder="you@example.com" required class="field-input" />
-          <span class="field-hint">We'll send your PDF here as backup, and use it for your payment receipt.</span>
-        </label>
-        <button type="submit" id="modal-pay-btn" class="cta-pulse" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:0.5rem">
-          Pay Securely
-        </button>
-        <p style="font-size:0.7rem;color:var(--color-text-muted);margin-top:0.75rem;text-align:center">&#x1F512; Secure payment via Razorpay &bull; Your birth details stay private</p>
+        <div class="pay-email-head"><span>Get PDF on Email</span><span class="pay-free">FREE</span></div>
+        <input type="email" id="modal-email" name="email" placeholder="Your email address" required class="field-input" autocomplete="email" />
+        <button type="submit" id="modal-pay-btn" class="cta-pulse pay-btn">Pay &#8377;249 &amp; Download PDF</button>
+        <ul id="modal-features-list" class="pay-feats"></ul>
+        <div id="modal-status" class="pay-status" style="display:none"></div>
       </form>
-      <div id="modal-status" style="display:none;padding:0.5rem;border-radius:6px;margin-top:0.75rem;font-size:0.85rem;text-align:center"></div>
+
+      <div class="pay-trust">
+        <div class="pay-trust-head"><span class="pay-check">&#10003;</span> Secure Payment</div>
+        <div class="pay-trust-logos">
+          <img src="/assets/payment/accepts.png" alt="UPI, Cards" height="20" loading="lazy" />
+          <span class="pay-sep">|</span>
+          <img src="/assets/payment/razorpay.png" alt="Razorpay" height="20" loading="lazy" />
+        </div>
+        <p class="pay-trust-note">Instant download &bull; Bank-grade security</p>
+      </div>
     </div>
   </div>
 
@@ -587,6 +595,60 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     }
     #payment-modal { backdrop-filter: blur(2px); }
     #payment-modal > div { box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+    .pay-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.1rem 1.15rem;
+      max-width: 390px;
+      width: 100%;
+      max-height: 94vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .pay-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .pay-head h3 { font-size: 1.02rem; line-height: 1.25; color: var(--color-secondary); margin: 0; }
+    #modal-close { background: none; border: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--color-text-muted); padding: 0 0.15rem; flex-shrink: 0; }
+    .pay-price-box {
+      background: #fffaf0;
+      border: 1px solid #f0d9b5;
+      border-radius: 10px;
+      padding: 0.6rem 0.85rem;
+      margin-bottom: 0.7rem;
+    }
+    .pay-price-main { display: flex; align-items: baseline; gap: 0.5rem; padding-bottom: 0.45rem; border-bottom: 1px dashed #ecd9b8; }
+    .pay-price-now { font-family: var(--font-heading); font-size: 1.55rem; font-weight: 700; color: var(--color-primary); }
+    .pay-price-was { font-size: 0.9rem; color: var(--color-text-muted); text-decoration: line-through; }
+    .pay-price-total { display: flex; justify-content: space-between; align-items: center; padding-top: 0.4rem; font-size: 0.85rem; color: var(--color-text-muted); }
+    .pay-price-total span:last-child { font-size: 1.05rem; font-weight: 700; color: var(--color-primary); }
+    .pay-email-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.82rem; font-weight: 600; color: var(--color-secondary); }
+    .pay-free { background: #e7f0ff; color: #1d4ed8; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; padding: 0.12rem 0.4rem; border-radius: 4px; }
+    .pay-btn {
+      width: 100%;
+      min-height: 44px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.55rem;
+    }
+    .pay-feats { list-style: none; display: grid; gap: 0.25rem; font-size: 0.76rem; color: var(--color-text-muted); margin: 0.6rem 0 0; padding: 0; }
+    .pay-feats li { display: flex; align-items: flex-start; gap: 0.35rem; }
+    .pay-status { padding: 0.45rem; border-radius: 6px; margin-top: 0.6rem; font-size: 0.8rem; text-align: center; }
+    .pay-trust { background: #faf9f7; border: 1px solid var(--color-border); border-radius: 8px; padding: 0.5rem 0.6rem; margin-top: 0.7rem; }
+    .pay-trust-head { display: flex; align-items: center; justify-content: center; gap: 0.3rem; font-size: 0.75rem; font-weight: 600; color: var(--color-secondary); margin-bottom: 0.35rem; }
+    .pay-check { color: var(--color-success); font-weight: 700; }
+    .pay-trust-logos { display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
+    .pay-trust-logos img { height: 18px; width: auto; max-width: 130px; object-fit: contain; }
+    .pay-sep { color: #d8d2c7; }
+    .pay-trust-note { font-size: 0.68rem; color: var(--color-text-muted); text-align: center; margin-top: 0.35rem; }
+    @media (max-width: 420px) {
+      .pay-card { padding: 0.85rem 0.9rem; border-radius: 12px; }
+      .pay-head h3 { font-size: 0.95rem; }
+      .pay-price-now { font-size: 1.35rem; }
+    }
     #success-modal { backdrop-filter: blur(2px); }
     #success-modal > div { box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
     .success-spinner { width: 16px; height: 16px; border: 2px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite; flex-shrink: 0; }
@@ -681,14 +743,14 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     ];
 
     function renderFeatureLists(items: string[]) {
-      const features = items && items.length ? items : DEFAULT_FEATURES;
+      const features = (items && items.length ? items : DEFAULT_FEATURES).slice(0, 4);
       for (const id of ["modal-features-list", "success-features-list"]) {
         const el = document.getElementById(id);
         if (!el) continue;
         el.innerHTML = features
           .map(
             (f) =>
-              `<li style="display:flex;align-items:flex-start;gap:0.4rem"><span style="color:var(--color-success);font-weight:700">&#10003;</span><span>${f}</span></li>`,
+              `<li style="display:flex;align-items:flex-start;gap:0.35rem"><span style="color:var(--color-success);font-weight:700">&#10003;</span><span>${f}</span></li>`,
           )
           .join("");
       }
@@ -705,20 +767,22 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         const res = await fetch(`${API_URL}/api/config/${REPORT_TYPE}`);
         if (res.ok) {
           const cfg = await res.json();
-          reportPrice = cfg.discountPrice || cfg.price || 499;
+          reportPrice = cfg.discountPrice || cfg.amount || cfg.price || 499;
           reportOriginalPrice = cfg.price || null;
           const unlockBtn = document.getElementById("unlock-btn");
           if (unlockBtn) unlockBtn.textContent = `Unlock Full Report \u2014 \u20B9${reportPrice}`;
           const modalPrice = document.getElementById("modal-price");
+          const modalTotal = document.getElementById("modal-total");
           const modalOriginal = document.getElementById("modal-original-price");
           if (modalPrice) modalPrice.textContent = `\u20B9${reportPrice}`;
+          if (modalTotal) modalTotal.textContent = `\u20B9${reportPrice}`;
           if (modalOriginal && reportOriginalPrice && reportOriginalPrice > reportPrice) {
             modalOriginal.textContent = `\u20B9${reportOriginalPrice}`;
           } else if (modalOriginal) {
             modalOriginal.style.display = "none";
           }
           const modalPayBtn = document.getElementById("modal-pay-btn");
-          if (modalPayBtn) modalPayBtn.textContent = `Pay \u20B9${reportPrice} Securely`;
+          if (modalPayBtn) modalPayBtn.textContent = `Pay \u20B9${reportPrice} & Download PDF`;
           if (Array.isArray(cfg.features) && cfg.features.length) renderFeatureLists(cfg.features);
         }
       } catch {}
@@ -1291,7 +1355,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
           const err = await res.json().catch(() => ({ error: "Failed" }));
           if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = err.error || "Payment failed. Please try again."; }
           modalPayBtn.disabled = false;
-          modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+          modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} & Download PDF`;
           return;
         }
 
@@ -1320,7 +1384,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
           rzp.on("payment.failed", function () {
             if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = "Payment failed. Please try again."; }
             modalPayBtn.disabled = false;
-            modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+            modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} & Download PDF`;
           });
           rzp.open();
         } else if (data.checkoutUrl) {
@@ -1328,12 +1392,12 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         } else {
           if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#efe"; modalStatus.style.color = "#060"; modalStatus.textContent = `Order created: ${data.orderId}. Check your email for payment link.`; }
           modalPayBtn.disabled = false;
-          modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+          modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} & Download PDF`;
         }
       } catch (err: any) {
         if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = `Error: ${err.message}`; }
         modalPayBtn.disabled = false;
-        modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} Securely`;
+        modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} & Download PDF`;
       }
     });
   </script>

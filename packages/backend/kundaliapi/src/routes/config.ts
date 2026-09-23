@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { logInfo } from "../lib/logger.js";
 import { REPORT_PRICING } from "../lib/pricing.js";
+import { getEffectivePricing } from "../lib/pricing-store.js";
+import type { ReportType } from "../lib/store.js";
 
 const configApp = new OpenAPIHono();
 
@@ -11,6 +13,7 @@ const ReportConfigSchema = z.object({
   description: z.string(),
   price: z.number(),
   discountPrice: z.number().optional(),
+  amount: z.number().optional().describe("Amount actually charged at checkout"),
   currency: z.string(),
   ctaText: z.string(),
   countdownMinutes: z.number(),
@@ -144,6 +147,19 @@ const DEFAULT_CONFIGS: Record<string, z.infer<typeof ReportConfigSchema>> = {
   },
 };
 
+/** Overlay live (Mongo-backed) pricing onto a static config template. */
+async function withLivePricing(
+  config: z.infer<typeof ReportConfigSchema>,
+): Promise<z.infer<typeof ReportConfigSchema>> {
+  try {
+    const p = await getEffectivePricing(config.reportType as ReportType);
+    return { ...config, price: p.listPrice, discountPrice: p.discountPrice, amount: p.amount };
+  } catch {
+    // DB unreachable → serve static defaults rather than failing the page.
+    return { ...config, amount: REPORT_PRICING[config.reportType as ReportType]?.amount };
+  }
+}
+
 const configRoute = createRoute({
   method: "get",
   path: "/:reportType",
@@ -163,8 +179,9 @@ configApp.openapi(configRoute, async (c) => {
     return c.json({ error: `Unknown report type: ${reportType}` }, 404);
   }
 
+  const live = await withLivePricing(config);
   logInfo(`/config/${reportType} served`);
-  return c.json(config, 200);
+  return c.json(live, 200);
 });
 
 const allConfigsRoute = createRoute({
@@ -178,8 +195,9 @@ const allConfigsRoute = createRoute({
 });
 
 configApp.openapi(allConfigsRoute, async (c) => {
+  const live = await Promise.all(Object.values(DEFAULT_CONFIGS).map(withLivePricing));
   logInfo("/config served (all)");
-  return c.json(Object.values(DEFAULT_CONFIGS), 200);
+  return c.json(live, 200);
 });
 
 export { configApp };

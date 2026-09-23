@@ -11,6 +11,7 @@ import { dbRoutes } from "./routes/db.js";
 import { downloadApp } from "./routes/download.js";
 import { healthRoutes } from "./routes/health.js";
 import { kundaliApp } from "./routes/kundali.js";
+import { pricingApp } from "./routes/pricing.js";
 import { teaserApp } from "./routes/teaser.js";
 import { telegramBotApp } from "./routes/telegram-bot.js";
 import { webhookApp } from "./routes/webhook.js";
@@ -38,6 +39,7 @@ app.route("/payment", checkoutApp);
 app.route("/webhook", webhookApp);
 app.route("/download", downloadApp);
 app.route("/api/config", configApp);
+app.route("/api/pricing", pricingApp);
 app.route("/telegram/bot", telegramBotApp);
 setupDocs(app);
 

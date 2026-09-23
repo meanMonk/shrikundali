@@ -9,7 +9,8 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "openapi": "tsx scripts/gen-openapi.ts",
-    "sample:report": "tsx scripts/generate-sample-report.ts"
+    "sample:report": "tsx scripts/generate-sample-report.ts",
+    "pricing:set": "tsx scripts/set-pricing.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

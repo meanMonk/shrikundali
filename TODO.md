@@ -47,6 +47,15 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
 ## C. Product / funnel
 
+- [x] **Dynamic report pricing (Mongo + API + no-deploy script).** Prices live in the Mongo
+      `pricing` collection with static `REPORT_PRICING` as fallback. Read via
+      `GET /api/pricing[/:reportType]` and the DB-backed `GET /api/config/:reportType`;
+      update via `PUT /api/pricing/:reportType` (`x-admin-token` when `ADMIN_TOKEN` is set)
+      or the script: `pnpm --filter kundaliapi pricing:set test` (all reports ₹9) and
+      `pnpm --filter kundaliapi pricing:set actual` (restore launch prices).
+      Code: `src/lib/pricing-store.ts`, `src/routes/pricing.ts`, `scripts/set-pricing.ts`.
+      Payment modal also made compact/responsive with trust badges.
+
 - [~] **Validate the complete end-to-end PDF kundali report flow.** ([#60](https://github.com/meanMonk/shrikundali/issues/60))
   - Flow: form → teaser → Razorpay/Cashfree checkout → webhook → PDF generate →
     store/archive → email + Telegram confirm → `/download/:id`.

@@ -16,7 +16,7 @@ import { generatePaidReport } from "../lib/report.js";
 import { readArchiveFile } from "../lib/archive.js";
 import { notifyAdminDownload } from "../lib/telegram.js";
 import { logGeneration, logInfo, logError } from "../lib/logger.js";
-import { getReportAmount } from "../lib/pricing.js";
+import { getReportAmount } from "../lib/pricing-store.js";
 
 const checkoutApp = new OpenAPIHono();
 
@@ -66,7 +66,7 @@ checkoutApp.openapi(checkoutRoute, async (c) => {
     }
 
     const receipt = `kundali_${body.cacheId}_${Date.now()}`;
-    const amount = getReportAmount(doc.reportType);
+    const amount = await getReportAmount(doc.reportType);
     const clientIp =
       c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
       c.req.header("x-real-ip") ||

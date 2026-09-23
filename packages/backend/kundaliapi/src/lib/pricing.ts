@@ -54,11 +54,8 @@ export const REPORT_PRICING: Record<ReportType, ReportPricing> = {
 };
 
 /**
- * Amount to charge for a report. Per-type env override wins:
- *   REPORT_PRICE_FINANCIAL_KUNDALI / REPORT_PRICE_MATCH_KUNDALI
+ * Amount to charge for a report. Live values come from Mongo (`pricing`
+ * collection) via `getReportAmount` in `pricing-store.ts`; this static map is
+ * the seed/fallback. Per-type env override (`REPORT_PRICE_<TYPE>`) still wins.
  */
-export function getReportAmount(reportType: ReportType): number {
-  const override = Number(process.env[`REPORT_PRICE_${reportType.toUpperCase()}`]);
-  if (Number.isFinite(override) && override > 0) return override;
-  return (REPORT_PRICING[reportType] ?? REPORT_PRICING.financial_kundali).amount;
-}
+
