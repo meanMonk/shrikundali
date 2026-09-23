@@ -71,3 +71,74 @@ then, test 1 clip before committing to more.
    and I'll quote the per-clip cost before generating anything (rough range: $0.10-0.50
    for a few seconds, depending on model — small relative to the image costs we already
    spent, but real, and I won't spend it without a explicit go-ahead).
+
+---
+
+## Update — implementation done, verified against the real HyperFrames CLI
+
+Built and rendered both test videos. The tool is genuinely free (npx-based, no API key,
+no account needed to render locally) and it works, but its actual contract is stricter
+than the summary above implied — worth recording here since it changes how a third
+video should be built later.
+
+### What HyperFrames actually requires (not just "write HTML/CSS")
+
+It is not a generic "any seekable CSS animation" renderer. A composition needs, in this
+exact shape (confirmed via `npx hyperframes init`, `check`, `render`, and `snapshot`
+against real output):
+
+- A project scaffold (`npx hyperframes init <dir>`) — not a loose HTML file. This gives
+  `index.html`, `package.json` (`npm run dev/check/render`), `hyperframes.json`
+  (asset paths), and `meta.json`.
+- One root `<div data-composition-id="..." data-start="0" data-duration="<seconds>">`
+  — **`data-duration` on the root is what actually sets the render length.** Omitting it
+  (or getting the composition-id wrong) is exactly what made the first attempt silently
+  render a 7-second clip instead of the intended 18s.
+- **One `gsap.timeline({ paused: true })` registered on
+  `window.__timelines["<composition-id>"]`.** Raw CSS `@keyframes` without this
+  registration is not the supported path — the timeline is what the renderer seeks
+  frame-by-frame.
+- `class="clip"` on every timed visual element.
+- `npm run check` — lints + validates layout/contrast/motion — before every render.
+  This caught two real bugs worth naming because they're easy to repeat: (1) a CSS
+  `inset: 0` shorthand on `.clip` silently stretched every absolutely-positioned text
+  overlay's bounding box all the way to the bottom of the canvas even though only the
+  `top` offset was overridden per element — this made a translucent scrim panel cover
+  and occlude elements positioned below it that were never touched visually but were
+  spatially inside that invisible stretched box; fixed by setting `bottom: auto; height:
+  auto` on the overlay class. (2) named fonts (e.g. "Noto Sans Devanagari") need either a
+  real `@font-face` or `src: local("...")`, or the linter fails the whole check.
+
+### The two rendered videos
+
+Live in `packages/tools/videogen/` — full pipeline, setup, and status in that package's
+`README.md`. Summary:
+
+| Project | Base creative | Script | Length | Status |
+|---|---|---|---|---|
+| `video1-anchor-offer/` | `E1-anchor-book-cover.png` | V4 (`money-debt-sprint-copy.md`) | 18.0s, verified | Silent master rendered, `check` passes clean |
+| `video2-checklist/` | `E2-premium-pdf-template.png` | V8 (`money-debt-sprint-copy.md`) | 15.0s, verified | Silent master rendered, `check` passes clean |
+
+**The one design lesson worth carrying forward:** `E1` and `E2` are `gpt-image-1`
+renders that already bake their headline, price badge, and (for `E2`) full checklist +
+CTA button in as pixels. The first draft of `video1` added a *second* headline/price
+text layer on top of the image and it looked cluttered and doubled-up in a visual
+snapshot check — caught before wasting a real render. The fix, now reflected in both
+compositions: only animate what the static image *doesn't* already say. `video1` adds a
+new checklist (real new info) and the CTA button into the image's own deliberately-empty
+bottom bar; `video2` adds motion only — a slow zoom plus a pulsing ring around the
+image's own existing CTA button, no new text.
+
+### What's left before either video is ad-ready
+1. **Voiceover** — not recorded yet. Scripts for both videos, timed to the actual
+   rendered length, are in `packages/tools/videogen/README.md`. Same open question as
+   before: record it yourself, or brief a Fiverr artist.
+2. **Captions** — added after the voiceover exists (timing depends on the real spoken
+   audio), via Jitter or CapCut as originally planned, then exported back into the
+   project's `renders/` output.
+3. **Format export** — `packages/tools/videogen/export-formats.sh` is written and
+   tested (ran successfully against `video1`'s master render, producing 9:16/4:5/1:1/16:9
+   variants via ffmpeg). Run it again on the final captioned file before upload.
+
+No paid generation was used anywhere in this — HyperFrames rendering is 100% local
+compute, same as planned.

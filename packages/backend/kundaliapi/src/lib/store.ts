@@ -187,3 +187,28 @@ export async function markKundaliDownloadNotified(id: string): Promise<boolean> 
   );
   return !!res;
 }
+
+/**
+ * Kundalis stuck mid-generation: payment succeeded ("paid") or generation
+ * started ("generating") more than `staleMinutes` ago but never reached
+ * "completed". Surfaces PDF-generation failures (ProKerala quota, render
+ * errors, crashed worker) that never get an explicit "failed" status.
+ */
+export async function getStuckKundalis(
+  since: Date,
+  staleMinutes = 10,
+): Promise<KundaliDoc[]> {
+  const c = await getCollection();
+  const staleBefore = new Date(Date.now() - staleMinutes * 60 * 1000);
+  return c
+    .find({
+      status: { $in: ["paid", "generating"] },
+      createdAt: { $gte: since },
+      $or: [
+        { generatingAt: { $lt: staleBefore } },
+        { generatingAt: { $exists: false }, createdAt: { $lt: staleBefore } },
+      ],
+    })
+    .sort({ createdAt: -1 })
+    .toArray();
+}

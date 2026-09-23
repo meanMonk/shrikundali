@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Re-export a HyperFrames master render (1080x1920, 9:16) into every ad-platform
-# format we need. Run after `npm run render:<name>` has produced the master file.
+# format we need. Run after `npm run render` inside a project has produced a
+# master file under that project's renders/ directory.
 #
-# Usage: ./export-formats.sh output/video1-anchor-offer-master.mp4
+# Usage: ./export-formats.sh video1-anchor-offer/renders/video1-anchor-offer_*.mp4
 set -euo pipefail
 
 MASTER="${1:?Usage: export-formats.sh <path-to-master.mp4>}"
 DIR="$(dirname "$MASTER")"
-BASE="$(basename "$MASTER" -master.mp4)"
+BASE="$(basename "$MASTER" .mp4)"
 
 # 9:16 Reels/Story — the master is already this shape, just re-encode for delivery.
 ffmpeg -y -i "$MASTER" -vf "scale=1080:1920" -c:v libx264 -pix_fmt yuv420p -c:a aac \

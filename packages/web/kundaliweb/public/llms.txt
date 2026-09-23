@@ -1,0 +1,27 @@
+# Rashi Kundali
+
+> Rashi Kundali (rashikundali.com) generates personalized Vedic astrology reports from a person's exact birth date, time and place of birth, cast with the Lahiri ayanamsa. The flagship product is the Financial Kundali report — an instant-download PDF covering wealth, career, investment timing, Dasha periods, doshas and remedies.
+
+Each report is built from the same birth chart using classical Parashari principles. It includes six money-axis scores (wealth, career, business, property, investment, stability), planetary positions with degrees and dignity, 12-house (bhava) analysis, yogas, doshas with practical remedies, and a full Vimshottari Dasha & Antardasha timeline. The Financial Kundali report is priced at ₹199. Delivery is an instant PDF download after payment, plus a backup copy sent by email.
+
+## Main pages
+
+- [Home — Financial Kundali Report](https://rashikundali.com/): Free birth-chart preview with money-axis scores, then unlock the full ₹199 Financial Kundali PDF.
+- [Financial Kundali checkout](https://rashikundali.com/kundali): Checkout page to purchase the Financial Kundali report.
+- [About Us](https://rashikundali.com/about): Who we are and how every report is generated.
+- [Sitemap](https://rashikundali.com/sitemap): Human-readable index of all pages.
+
+## Report landing pages
+
+- [Kundali Matching Report](https://rashikundali.com/p/kundali-matching): Guna Milan (Ashtakoot) compatibility score and long-term harmony for marriage.
+- [Career Kundali Report](https://rashikundali.com/p/career-kundali): Career windows for job change, promotion and business, from the 10th house and Dasha periods.
+- [Marriage Kundali Report](https://rashikundali.com/p/marriage-kundali): Favorable marriage timing, delays and remedies from the 7th house.
+- [Dosha Report](https://rashikundali.com/p/dosha-report): Manglik, Kaal Sarp, Pitra and Shani dosha checks with simple remedies.
+- [Health Kundali Report](https://rashikundali.com/p/health-kundali): Health-sensitive periods and preventive guidance from the 6th house.
+
+## Legal
+
+- [Refund Policy](https://rashikundali.com/refund): Refund terms for report purchases.
+- [Privacy Policy](https://rashikundali.com/privacy): How birth details and personal data are handled.
+- [Terms of Service](https://rashikundali.com/terms): Terms governing use of the site and reports.
+- [Disclaimer](https://rashikundali.com/disclaimer): Astrology guidance disclaimer and limitations.

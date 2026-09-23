@@ -92,6 +92,10 @@ export async function getOrdersByDateRange(
     .toArray();
 }
 
+export async function getAllTimeOrderStats() {
+  return getOrderStats(new Date(0), new Date());
+}
+
 export async function getOrderStats(startDate: Date, endDate: Date) {
   const orders = await getOrdersByDateRange(startDate, endDate);
 

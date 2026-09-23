@@ -1,6 +1,22 @@
 # Money/Debt Sprint — Creatives
 
-**Use the `E` set. Ignore/deprioritize the `D` set.** After the first round shipped, the
+**Use the `-branded` versions of the `E` set — those are the ones with our real logo
+on them and are the final ship-ready files.** The plain `E1`-`E4` (no `-branded` suffix)
+are kept only as the unbranded originals in case the logo placement ever needs to change
+— don't ship those directly.
+
+Logo composited from `packages/web/kundaliweb/public/logo.png` (the lotus + kundli-chart
+mark — this is the real site logo, not `assets/shree_logo.png`, which is a different,
+very low-contrast glow mark not currently used on the live site and not legible enough
+at ad-creative size). Done locally with PIL/ImageMagick, not another AI generation pass
+— composited, not generated, so placement is exact and it cost nothing. `E2` needed a
+small white circular badge behind the logo since its background corner already has a
+busy mandala pattern that swallowed the plain mark; `E1`, `E3`, `E4` have clean enough
+backgrounds that the logo drops straight on. See `packages/tools/assetgen/generate.mjs`
+if you want to regenerate the underlying `E1`-`E4` bases — the logo-compositing step
+would need to be redone after any regeneration.
+
+**Ignore/deprioritize the `D` set entirely.** After the first round shipped, the
 feedback was that `D1`-`D6` read as generic AI photography with no real content — true:
 `flux-pro/v1.1-ultra` and `recraft-v3` (fal.ai's other two models) don't reliably render
 legible in-image text, so those creatives carry no price, no headline, no book title —
@@ -20,10 +36,10 @@ copies in `docs/ads/` are the ones to ship.
 
 | File | Concept | Replicates | Pairs with copy |
 |---|---|---|---|
-| `E1-anchor-book-cover.png` | Headline + honest price comparison ("Astrologer consult ₹500+" vs "₹199 Only") + a book titled "YOUR MONEY KUNDALI / Personalized Financial Report", empty CTA bar at bottom | Astro Arun Pandit's ₹299 anchor-price layout | V4 — **the hero ad.** Empty bottom bar is intentional, drop your CTA button there. |
-| `E2-premium-pdf-template.png` | Full purple/gold template — headline, "SIRF ₹199 ONLY" badge, 5-item checklist, speed/confidentiality/PDF badges, green "GET YOUR REPORT NOW" button | Vivahyoga/Clubastro's ₹71 template (the one two unrelated advertisers both run) | V4, V6, V8 — this one is close to publish-ready as-is |
-| `E3-magazine-cover.png` | Editorial magazine-cover layout — "SHRIKUNDALI" masthead, headline, book photo on a desk, price ribbon | Surabhi Astrology's ₹999 magazine-cover creative | V2, V9 — softer/trust-led tone |
-| `E4-book-hero.png` | Clean product shot: closed book titled "YOUR PERSONALIZED MONEY KUNDALI", generous empty space top/bottom | Requested directly — a standalone "book on the front page" asset | Any variant — pair with whichever headline/price text you want to overlay; most flexible of the four |
+| `E1-anchor-book-cover-branded.png` | Logo top-left, headline + honest price comparison ("Astrologer consult ₹500+" vs "₹199 Only") + a book titled "YOUR MONEY KUNDALI / Personalized Financial Report", empty CTA bar at bottom | Astro Arun Pandit's ₹299 anchor-price layout | V4 — **the hero ad.** Empty bottom bar is intentional, drop your CTA button there. |
+| `E2-premium-pdf-template-branded.png` | Logo top-left (on a white badge for contrast), headline, "SIRF ₹199 ONLY" badge, 5-item checklist, speed/confidentiality/PDF badges, green "GET YOUR REPORT NOW" button | Vivahyoga/Clubastro's ₹71 template (the one two unrelated advertisers both run) | V4, V6, V8 — this one is close to publish-ready as-is |
+| `E3-magazine-cover-branded.png` | Logo top-left next to the "SHRIKUNDALI" masthead, headline, book photo on a desk, price ribbon | Surabhi Astrology's ₹999 magazine-cover creative | V2, V9 — softer/trust-led tone |
+| `E4-book-hero-branded.png` | Logo top-left, clean product shot: closed book titled "YOUR PERSONALIZED MONEY KUNDALI", generous empty space top/bottom | Requested directly — a standalone "book on the front page" asset | Any variant — pair with whichever headline/price text you want to overlay; most flexible of the four |
 
 Real price used throughout: **₹199** (our actual `REPORT_PRICING.financial_kundali`
 amount — see `packages/backend/kundaliapi/src/lib/pricing.ts`). `E1`'s "Astrologer

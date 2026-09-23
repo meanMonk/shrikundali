@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; font-family: Inter, ui-sans-serif, sans-serif; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #1a0a2e; }
+      #root { width: 100%; height: 100%; position: relative; background: #1a0a2e; }
+
+      .clip { position: absolute; inset: 0; }
+
+      .bg { width: 100%; height: 100%; object-fit: cover; }
+
+      /* E2 already bakes in the full headline, price badge, checklist, trust badges and CTA
+         button as pixels (it's "close to publish-ready as-is" per
+         docs/ads/money-debt-creatives/README.md). This scene adds motion only — a slow
+         zoom and a pulsing highlight ring around the existing CTA button — no new text. */
+
+      .cta-ring {
+        position: absolute;
+        left: 55px;
+        right: 55px;
+        top: 1705px;
+        bottom: auto;
+        height: 140px;
+        border-radius: 70px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="video2-checklist"
+      data-start="0"
+      data-duration="15"
+      data-width="1080"
+      data-height="1920"
+    >
+      <img class="clip bg" id="bg" src="assets/E2-premium-pdf-template.png" data-start="0" data-duration="15" alt="" />
+
+      <div class="clip cta-ring" id="cta-ring" data-start="0" data-duration="15"></div>
+
+      <!-- Voiceover (added later): record the V8 script (docs/ads/faceless-video-ads-plan.md
+           -> Video 2 script), drop the file at assets slash voiceover dot mp3, then add an
+           audio element with id "voiceover", data-start 0, data-duration 15, pointing at it.
+           Omitted for now so `check` doesn't fail on a missing asset. -->
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Slow continuous zoom for the whole clip — kept small (1.0 -> 1.04) so the CTA
+      // ring below doesn't visibly drift off the button as the frame scales.
+      tl.fromTo("#bg", { scale: 1 }, { scale: 1.04, duration: 15, ease: "sine.inOut" }, 0);
+
+      // Three pulse beats on the CTA ring, timed to land near the script's price/CTA lines.
+      tl.set("#cta-ring", { boxShadow: "0 0 0 0 rgba(37,211,102,0)" }, 0);
+      const pulse = (start) => {
+        tl.to("#cta-ring", { boxShadow: "0 0 0 22px rgba(37,211,102,0.6)", duration: 0.35, ease: "sine.out" }, start);
+        tl.to("#cta-ring", { boxShadow: "0 0 0 22px rgba(37,211,102,0)", duration: 0.35, ease: "sine.in" }, start + 0.35);
+      };
+      pulse(2);
+      pulse(8);
+      pulse(12.5);
+
+      window.__timelines["video2-checklist"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

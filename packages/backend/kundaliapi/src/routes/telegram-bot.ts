@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { getOrderStats } from "../lib/orders.js";
+import { getOrderStats, getAllTimeOrderStats } from "../lib/orders.js";
+import { getStuckKundalis } from "../lib/store.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const telegramBotApp = new OpenAPIHono();
@@ -42,6 +43,23 @@ function formatStats(period: string, stats: { totalSales: number; totalRevenue: 
     for (const [type, data] of reportTypes) {
       lines.push(`• ${type}: ${data.count} sales, ₹${data.revenue}`);
     }
+  }
+
+  return lines.join("\n");
+}
+
+function formatFailed(hours: number, stuck: Awaited<ReturnType<typeof getStuckKundalis>>): string {
+  const lines: string[] = [];
+  lines.push(`⚠️ *Failed / Stuck (last ${hours}h)*`);
+  lines.push(`Count: ${stuck.length}`);
+
+  if (stuck.length) {
+    lines.push("");
+    for (const d of stuck.slice(0, 15)) {
+      const ageMin = Math.round((Date.now() - new Date(d.generatingAt ?? d.createdAt).getTime()) / 60000);
+      lines.push(`• ${d.reportLabel || d.reportType} — ${d.email || "no email"} — status: ${d.status}, stuck ${ageMin}m`);
+    }
+    if (stuck.length > 15) lines.push(`… and ${stuck.length - 15} more`);
   }
 
   return lines.join("\n");
@@ -92,6 +110,12 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       end.setDate(end.getDate() + 1);
       const stats = await getOrderStats(start, end);
       reply = formatStats("Today", stats);
+    } else if (text === "/yesterday") {
+      const end = startOfDay(now);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 1);
+      const stats = await getOrderStats(start, end);
+      reply = formatStats("Yesterday", stats);
     } else if (text === "/week") {
       const start = startOfDay(now);
       start.setDate(start.getDate() - 7);
@@ -110,8 +134,18 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       start.setMonth(start.getMonth() - 1);
       const stats = await getOrderStats(start, end);
       reply = formatStats("Last Month", stats);
+    } else if (text === "/overall") {
+      const stats = await getAllTimeOrderStats();
+      reply = formatStats("Overall (All-Time)", stats);
+    } else if (text === "/failed") {
+      const since = new Date(now);
+      since.setDate(since.getDate() - 7);
+      const stuck = await getStuckKundalis(since, 10);
+      reply = formatFailed(24 * 7, stuck);
+    } else if (text === "/feedback") {
+      reply = "💬 *Feedback*\n\nNo feedback collection is wired up yet — there's no ratings/feedback schema in the DB. Ask if you'd like one added (e.g. a post-download rating prompt).";
     } else if (text === "/start" || text === "/help") {
-      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month";
+      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales\n/yesterday — Yesterday's sales\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month\n/overall — All-time totals\n/failed — Paid orders stuck without a completed report (last 7 days)\n/feedback — Feedback stats (not tracked yet)";
     }
 
     if (reply) {

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; font-family: Inter, "Noto Sans Devanagari", ui-sans-serif, sans-serif; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #1a0f2e; }
+      #root { width: 100%; height: 100%; position: relative; background: #1a0f2e; }
+
+      @font-face { font-family: "Noto Sans Devanagari"; src: local("Noto Sans Devanagari"); }
+
+      .clip { position: absolute; inset: 0; }
+
+      .bg { width: 100%; height: 100%; object-fit: cover; }
+
+      /* E1 already bakes in the headline + price comparison as pixels — this scene only
+         adds NEW information (a checklist) and the CTA the creative deliberately left blank
+         in its empty bottom bar. See docs/ads/money-debt-creatives/README.md. */
+
+      .overlay { position: absolute; left: 60px; right: 60px; bottom: auto; height: auto; text-align: center; color: #fff; }
+      .scrim { background: rgba(10, 5, 25, 0.68); border-radius: 24px; padding: 22px 30px; }
+
+      .checklist { top: 1120px; display: flex; flex-direction: column; align-items: center; gap: 20px; font-size: 36px; color: #fff; }
+      .checklist span { display: block; }
+
+      .cta-row {
+        top: 1655px;
+        bottom: auto;
+        height: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #ffd54a;
+        color: #1a0f2e;
+        font-size: 46px;
+        font-weight: 800;
+        width: fit-content;
+        margin: 0 auto;
+        padding: 24px 66px;
+        border-radius: 60px;
+        left: 0;
+        right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="video1-anchor-offer"
+      data-start="0"
+      data-duration="18"
+      data-width="1080"
+      data-height="1920"
+    >
+      <img class="clip bg" id="bg" src="assets/E1-anchor-book-cover.png" data-start="0" data-duration="18" alt="" />
+
+      <div class="clip overlay scrim checklist" data-start="7" data-duration="9" id="checklist">
+        <span id="ci-1">✅ Money &amp; Wealth Analysis</span>
+        <span id="ci-2">✅ Karz / Debt Reasons</span>
+        <span id="ci-3">✅ 12-Month Outlook</span>
+        <span id="ci-4">✅ Instant PDF</span>
+      </div>
+
+      <div class="clip cta-row" data-start="14.5" data-duration="3.5" id="cta-row">Get Report — ₹199</div>
+
+      <!-- Voiceover (added later): record the V4 script (docs/ads/faceless-video-ads-plan.md
+           -> Video 1 script), drop the file at assets slash voiceover dot mp3, then add an
+           audio element with id "voiceover", data-start 0, data-duration 18, pointing at it.
+           Omitted for now so `check` doesn't fail on a missing asset. -->
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Book settles in: image itself gets a slow scale-down from a slight zoom, giving
+      // the whole 18s clip a sense of motion even though most of the frame is static art.
+      tl.fromTo("#bg", { scale: 1.06 }, { scale: 1, duration: 18, ease: "sine.out" }, 0);
+
+      ["#ci-1", "#ci-2", "#ci-3", "#ci-4"].forEach((sel, i) => {
+        tl.fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 7 + i * 0.5);
+      });
+
+      tl.fromTo("#cta-row", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 14.5);
+      // CTA pulse: 2 finite beats (no infinite repeat — determinism rule).
+      tl.to("#cta-row", { boxShadow: "0 0 0 26px rgba(255,213,74,0)", duration: 0.6, ease: "sine.inOut" }, 15.4);
+      tl.to("#cta-row", { boxShadow: "0 0 0 0 rgba(255,213,74,0.55)", duration: 0.6, ease: "sine.inOut" }, 16);
+
+      window.__timelines["video1-anchor-offer"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

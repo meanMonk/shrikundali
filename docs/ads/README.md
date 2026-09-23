@@ -22,25 +22,28 @@ docs/ads/
 │   └── README.md                      What each one is and why it's saved
 ├── regional-language-scan.md          Tamil/Telugu/Kannada/Malayalam/Bengali competitor research (Meta)
 ├── regional-campaign-structures.md    Per-language campaign plan + ready-to-run native copy
-├── google-ads-transparency-scan.md    Who runs Google Ads in this category, and how (see below)
+├── google-ads-transparency-scan.md    Who runs Google Ads in this category, and how
+├── google-keyword-research.md         Keyword lists (head + long-tail) + negatives, ready for the Ads account
 ├── meta-business-manager-setup.md     How to set up the Meta ad account (needs you — see below)
 └── faceless-video-ads-plan.md         Parked — video creative proposal, not started
 ```
 
 ## Which creatives to actually use
 
-**Use the 4 `E` files. That's it, for now.** They're the only ones with real, legible
-text baked in (headline, price, book title) — generated with `gpt-image-1` after the
-first batch (`D1`-`D6`, fal's other models) came back as text-less mood photography.
-`D1`-`D6` aren't wasted — keep them as optional background/B-roll if you want a
-photographic option layered under `E`-style text — but don't ship them as-is.
+**Use the 4 `E*-branded.png` files. That's it, for now.** They're the only ones with
+real, legible text baked in (headline, price, book title) — generated with `gpt-image-1`
+after the first batch (`D1`-`D6`, fal's other models) came back as text-less mood
+photography — and now with our real logo (`packages/web/kundaliweb/public/logo.png`)
+composited into the top-left corner, done locally, no extra generation cost. `D1`-`D6`
+aren't wasted — keep them as optional background/B-roll if you want a photographic
+option layered under `E`-style text — but don't ship them as-is.
 
 | File | What's on it | Pair with (from `money-debt-sprint-copy.md`) |
 |---|---|---|
-| `E1-anchor-book-cover.png` | Headline, "Astrologer consult ₹500+" vs "₹199 Only" price comparison, a book titled "YOUR MONEY KUNDALI — Personalized Financial Report", empty CTA bar at bottom (add your button) | **V4 — the hero ad, start here** |
-| `E2-premium-pdf-template.png` | Full template: "MONEY KUNDALI REPORT" headline, "SIRF ₹199 ONLY" badge, 5-item checklist, speed/confidentiality/PDF badges, green "GET YOUR REPORT NOW" button — close to publish-ready as-is | V6, V8 |
-| `E3-magazine-cover.png` | Editorial magazine-cover layout, book photo on a desk, price ribbon | V2, V9 |
-| `E4-book-hero.png` | Clean standalone book product shot, most flexible — pair with any headline you overlay | Any variant |
+| `E1-anchor-book-cover-branded.png` | Logo, headline, "Astrologer consult ₹500+" vs "₹199 Only" price comparison, a book titled "YOUR MONEY KUNDALI — Personalized Financial Report", empty CTA bar at bottom (add your button) | **V4 — the hero ad, start here** |
+| `E2-premium-pdf-template-branded.png` | Logo, full template: "MONEY KUNDALI REPORT" headline, "SIRF ₹199 ONLY" badge, 5-item checklist, speed/confidentiality/PDF badges, green "GET YOUR REPORT NOW" button — close to publish-ready as-is | V6, V8 |
+| `E3-magazine-cover-branded.png` | Logo, editorial magazine-cover layout, book photo on a desk, price ribbon | V2, V9 |
+| `E4-book-hero-branded.png` | Logo, clean standalone book product shot, most flexible — pair with any headline you overlay | Any variant |
 
 ## How to actually launch this (step by step)
 
