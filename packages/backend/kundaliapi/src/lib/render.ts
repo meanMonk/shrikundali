@@ -20,27 +20,27 @@ export interface ReportMeta {
    Reference data
    ──────────────────────────────────────────────────────────── */
 
-const SIGNS = [
+export const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
   "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
 ];
-const SIGN_LORDS = [
+export const SIGN_LORDS = [
   "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
   "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter",
 ];
-const SIGN_ELEMENT = [
+export const SIGN_ELEMENT = [
   "Fire", "Earth", "Air", "Water", "Fire", "Earth",
   "Air", "Water", "Fire", "Earth", "Air", "Water",
 ];
 
-interface PlanetMeta {
+export interface PlanetMeta {
   display: string;
   nature: string;
   karaka: string;
   remedy: string;
 }
 
-const PLANET_META: Record<string, PlanetMeta> = {
+export const PLANET_META: Record<string, PlanetMeta> = {
   sun: { display: "Sun", nature: "the soul, father, authority and vitality", karaka: "leadership, confidence, recognition and health", remedy: "Offer water to the Sun at sunrise and chant the Aditya Hridayam on Sundays." },
   moon: { display: "Moon", nature: "the mind, emotions, mother and nourishment", karaka: "emotional balance, intuition, public life and comfort", remedy: "Wear a pearl in silver and offer milk to Shiva on Mondays." },
   mars: { display: "Mars", nature: "energy, courage, drive and competition", karaka: "ambition, property, siblings and physical strength", remedy: "Chant the Hanuman Chalisa on Tuesdays and donate red lentils." },
@@ -52,12 +52,12 @@ const PLANET_META: Record<string, PlanetMeta> = {
   ketu: { display: "Ketu", nature: "detachment, spirituality, insight and moksha", karaka: "liberation, research, and past-life karma", remedy: "Feed stray dogs and chant Ganesha mantras." },
 };
 
-interface HouseMeta {
+export interface HouseMeta {
   name: string;
   signifies: string;
 }
 
-const HOUSE_META: Record<number, HouseMeta> = {
+export const HOUSE_META: Record<number, HouseMeta> = {
   1: { name: "First House (Tanu Bhava)", signifies: "self, body, personality, vitality and overall life direction" },
   2: { name: "Second House (Dhana Bhava)", signifies: "wealth, savings, family, speech and accumulated resources" },
   3: { name: "Third House (Sahaja Bhava)", signifies: "courage, siblings, communication, short journeys and effort" },
@@ -76,15 +76,15 @@ const HOUSE_META: Record<number, HouseMeta> = {
    Helpers
    ──────────────────────────────────────────────────────────── */
 
-function signName(id: number): string {
+export function signName(id: number): string {
   if (id >= 1 && id <= 12) return SIGNS[id - 1] ?? "Unknown";
   return "Unknown";
 }
-function signLord(id: number): string {
+export function signLord(id: number): string {
   if (id >= 1 && id <= 12) return SIGN_LORDS[id - 1] ?? "Unknown";
   return "Unknown";
 }
-function signElement(id: number): string {
+export function signElement(id: number): string {
   if (id >= 1 && id <= 12) return SIGN_ELEMENT[id - 1] ?? "";
   return "";
 }
@@ -596,7 +596,7 @@ function houseConnection(planet: string, house: number): string {
   return `In the ${h.name}, it brings ${planet}'s energy to bear on ${h.signifies}.`;
 }
 
-function axisInterpretation(key: string, score: number): string {
+export function axisInterpretation(key: string, score: number): string {
   const band = score >= 8 ? "strong" : score >= 6 ? "above average" : score >= 4 ? "moderate" : "in need of conscious support";
   const map: Record<string, string> = {
     wealthPotential: `Your capacity to accumulate and retain wealth is ${band}. This is driven mainly by the strength of Jupiter, Venus and the Moon, and by the wealth-giving houses (2nd, 11th) in your chart.`,
