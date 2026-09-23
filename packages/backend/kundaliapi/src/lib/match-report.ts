@@ -1,6 +1,6 @@
 import type { MatchingData } from "./prokerala.js";
 import { val, str } from "./scores.js";
-import { htmlToPdf } from "./render.js";
+import { htmlToPdf, formatBirthDateTime } from "./render.js";
 
 export interface MatchMeta {
   girlName?: string;
@@ -209,7 +209,7 @@ export function buildMatchReportHTML(data: MatchingData, meta: MatchMeta = {}): 
       <tr><td>Nakshatra</td><td>${esc(s.girl.nakshatra)} (Pada ${esc(s.girl.pada)})</td><td>${esc(s.boy.nakshatra)} (Pada ${esc(s.boy.pada)})</td></tr>
       <tr><td>Rashi (Moon sign)</td><td>${esc(s.girl.rasi)}</td><td>${esc(s.boy.rasi)}</td></tr>
       <tr><td>Rashi lord</td><td>${esc(s.girl.lord)}</td><td>${esc(s.boy.lord)}</td></tr>
-      <tr><td>Date / time of birth</td><td>${esc(meta.girlDatetime || "—")}</td><td>${esc(meta.boyDatetime || "—")}</td></tr>
+      <tr><td>Date / time of birth</td><td>${esc(formatBirthDateTime(meta.girlDatetime))}</td><td>${esc(formatBirthDateTime(meta.boyDatetime))}</td></tr>
       <tr><td>Place of birth</td><td>${esc(meta.girlPlace || "—")}</td><td>${esc(meta.boyPlace || "—")}</td></tr>
     </tbody>
   </table>

@@ -77,7 +77,7 @@ const TOTAL_PAGES = 12;
 
 const COPY = {
   en: {
-    brand: "Shri Kundali",
+    brand: "Rashi Kundali",
     footer: "rashikundali.com",
     auspicious: "AUSPICIOUS",
     title: "Janam Kundali Report",
@@ -166,7 +166,7 @@ const COPY = {
     page: "Page",
   },
   hi: {
-    brand: "श्री कुंडली",
+    brand: "राशि कुंडली",
     footer: "rashikundali.com",
     auspicious: "शुभम्",
     title: "जन्म कुंडली रिपोर्ट",
@@ -279,7 +279,7 @@ function fmtBirthTime(datetime: string | undefined): string {
   if (!datetime) return "—";
   const d = new Date(datetime);
   if (isNaN(d.getTime())) return datetime;
-  return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).toUpperCase();
 }
 function fmtDate(v: unknown, lang: Lang): string {
   if (!v) return "—";
@@ -666,8 +666,8 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
     }
   }
   const intro = lang === "hi"
-    ? `यह रिपोर्ट आपके दिए गए जन्म विवरण से श्री कुंडली की विंशोत्तरी एवं पराशरी पद्धति के अनुसार तैयार की गई है। ${esc(moonName)} राशि एवं ${esc(nakName)} नक्षत्र आपके मन और सहज स्वभाव को दर्शाते हैं; आगे के पृष्ठों में आपके धन, करियर एवं समय-चक्र का विस्तृत विश्लेषण है।`
-    : `This report is cast from the birth details you provided, using the Vimshottari and Parashari system followed by Shri Kundali. Your Moon in ${esc(moonName)} and birth nakshatra ${esc(nakName)} shape your mind and instinct; the pages that follow analyse your wealth, career and planetary timing in detail.`;
+    ? `यह रिपोर्ट आपके दिए गए जन्म विवरण से राशि कुंडली की विंशोत्तरी एवं पराशरी पद्धति के अनुसार तैयार की गई है। ${esc(moonName)} राशि एवं ${esc(nakName)} नक्षत्र आपके मन और सहज स्वभाव को दर्शाते हैं; आगे के पृष्ठों में आपके धन, करियर एवं समय-चक्र का विस्तृत विश्लेषण है।`
+    : `This report is cast from the birth details you provided, using the Vimshottari and Parashari system followed by Rashi Kundali. Your Moon in ${esc(moonName)} and birth nakshatra ${esc(nakName)} shape your mind and instinct; the pages that follow analyse your wealth, career and planetary timing in detail.`;
   pages.push(
     heading(C.birthDetails, C.birthDetailsSub) +
     `<div class="two-col"><div>${table([C.field, C.value], birthRows)}</div><div>${panchangRows.length ? table([C.field, C.value], panchangRows) : ""}</div></div>` +

@@ -167,7 +167,15 @@ function fmtBirthTime(datetime?: string): string {
   if (!datetime) return "—";
   const d = new Date(datetime);
   if (isNaN(d.getTime())) return datetime;
-  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }).toUpperCase();
+}
+
+/** Human-readable "DD Month YYYY, H:MM AM/PM" for a birth datetime. */
+export function formatBirthDateTime(datetime?: string): string {
+  if (!datetime) return "—";
+  const d = new Date(datetime);
+  if (isNaN(d.getTime())) return datetime;
+  return `${fmtBirthDate(datetime)}, ${fmtBirthTime(datetime)}`;
 }
 
 /* ────────────────────────────────────────────────────────────

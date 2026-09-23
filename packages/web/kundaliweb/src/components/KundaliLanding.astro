@@ -247,25 +247,51 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
             </select>
           </label>
           <div class="field-row">
-            <label class="field-label">
+            <div class="field-label">
               <span>Partner's Date of Birth</span>
-              <input type="date" id="partner-dob" name="partner-dob" class="field-input" />
-            </label>
-            <label class="field-label">
+              <div class="select-group dob-group">
+                <select id="partner-dob-day" class="field-input" aria-label="Partner's day of birth">
+                  <option value="" disabled selected>Day</option>
+                  {DAYS.map((d) => <option value={pad2(d)}>{d}</option>)}
+                </select>
+                <select id="partner-dob-month" class="field-input" aria-label="Partner's month of birth">
+                  <option value="" disabled selected>Month</option>
+                  {MONTHS.map((m, i) => <option value={pad2(i + 1)}>{m}</option>)}
+                </select>
+                <select id="partner-dob-year" class="field-input" aria-label="Partner's year of birth">
+                  <option value="" disabled selected>Year</option>
+                  {YEARS.map((y) => <option value={String(y)}>{y}</option>)}
+                </select>
+              </div>
+            </div>
+            <div class="field-label">
               <span>Partner's Time of Birth</span>
-              <input type="time" id="partner-birthtime" name="partner-birthtime" class="field-input" />
-            </label>
+              <div class="select-group time-group">
+                <select id="partner-tob-hour" class="field-input" aria-label="Partner's hour of birth">
+                  {HOURS.map((h) => <option value={pad2(h)} selected={h === 12}>{h}</option>)}
+                </select>
+                <select id="partner-tob-minute" class="field-input" aria-label="Partner's minute of birth">
+                  {MINUTES.map((m) => <option value={pad2(m)} selected={m === 0}>{pad2(m)}</option>)}
+                </select>
+                <select id="partner-tob-ampm" class="field-input" aria-label="Partner's AM or PM">
+                  <option value="AM">AM</option>
+                  <option value="PM" selected>PM</option>
+                </select>
+              </div>
+            </div>
           </div>
           <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--color-text-muted);margin:0.5rem 0 0.75rem">
             <input type="checkbox" id="partner-approx-time" style="width:20px;height:20px" />
             Partner's exact time is unknown (use 12:00 PM)
           </label>
-          <label class="field-label">
-            <span>Partner's Birthplace</span>
-            <input type="text" id="partner-birthplace" name="partner-birthplace" placeholder="City, State" autocomplete="off" class="field-input" />
+          <div class="field-label">
+            <label for="partner-birthplace"><span>Partner's Birthplace</span></label>
+            <div class="place-wrap">
+              <input type="text" id="partner-birthplace" name="partner-birthplace" placeholder="City, State" autocomplete="off" class="field-input" />
+              <div id="partner-place-suggestions" class="place-suggestions" role="listbox" aria-label="Partner's birthplace suggestions"></div>
+            </div>
             <input type="hidden" id="partner-coordinates" value="19.0760,72.8777" />
-            <div id="partner-place-suggestions" style="border:1px solid var(--color-border);border-radius:6px;margin-top:0.25rem;display:none;background:#fff;position:relative;z-index:10"></div>
-          </label>
+          </div>
         </div>
       )}
 
@@ -744,13 +770,41 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     }
 
     // ---- Partner fields (match_kundali only) ----
+    const partnerTimeSelects = ["partner-tob-hour", "partner-tob-minute", "partner-tob-ampm"]
+      .map((id) => document.getElementById(id) as HTMLSelectElement | null)
+      .filter((el): el is HTMLSelectElement => !!el);
+
+    function setPartnerTime12(hour12: number, minute: number, ampm: "AM" | "PM") {
+      const h = document.getElementById("partner-tob-hour") as HTMLSelectElement | null;
+      const m = document.getElementById("partner-tob-minute") as HTMLSelectElement | null;
+      const ap = document.getElementById("partner-tob-ampm") as HTMLSelectElement | null;
+      if (h) h.value = String(hour12).padStart(2, "0");
+      if (m) m.value = String(minute).padStart(2, "0");
+      if (ap) ap.value = ampm;
+    }
+
+    function readPartnerDateISO(): string {
+      const d = (document.getElementById("partner-dob-day") as HTMLSelectElement | null)?.value;
+      const mo = (document.getElementById("partner-dob-month") as HTMLSelectElement | null)?.value;
+      const y = (document.getElementById("partner-dob-year") as HTMLSelectElement | null)?.value;
+      if (!d || !mo || !y) return "";
+      return `${y}-${mo}-${d}`;
+    }
+
+    function readPartnerTime24(): string {
+      const h = (document.getElementById("partner-tob-hour") as HTMLSelectElement | null)?.value || "12";
+      const m = (document.getElementById("partner-tob-minute") as HTMLSelectElement | null)?.value || "00";
+      const ap = (document.getElementById("partner-tob-ampm") as HTMLSelectElement | null)?.value || "AM";
+      let hour = parseInt(h, 10) % 12;
+      if (ap === "PM") hour += 12;
+      return `${String(hour).padStart(2, "0")}:${m.padStart(2, "0")}`;
+    }
+
     const partnerApprox = document.getElementById("partner-approx-time") as HTMLInputElement | null;
-    const partnerTime = document.getElementById("partner-birthtime") as HTMLInputElement | null;
     partnerApprox?.addEventListener("change", () => {
-      if (partnerTime) {
-        partnerTime.disabled = !!partnerApprox.checked;
-        if (partnerApprox.checked) partnerTime.value = "12:00";
-      }
+      const disabled = !!partnerApprox.checked;
+      partnerTimeSelects.forEach((s) => { s.disabled = disabled; });
+      if (disabled) setPartnerTime12(12, 0, "PM");
     });
 
     const partnerBirthplace = document.getElementById("partner-birthplace") as HTMLInputElement | null;
@@ -768,19 +822,40 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         try {
           const results = await nominatimSearch(query);
           partnerSuggestions.innerHTML = "";
+          if (results.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "place-empty";
+            empty.textContent = "No matching place found — try a nearby city.";
+            partnerSuggestions.appendChild(empty);
+            partnerSuggestions.style.display = "block";
+            return;
+          }
           results.forEach((r) => {
+            const parts = r.label.split(",").map((s) => s.trim()).filter(Boolean);
+            const name = parts[0] || r.label;
+            const region = parts.slice(1, 4).join(", ");
             const item = document.createElement("button");
             item.type = "button";
             item.className = "place-item";
-            item.textContent = r.label;
+            item.setAttribute("role", "option");
+            const nameEl = document.createElement("span");
+            nameEl.className = "place-item-name";
+            nameEl.textContent = name;
+            item.appendChild(nameEl);
+            if (region) {
+              const regionEl = document.createElement("span");
+              regionEl.className = "place-item-region";
+              regionEl.textContent = region;
+              item.appendChild(regionEl);
+            }
             item.addEventListener("click", () => {
-              if (partnerBirthplace) partnerBirthplace.value = r.label;
+              if (partnerBirthplace) partnerBirthplace.value = name;
               setPartnerCoordinates(r.lat, r.lon);
               partnerSuggestions.style.display = "none";
             });
             partnerSuggestions.appendChild(item);
           });
-          partnerSuggestions.style.display = results.length ? "block" : "none";
+          partnerSuggestions.style.display = "block";
         } catch {}
       }, 1000);
 
@@ -790,6 +865,12 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         if (m) setPartnerCoordinates(m.lat, m.lon);
         else setPartnerCoordinates(DEFAULT_COORDS.lat, DEFAULT_COORDS.lon);
         runPartnerSearch(q);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (partnerSuggestions && !partnerSuggestions.contains(e.target as Node) && e.target !== partnerBirthplace) {
+          partnerSuggestions.style.display = "none";
+        }
       });
     }
 
@@ -822,8 +903,8 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
 
       let partner: Record<string, string> | undefined;
       if (DUAL) {
-        const pDob = (document.getElementById("partner-dob") as HTMLInputElement | null)?.value || "";
-        const pTime = (document.getElementById("partner-birthtime") as HTMLInputElement | null)?.value || "12:00";
+        const pDob = readPartnerDateISO();
+        const pTime = readPartnerTime24();
         if (pDob) {
           partner = {
             name: (document.getElementById("partner-name") as HTMLInputElement | null)?.value || "",
@@ -851,7 +932,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
         const data = await res.json();
         cacheId = data.cacheId;
-        trackLead({ content_name: "financial_kundali_preview", form_name: formName, gender: formGender });
+        trackLead({ content_name: `${REPORT_TYPE}_preview`, form_name: formName, gender: formGender });
 
         // Show teaser results on-page
         const t = data.teaser || {};
