@@ -33,8 +33,8 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
     `docs/ads/google-ads-transparency-scan.md`.
   - Decide auth path: Google Ads API service account vs. MCC OAuth; document which creds
     are needed and where they live (never commit secrets).
-  - Hard-blocked on P0 frontend work + locked CTA verb per
-    `docs/prd/frontend-gap-plan.md` notes (line ~124).
+  - **Unblocked (2026-09-23):** P0 frontend work is done (see
+    `docs/prd/frontend-gap-plan.md`). Only the CTA-verb lock (#42/#37) remains open.
 
 - [ ] **Meta Business — create business account + sub-accounts (ad accounts/Pages) and
       launch 10+ ad variants.** ([#59](https://github.com/meanMonk/shrikundali/issues/59))
@@ -124,14 +124,14 @@ plus direct API calls. Backend had to be started with overrides
 - [ ] **Dead `trackServerEvent`.** `lib/tracking.ts` POSTs to `/track`, which the API does
       not expose. Remove or add the endpoint.
 
-- [ ] **Add more buy buttons + B2C conversion/offer copy on every page.** Force the
+- [x] **Add more buy buttons + B2C conversion/offer copy on every page.** Force the
       purchase click with urgency, offers, and outcome-focused copy. ([#61](https://github.com/meanMonk/shrikundali/issues/61))
-  - Every page should carry repeated purchase CTAs with consistent verb (CTA-verb
-    decision is an open item, see `docs/prd/frontend-gap-plan.md` issue #42).
+  - Every page carries repeated purchase CTAs. Remaining: lock the CTA verb
+    (see `docs/prd/frontend-gap-plan.md` issue #42).
 
-- [ ] **Mobile view review — add missing pages / fix responsive layout.** ([#62](https://github.com/meanMonk/shrikundali/issues/62))
-  - PRD §7 is mobile-first; current build has minimal `@media` coverage per
-    `docs/prd/frontend-gap-plan.md` (item 6).
+- [~] **Mobile view review — add missing pages / fix responsive layout.** ([#62](https://github.com/meanMonk/shrikundali/issues/62))
+  - PRD §7 is mobile-first. Modal compacted for mobile + trust badges (2026-09-23); full
+    landing/form audit still ongoing per `docs/prd/frontend-gap-plan.md` (item 6).
 
 ## D. Design
 

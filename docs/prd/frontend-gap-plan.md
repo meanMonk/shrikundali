@@ -80,24 +80,28 @@ form+payment page), `pages/{about,privacy,terms,refund,disclaimer,sitemap}.astro
 
 | # | Task | Issue | Status |
 |---|------|-------|--------|
-| 1 | Merge form into landing page as `#form-section`, remove `/kundali` from primary path | [#34](https://github.com/meanMonk/shrikundali/issues/34) (scope item 1) | OPEN |
-| 2 | Live free teaser — wire to AstrologyAPI, show real Lagna/Rashi/Nakshatra/dosha | [#35](https://github.com/meanMonk/shrikundali/issues/35) | OPEN |
-| 3 | Form restructure — single group or 2-step, email moved to payment modal only | [#43](https://github.com/meanMonk/shrikundali/issues/43) | OPEN |
-| 3a | Add Gender field to birth details form | [#39](https://github.com/meanMonk/shrikundali/issues/39) | OPEN |
-| 4 | Payment modal — replace `/kundali` redirect with in-page modal (PRD §6a) | [#36](https://github.com/meanMonk/shrikundali/issues/36) | OPEN |
-| 5 | Mobile responsiveness audit + fixes (sticky bar mobile-only, tap targets, etc.) | [#22](https://github.com/meanMonk/shrikundali/issues/22) + [#40](https://github.com/meanMonk/shrikundali/issues/40) | OPEN |
+| 1 | Merge form into landing page as `#form-section`, remove `/kundali` from primary path | [#34](https://github.com/meanMonk/shrikundali/issues/34) (scope item 1) | ✅ DONE — `KundaliLanding.astro` inline form on all pages |
+| 2 | Live free teaser — wire to AstrologyAPI, show real Lagna/Rashi/Nakshatra/dosha | [#35](https://github.com/meanMonk/shrikundali/issues/35) | ✅ DONE — form POSTs `/teaser`, live preview rendered |
+| 3 | Form restructure — single group or 2-step, email moved to payment modal only | [#43](https://github.com/meanMonk/shrikundali/issues/43) | ✅ DONE — single group; email only in `#modal-email` |
+| 3a | Add Gender field to birth details form | [#39](https://github.com/meanMonk/shrikundali/issues/39) | ✅ DONE — `#gender` select |
+| 4 | Payment modal — replace `/kundali` redirect with in-page modal (PRD §6a) | [#36](https://github.com/meanMonk/shrikundali/issues/36) | ✅ DONE — `#payment-modal` (compact + trust badges) |
+| 5 | Mobile responsiveness audit + fixes (sticky bar mobile-only, tap targets, etc.) | [#22](https://github.com/meanMonk/shrikundali/issues/22) + [#40](https://github.com/meanMonk/shrikundali/issues/40) | #40 ✅ DONE (`#sticky-cta`); #22 ongoing |
 
 **Sequencing:** 1 → 3 → 3a → 2 → 4 → 5 (form merge first, then restructure, then teaser, then modal, then mobile)
+
+**P0 frontend blocker is cleared (2026-09-23)** — all P0 rows are implemented, so the paid-traffic
+gate noted at the bottom no longer applies.
 
 ### P1 — Trust & conversion mechanics
 
 | # | Task | Issue | Status |
 |---|------|-------|--------|
-| 6 | Apply brand system (color tokens, fonts, Devanagari fallback) | [#34](https://github.com/meanMonk/shrikundali/issues/34) (scope item 5) | OPEN |
-| 7 | Pricing block to spec — single source of truth for price | [#41](https://github.com/meanMonk/shrikundali/issues/41) | OPEN |
+| 6 | Apply brand system (color tokens, fonts, Devanagari fallback) | [#34](https://github.com/meanMonk/shrikundali/issues/34) (scope item 5) | ✅ DONE — tokens in `Base.astro`, Noto Devanagari fonts |
+| 7 | Pricing block to spec — single source of truth for price | [#41](https://github.com/meanMonk/shrikundali/issues/41) | ✅ DONE — Mongo `pricing` + `/api/config/:reportType` |
 | 8 | CTA copy consistency — one verb everywhere | [#37](https://github.com/meanMonk/shrikundali/issues/37) | OPEN |
-| 9 | Trust elements near every CTA | [#38](https://github.com/meanMonk/shrikundali/issues/38) | OPEN |
+| 9 | Trust elements near every CTA | [#38](https://github.com/meanMonk/shrikundali/issues/38) | ✅ DONE — trust row under CTAs + modal badges |
 | 10 | Static sample-report preview carousel | [#25](https://github.com/meanMonk/shrikundali/issues/25) | OPEN |
+
 
 ### P2 — Post-purchase & analytics completeness
 
@@ -121,6 +125,7 @@ form+payment page), `pages/{about,privacy,terms,refund,disclaimer,sitemap}.astro
 | 16 | Set up Google Ads campaigns (Search + PMax) | [#33](https://github.com/meanMonk/shrikundali/issues/33) | OPEN |
 
 ## Notes
-- P0 items must be completed before any paid traffic is sent (Google Ads issue #33 is hard-blocked on #35 teaser + #43 form restructure + #37 CTA verb decision)
+- P0 frontend items are DONE (2026-09-23): #34/#35/#36/#43/#39/#45 + #40. The paid-traffic
+  gate is therefore **cleared**; only the CTA-verb lock (#42/#37) remains an open decision.
 - Issues #34, #35, #43, #36, #39, #40, #41, #37, #38, #42 were created on 2026-09-09 as part of this gap analysis
 - Each issue includes: current state, PRD section reference, scope, and acceptance criteria
