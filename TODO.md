@@ -47,7 +47,7 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
 ## C. Product / funnel
 
-- [ ] **Validate the complete end-to-end PDF kundali report flow.** ([#60](https://github.com/meanMonk/shrikundali/issues/60))
+- [~] **Validate the complete end-to-end PDF kundali report flow.** ([#60](https://github.com/meanMonk/shrikundali/issues/60))
   - Flow: form → teaser → Razorpay/Cashfree checkout → webhook → PDF generate →
     store/archive → email + Telegram confirm → `/download/:id`.
   - Backend: `packages/backend/kundaliapi/src/` (`lib/report.ts`, `lib/render.ts`,
@@ -55,6 +55,62 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
   - See `docs/progress/kundali-launch-checklist.md` and
     `docs/progress/2026-09-21-pdf-quality-review-corrected.md`.
   - Confirm Hindi/Devanagari rendering, 12-page template, watermark, refund path.
+
+### Integration test — local end-to-end (2026-09-23) `[~]`
+
+Ran the app locally: Astro dev `:3000` + Hono dev `:3400` + local Mongo
+(`app_kundaliapi`), walked every page and the funnel in a real browser (Chrome)
+plus direct API calls. Backend had to be started with overrides
+`MONGODB_URI=mongodb://localhost:27017/app_kundaliapi MINIO_ENDPOINT=false`
+(the repo `.env` is docker-oriented — see blocker below).
+
+**Pages — all HTTP 200, correct `<title>` + Rashi Kundali brand + footer domain:**
+
+| Page | Form | `#form-section` CTAs | Notes |
+| --- | --- | --- | --- |
+| `/` | ✅ | 3 | money angle |
+| `/p/marriage-kundali/` | ✅ | 3 | angle copy + `reportType` |
+| `/p/career-kundali/` | ✅ | 3 | |
+| `/p/dosha-report/` | ✅ | 3 | |
+| `/p/kundali-matching/` | ✅ | 3 | dual form (2 person cards) |
+| `/p/health-kundali/` | ✅ | 3 | |
+| `/about/ /privacy/ /terms/ /refund/ /disclaimer/ /sitemap/` | — | 0 | content renders, no form |
+| `/kundali/` | — | 0 | legacy checkout; redirects to `/` without `cacheId`+`email` |
+
+**Funnel — validated:**
+- Financial teaser → free preview (lagna/rashi/nakshatra/dosha + 6 money scores) ✅
+- Matching teaser (dual) → Guna Milan score + band rendered ✅
+- Checkout → order created, amount per `reportType` (₹199 / ₹299) ✅
+- Razorpay modal opens from the UI ✅ (live keys — payment cannot complete locally)
+- Attribution persisted on the kundali doc (`utm_source`, `utm_campaign`, `user_agent`) ✅
+- Report generation (invoked directly, bypassing payment): financial **11-page** PDF
+  + match **3-page** PDF, archived + downloadable ✅
+- Download routes `/download/:archiveId/pdf` and `/payment/download/:orderId` → 200 PDF ✅
+
+**Blockers / gaps found (tracked below):**
+- Local dev needs env overrides (docker-oriented `.env`: `mongo` host, MinIO, prod CORS).
+- Payment cannot complete locally (live Razorpay keys) → webhook/report/email/telegram
+  untestable through the real flow.
+- Matching preview silently hides when the ProKerala matching call fails/rate-limits.
+- Razorpay `checkout.js` loads on every page (`checkout-static-next.razorpay.com/build/undefined`
+  → `ERR_BLOCKED_BY_ORB`) even when not checking out.
+
+- [ ] **Local dev env overrides.** Add a `dev` script (or `.env.local`) that sets
+      `MONGODB_URI=mongodb://localhost:27017/app_kundaliapi`, `MINIO_ENDPOINT=false`, and
+      localhost in `CORS_ORIGINS`, so `pnpm dev` works without manual overrides. (Added
+      `http://localhost:3000` to `CORS_ORIGINS` in the local `.env` during this test.)
+- [ ] **Razorpay test mode for local/dev.** Use `rzp_test_*` keys (or a dev "mark paid"
+      bypass) so payment → webhook → report → email/telegram → download can be exercised
+      end-to-end without a real charge.
+- [ ] **Matching preview fallback.** When the compatibility call fails/rate-limits, show a
+      retry/notice instead of silently hiding the Guna Milan score.
+- [ ] **Load Razorpay `checkout.js` lazily** on unlock only (kill the per-page console noise).
+- [ ] **Financial report page completeness.** Template targets 12 pages; generated PDF was
+      11 pages — verify no section is silently dropped for lean charts.
+- [ ] **Orphaned legacy checkout.** `/kundali/` redirects to `/download?orderId=…`, but no
+      `/download` page exists; the live funnel downloads in-modal. Remove or wire it up.
+- [ ] **Dead `trackServerEvent`.** `lib/tracking.ts` POSTs to `/track`, which the API does
+      not expose. Remove or add the endpoint.
 
 - [ ] **Add more buy buttons + B2C conversion/offer copy on every page.** Force the
       purchase click with urgency, offers, and outcome-focused copy. ([#61](https://github.com/meanMonk/shrikundali/issues/61))
