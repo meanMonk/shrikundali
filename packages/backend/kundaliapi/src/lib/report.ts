@@ -176,11 +176,17 @@ export async function generatePaidReport(
         const list = (k.data as Record<string, unknown> | undefined)?.planet_positions;
         return Array.isArray(list) && list.length > 0;
       };
+      const hasAscendant = (k: typeof doc.parsed): boolean =>
+        Boolean((k.data as Record<string, unknown> | undefined)?.ascendant);
       const current = (doc.parsed.data as Record<string, unknown> | undefined)?.dasha_periods;
-      // Re-fetch whenever either prerequisite is missing, so an earlier
-      // partial fetch that was cached on the doc cannot poison every retry.
+      // Re-fetch whenever any prerequisite is missing, so an earlier partial
+      // fetch that was cached on the doc (e.g. from before the ascendant-merge
+      // fix) cannot poison every retry forever.
       const needsDetailed =
-        !hasPlanets(doc.parsed) || !Array.isArray(current) || current.length === 0;
+        !hasPlanets(doc.parsed) ||
+        !hasAscendant(doc.parsed) ||
+        !Array.isArray(current) ||
+        current.length === 0;
       if (needsDetailed && birth) {
         try {
           const detailed = await getKundli({
@@ -203,9 +209,9 @@ export async function generatePaidReport(
       }
       if (isFinancial) {
         const dasha = (renderData.data as Record<string, unknown> | undefined)?.dasha_periods;
-        if (!hasPlanets(renderData) || !Array.isArray(dasha) || dasha.length === 0) {
+        if (!hasPlanets(renderData) || !hasAscendant(renderData) || !Array.isArray(dasha) || dasha.length === 0) {
           throw new Error(
-            "Financial report requires a complete chart (planet positions + dasha periods); ProKerala data incomplete",
+            "Financial report requires a complete chart (ascendant + planet positions + dasha periods); ProKerala data incomplete",
           );
         }
       }
