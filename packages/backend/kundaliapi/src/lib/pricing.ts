@@ -14,12 +14,43 @@ export interface ReportPricing {
  * by serving these values through /api/config/:reportType.
  */
 export const REPORT_PRICING: Record<ReportType, ReportPricing> = {
-  financial_kundali: { amount: 199, listPrice: 199, discountPrice: 199 },
-  marriage_kundali: { amount: 199, listPrice: 199, discountPrice: 199 },
-  career_kundali: { amount: 199, listPrice: 199, discountPrice: 199 },
-  dosha_report: { amount: 199, listPrice: 199, discountPrice: 199 },
-  match_kundali: { amount: 299, listPrice: 299, discountPrice: 299 },
-  health_kundali: { amount: 199, listPrice: 199, discountPrice: 199 },
+
+  financial_kundali: {
+    amount: 249,
+    listPrice: 999,
+    discountPrice: 249,
+  },
+
+  marriage_kundali: {
+    amount: 249,
+    listPrice: 999,
+    discountPrice: 249,
+  },
+
+  career_kundali: {
+    amount: 249,
+    listPrice: 999,
+    discountPrice: 249,
+  },
+
+  dosha_report: {
+    amount: 199,
+    listPrice: 799,
+    discountPrice: 199,
+  },
+
+  match_kundali: {
+    amount: 299,
+    listPrice: 1499,
+    discountPrice: 299,
+  },
+
+  health_kundali: {
+    amount: 249,
+    listPrice: 999,
+    discountPrice: 249,
+  },
+
 };
 
 /**
