@@ -10,19 +10,19 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
 ## A. Ads attribution & Telegram reporting
 
-- [ ] **Persist all ads params (UTM + click IDs) to DB and report via Telegram.** ([#57](https://github.com/meanMonk/shrikundali/issues/57))
-  - Frontend already captures attribution in
-    `packages/web/kundaliweb/src/lib/attribution.ts` (utm_*, gclid, gbraid, wbraid,
-    fbclid, fbp, fbc, ga_client_id) and sends it on teaser + checkout.
-  - Backend already accepts/stores `attribution` on orders (`routes/checkout.ts`,
-    `routes/teaser.ts`, `lib/orders.ts`, `lib/store.ts`) and feeds it to the conversion
-    APIs (`lib/report.ts`, `lib/conversions.ts`).
-  - **Gap to close:** verify every order row actually carries the full set end-to-end;
-    add a per-source / per-campaign breakdown to the Telegram bot.
-  - Add a `/help` command entry + a **share-report** action in
-    `packages/backend/kundaliapi/src/routes/telegram-bot.ts` (existing commands end at
-    line ~148). Wire "share report" to the same hooks used by the report pipeline so a
-    report can be pushed into Telegram on demand.
+- [~] **Persist all ads params (UTM + click IDs) to DB and report via Telegram.** ([#57](https://github.com/meanMonk/shrikundali/issues/57))
+  - Frontend captures attribution in
+    `packages/web/kundaliweb/src/lib/attribution.ts` (utm_source/medium/campaign/content/term,
+    gclid, gbraid, wbraid, fbclid, fbp, fbc, ga_client_id, landing_page, referrer) and sends it
+    on teaser + checkout.
+  - Backend stores it on `kundalis.attribution` (teaser) and `orders.attribution` (checkout, which
+    also merges client_ip + user_agent) and feeds the conversion APIs (`lib/report.ts`).
+  - **Done:** Telegram attribution reporting via `lib/attribution-stats.ts` +
+    `/sources`, `/campaigns` (30d) and `/sources_all`, `/campaigns_all` (all-time) — leads ×
+    orders × paid × revenue per UTM value. Verified live: orders/kundalis carry the attribution
+    object (no UTM values yet because traffic has been direct — will populate once ads run).
+  - **Still open:** share-report action in the bot.
+
 
 ## B. Paid acquisition
 

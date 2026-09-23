@@ -7,8 +7,10 @@ import {
   listKundaliLeads,
   type LeadRow,
   type LeadStats,
-} from "../lib/store.js";import { getAllPricingDocs } from "../lib/pricing-store.js";
+} from "../lib/store.js";
+import { getAllPricingDocs } from "../lib/pricing-store.js";
 import { applyPricingPreset, formatPricing, TEST_PRICE } from "../lib/pricing-presets.js";
+import { getAttributionBreakdown, type AttributionRow } from "../lib/attribution-stats.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const telegramBotApp = new OpenAPIHono();
@@ -175,6 +177,32 @@ function formatFailed(hours: number, stuck: Awaited<ReturnType<typeof getStuckKu
   return lines.join("\n");
 }
 
+function formatAttribution(title: string, rows: AttributionRow[]): string {
+  const lines: string[] = [`📈 *${title}*`, ""];
+  if (!rows.length) {
+    lines.push("No leads or orders in this window yet.");
+    return lines.join("\n");
+  }
+
+  const totalLeads = rows.reduce((s, r) => s + r.leads, 0);
+  const totalPaid = rows.reduce((s, r) => s + r.completed, 0);
+  for (const r of rows.slice(0, 20)) {
+    const cvr = r.leads ? Math.round((r.completed / r.leads) * 100) : 0;
+    lines.push(
+      `• *${r.key}* — leads ${r.leads} · orders ${r.orders} · paid ${r.completed} (${cvr}%) · ₹${r.revenue}`,
+    );
+  }
+  if (rows.length > 20) lines.push(`… and ${rows.length - 20} more`);
+  lines.push("", `Totals: ${totalLeads} leads · ${totalPaid} paid`);
+  return lines.join("\n");
+}
+
+function lastNDays(days: number): { start: Date; end: Date } {
+  const end = new Date();
+  const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+  return { start, end };
+}
+
 /**
  * Bot command reference. Telegram command names allow only a-z, 0-9 and "_",
  * so multi-word commands use underscores and short joined aliases (e.g.
@@ -190,6 +218,11 @@ const HELP_TEXT = [
   "/month — Last 30 days",
   "/lastmonth — Previous calendar month",
   "/overall — All-time totals",
+  "",
+  "*Attribution*",
+  "/sources — traffic + conversions by utm_source (30d)",
+  "/campaigns — traffic + conversions by utm_campaign (30d)",
+  "/sources_all · /campaigns_all — same, all-time",
   "",
   "*Transactions*",
   "/txns — pending/paid/completed/failed (last 7 days)",
@@ -320,6 +353,16 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       const end = new Date(start);
       end.setDate(end.getDate() + 1);
       reply = formatTransactions("Today", await getOrderStatusBreakdown(start, end));
+    } else if (text === "/sources" || text === "/source" || text === "/utm_sources") {
+      const { start, end } = lastNDays(30);
+      reply = formatAttribution("Traffic by Source — last 30 days", await getAttributionBreakdown("utm_source", start, end));
+    } else if (text === "/campaigns" || text === "/campaign" || text === "/utm_campaigns") {
+      const { start, end } = lastNDays(30);
+      reply = formatAttribution("Traffic by Campaign — last 30 days", await getAttributionBreakdown("utm_campaign", start, end));
+    } else if (text === "/sources_all" || text === "/sourcesall" || text === "/utm_sources_all") {
+      reply = formatAttribution("Traffic by Source — all-time", await getAttributionBreakdown("utm_source"));
+    } else if (text === "/campaigns_all" || text === "/campaignsall" || text === "/utm_campaigns_all") {
+      reply = formatAttribution("Traffic by Campaign — all-time", await getAttributionBreakdown("utm_campaign"));
     } else if (text === "/current_pricing" || text === "/pricing" || text === "/currentpricing") {
       reply = formatPricing(await getAllPricingDocs());
     } else if (text === "/test_price" || text === "/testprice") {
