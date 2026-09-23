@@ -67,6 +67,8 @@ export interface KundaliDoc {
   downloadNotified?: boolean;
   conversionSent?: boolean;
   attribution?: Record<string, string>;
+  partner?: { name?: string; gender?: string; birth?: BirthDetails };
+  matching?: Record<string, unknown>;
   generatingAt?: Date;
   createdAt: Date;
   paidAt?: Date;

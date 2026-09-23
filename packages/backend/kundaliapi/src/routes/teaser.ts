@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { getKundli } from "../lib/prokerala.js";
+import { getKundli, getKundliMatching, type MatchingData } from "../lib/prokerala.js";
 import { buildTeaser, LOCKED_SECTIONS } from "../lib/teaser.js";
+import { buildMatchSummary } from "../lib/match-report.js";
 import {
   getKundali,
   saveKundali,
@@ -38,6 +39,26 @@ const TeaserInput = z.object({
   email: z.string().email().optional().describe("Used for report delivery"),
   attribution: z.record(z.string()).optional()
     .describe("UTM / gclid / fbclid / fbp / fbc for ad attribution"),
+  partner: z.object({
+    name: z.string().optional(),
+    gender: z.string().optional(),
+    datetime: z.string().optional().describe("Partner ISO 8601 birth datetime"),
+    coordinates: z.string().optional().describe("Partner lat,lon"),
+    place: z.string().optional(),
+  }).optional().describe("Second person's birth details (match_kundali only)"),
+});
+
+const MatchingSummarySchema = z.object({
+  totalPoints: z.number(),
+  maximumPoints: z.number(),
+  percentage: z.number(),
+  band: z.string(),
+  recommendation: z.string(),
+  girl: z.object({ nakshatra: z.string(), pada: z.string(), rasi: z.string(), lord: z.string() }),
+  boy: z.object({ nakshatra: z.string(), pada: z.string(), rasi: z.string(), lord: z.string() }),
+  koots: z.array(
+    z.object({ koota: z.string(), max: z.number(), girl: z.string(), boy: z.string(), note: z.string() }),
+  ),
 });
 
 const MoneyAxisScoresSchema = z.object({
@@ -63,6 +84,7 @@ const TeaserSchema = z.object({
   moneyAxisScores: MoneyAxisScoresSchema.optional(),
   mangalDosha: z.boolean(),
   majorYogas: z.number(),
+  matching: MatchingSummarySchema.optional(),
 });
 
 const TeaserResponse = z.object({
@@ -96,10 +118,16 @@ teaserApp.openapi(teaserRoute, async (c) => {
     if (body.cacheId) {
       const existing = await getKundali(body.cacheId);
       if (existing) {
+        const storedMatching = existing.matching
+          ? buildMatchSummary({ status: "ok", data: existing.matching } as unknown as MatchingData)
+          : undefined;
         return c.json({
           cacheId: existing.id,
           reportType: existing.reportType,
-          teaser: (existing.teaser ?? {}) as z.infer<typeof TeaserSchema>,
+          teaser: {
+            ...(existing.teaser ?? {}),
+            ...(storedMatching ? { matching: storedMatching } : {}),
+          } as z.infer<typeof TeaserSchema>,
           locked: existing.locked ?? LOCKED_SECTIONS[existing.reportType],
         }, 200);
       }
@@ -127,7 +155,33 @@ teaserApp.openapi(teaserRoute, async (c) => {
       place: body.place,
     };
 
+    // Match Kundali needs both charts: compare the native with the partner.
+    let matching: MatchingData | null = null;
+    if (reportType === "match_kundali" && body.partner?.datetime && body.partner?.coordinates) {
+      const nativeIsBoy = (body.gender ?? "").toLowerCase().startsWith("m");
+      const girl = nativeIsBoy
+        ? { datetime: body.partner.datetime, coordinates: body.partner.coordinates }
+        : { datetime: body.datetime, coordinates: body.coordinates };
+      const boy = nativeIsBoy
+        ? { datetime: body.datetime, coordinates: body.coordinates }
+        : { datetime: body.partner.datetime, coordinates: body.partner.coordinates };
+      try {
+        matching = await getKundliMatching({
+          girlDob: girl.datetime,
+          girlCoordinates: girl.coordinates,
+          boyDob: boy.datetime,
+          boyCoordinates: boy.coordinates,
+          ayanamsa: body.ayanamsa,
+          la: body.la,
+        });
+      } catch (e) {
+        logError(`${endpoint}/matching`, e);
+      }
+    }
+
     const { teaser, locked } = buildTeaser(reportType, parsed, reportName, birth);
+    const matchingSummary = matching ? buildMatchSummary(matching) : undefined;
+    const teaserOut = matchingSummary ? { ...teaser, matching: matchingSummary } : teaser;
     const cacheId = newId();
 
     await saveKundali({
@@ -141,14 +195,26 @@ teaserApp.openapi(teaserRoute, async (c) => {
       birth,
       raw,
       parsed,
-      teaser: teaser as unknown as Record<string, unknown>,
+      teaser: teaserOut as unknown as Record<string, unknown>,
       locked,
       attribution: body.attribution,
+      partner: body.partner
+        ? {
+            name: body.partner.name,
+            gender: body.partner.gender,
+            birth: {
+              coordinates: body.partner.coordinates ?? "",
+              datetime: body.partner.datetime ?? "",
+              place: body.partner.place,
+            },
+          }
+        : undefined,
+      matching: matching?.data as Record<string, unknown> | undefined,
       status: "teaser",
       createdAt: new Date(),
     });
 
-    return c.json({ cacheId, reportType, teaser, locked }, 200);
+    return c.json({ cacheId, reportType, teaser: teaserOut, locked }, 200);
   } catch (e) {
     logError(endpoint, e);
     return c.json({ error: String(e) }, 400);
