@@ -24,7 +24,13 @@ import { logInfo } from "./logger.js";
  *     generatingAt, createdAt, paidAt : Date
  *   }
  */
-export type ReportType = "financial_kundali" | "match_kundali";
+export type ReportType =
+  | "financial_kundali"
+  | "marriage_kundali"
+  | "career_kundali"
+  | "dosha_report"
+  | "match_kundali"
+  | "health_kundali";
 export type KundaliStatus = "teaser" | "ordered" | "paid" | "generating" | "completed";
 
 export interface BirthDetails {
@@ -68,7 +74,11 @@ export interface KundaliDoc {
 
 export const REPORT_LABELS: Record<ReportType, string> = {
   financial_kundali: "Financial Kundali Report",
+  marriage_kundali: "Marriage Kundali Report",
+  career_kundali: "Career Kundali Report",
+  dosha_report: "Dosha Report",
   match_kundali: "Match Kundali Report",
+  health_kundali: "Health Kundali Report",
 };
 
 export function newId(): string {

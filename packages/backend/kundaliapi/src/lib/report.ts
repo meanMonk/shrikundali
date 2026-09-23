@@ -15,6 +15,7 @@ import {
   type KundaliDoc,
 } from "./store.js";
 import { sendPurchaseConversion } from "./conversions.js";
+import { isAngleReport } from "./angle-report.js";
 
 const API_BASE = () => process.env.APP_URL ?? "http://localhost:3400";
 
@@ -114,7 +115,9 @@ export async function generatePaidReport(
     // detailed chart once (and cache it on the doc) rather than shipping a
     // report whose timing pages are empty.
     let renderData = doc.parsed;
-    if (doc.reportType === "financial_kundali") {
+    const isFinancial = doc.reportType === "financial_kundali";
+    const needsDetailedChart = isFinancial || isAngleReport(doc.reportType);
+    if (needsDetailedChart) {
       const hasPlanets = (k: typeof doc.parsed): boolean => {
         const list = (k.data as Record<string, unknown> | undefined)?.planet_positions;
         return Array.isArray(list) && list.length > 0;
@@ -144,20 +147,25 @@ export async function generatePaidReport(
           logError(`${endpoint}/report-refetch`, e);
         }
       }
-      const dasha = (renderData.data as Record<string, unknown> | undefined)?.dasha_periods;
-      if (!hasPlanets(renderData) || !Array.isArray(dasha) || dasha.length === 0) {
-        throw new Error(
-          "Financial report requires a complete chart (planet positions + dasha periods); ProKerala data incomplete",
-        );
+      if (isFinancial) {
+        const dasha = (renderData.data as Record<string, unknown> | undefined)?.dasha_periods;
+        if (!hasPlanets(renderData) || !Array.isArray(dasha) || dasha.length === 0) {
+          throw new Error(
+            "Financial report requires a complete chart (planet positions + dasha periods); ProKerala data incomplete",
+          );
+        }
       }
     }
 
     // Prefer ProKerala's own full paragraph report for non-financial types.
     // Financial Kundali always uses our branded 12-page template so it stays
     // self-contained, cheap, and finance-focused.
+    // Financial + angle reports use our branded templates; other types
+    // (e.g. match_kundali) keep using ProKerala's paragraph report.
     const useProkeralaReport =
       (process.env.PROKERALA_PDF_REPORT ?? "true") !== "false" &&
-      doc.reportType !== "financial_kundali";
+      doc.reportType !== "financial_kundali" &&
+      !isAngleReport(doc.reportType);
     let pdf: Buffer | null = null;
 
     if (useProkeralaReport && birth) {

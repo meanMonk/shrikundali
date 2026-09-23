@@ -174,7 +174,7 @@ function fmtBirthTime(datetime?: string): string {
    Block model
    ──────────────────────────────────────────────────────────── */
 
-type Block =
+export type Block =
   | { t: "h1" | "h2" | "h3" | "p" | "muted"; text: string }
   | { t: "ul"; items: string[] }
   | { t: "table"; headers: string[]; rows: string[][] }
@@ -233,7 +233,12 @@ function planetByHouse(planets: PlanetRow[], house: number): PlanetRow[] {
   return planets.filter((p) => p.house === house && p.name.toLowerCase() !== "ascendant");
 }
 
-function buildBlocks(d: Record<string, unknown>, label: string, meta: ReportMeta): Block[] {
+function buildBlocks(
+  d: Record<string, unknown>,
+  label: string,
+  meta: ReportMeta,
+  intro: Block[] = [],
+): Block[] {
   const blocks: Block[] = [];
   const push = (...b: Block[]) => blocks.push(...b);
 
@@ -268,6 +273,9 @@ function buildBlocks(d: Record<string, unknown>, label: string, meta: ReportMeta
     { t: "muted", text: `Generated on ${fmtDate(new Date().toISOString())}` },
     { t: "pagebreak" },
   );
+
+  // Angle-specific focus section (marriage / career / dosha / health).
+  if (intro.length) push(...intro);
 
   /* ── Birth details ── */
   push(
@@ -646,9 +654,14 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function renderHTML(data: KundliData, label?: string, meta: ReportMeta = {}): string {
+export function renderHTML(
+  data: KundliData,
+  label?: string,
+  meta: ReportMeta = {},
+  intro: Block[] = [],
+): string {
   const title = label || "Janam Kundali Report";
-  const blocks = buildBlocks(data.data, title, meta);
+  const blocks = buildBlocks(data.data, title, meta, intro);
 
   const body: string[] = [];
   for (const b of blocks) {
@@ -766,6 +779,10 @@ export async function renderReportHTML(
   if (reportType === "financial_kundali") {
     const { buildFinancialReportHTML } = await import("./financial-report.js");
     return buildFinancialReportHTML(data, label || "Janam Kundali Report", meta);
+  }
+  const { isAngleReport, angleIntroBlocks } = await import("./angle-report.js");
+  if (isAngleReport(reportType)) {
+    return renderHTML(data, label, meta, angleIntroBlocks(reportType, data));
   }
   return renderHTML(data, label, meta);
 }

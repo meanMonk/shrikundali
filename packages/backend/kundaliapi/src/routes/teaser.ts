@@ -13,7 +13,14 @@ import { logGeneration, logError } from "../lib/logger.js";
 
 const teaserApp = new OpenAPIHono();
 
-const ReportTypeEnum = z.enum(["financial_kundali", "match_kundali"]);
+const ReportTypeEnum = z.enum([
+  "financial_kundali",
+  "marriage_kundali",
+  "career_kundali",
+  "dosha_report",
+  "match_kundali",
+  "health_kundali",
+]);
 
 const TeaserInput = z.object({
   reportType: ReportTypeEnum.optional().default("financial_kundali")
