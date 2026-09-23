@@ -18,13 +18,33 @@ const minio = USE_MINIO
 const BUCKET = process.env.MINIO_BUCKET ?? "shrikundali";
 const LOCAL_BASE = join(process.cwd(), "archive", "uploads");
 
-async function ensureBucket() {
+// Memoized so concurrent uploads (archiveRaw fires several in parallel) share
+// one bucket-existence check instead of racing to create it independently —
+// without this, all but the first concurrent call crash with
+// "BucketAlreadyOwnedByYou" once the first call's makeBucket succeeds.
+let bucketReady: Promise<void> | null = null;
+
+async function ensureBucket(): Promise<void> {
   if (!minio) return;
-  const exists = await minio.bucketExists(BUCKET).catch(() => false);
-  if (!exists) {
-    await minio.makeBucket(BUCKET, "us-east-1");
-    logInfo(`archive: created MinIO bucket ${BUCKET}`);
+  if (!bucketReady) {
+    bucketReady = (async () => {
+      const exists = await minio.bucketExists(BUCKET).catch(() => false);
+      if (exists) return;
+      try {
+        await minio.makeBucket(BUCKET, "us-east-1");
+        logInfo(`archive: created MinIO bucket ${BUCKET}`);
+      } catch (e) {
+        // Bucket appeared between our check and create (another worker, or
+        // the deploy script's `mc mb`) — not an error.
+        if (e instanceof Error && "code" in e && (e as { code?: string }).code === "BucketAlreadyOwnedByYou") {
+          return;
+        }
+        bucketReady = null; // let the next call retry on a real failure
+        throw e;
+      }
+    })();
   }
+  return bucketReady;
 }
 
 async function uploadToMinio(key: string, data: Buffer, contentType: string) {
