@@ -90,6 +90,19 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
     `docs/progress/2026-09-21-pdf-quality-review-corrected.md`.
   - Confirm Hindi/Devanagari rendering, 12-page template, watermark, refund path.
 
+- [x] **Fixed P0: ascendant-merge bug stalling paid financial reports (2026-09-23).**
+      Root cause + fix in `lib/prokerala.ts`/`lib/report.ts` — see commits `8e5d4a8`,
+      `769d216`. **Blocked separately by ProKerala account credit exhaustion** —
+      confirmed directly against their API (`insufficient credit balance` on every
+      endpoint); needs a top-up on the ProKerala dashboard before any report,
+      paid or free, can generate again. Also shipped: payment-confirmed +
+      report-failure Telegram alerts (previously only success notified), a
+      Telegram `/retry <orderId>` command, and a 2-hourly in-process cron
+      (`lib/auto-resolve.ts`) that auto-regenerates any paid-but-stuck report
+      with no manual step. Also trimmed free-teaser ProKerala credit usage
+      (3→2 calls; match_kundali no longer fetches an unused solo chart) and
+      removed the orphaned, unpaid `/kundali/generate,markdown,pdf` dev routes.
+
 ### Integration test — local end-to-end (2026-09-23) `[~]`
 
 Ran the app locally: Astro dev `:3000` + Hono dev `:3400` + local Mongo

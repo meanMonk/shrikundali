@@ -364,3 +364,51 @@ export async function generatePaidReport(
     return null;
   }
 }
+
+export interface RegenerateResult {
+  ok: boolean;
+  message: string;
+  downloadUrl?: string;
+}
+
+/**
+ * Manually re-trigger generation for a kundali stuck after payment, by order
+ * ID or cache ID — the single entry point for both the Telegram `/retry`
+ * command and the 2-hourly auto-resolve cron. Reuses generatePaidReport, so
+ * a successful retry already re-sends the sale Telegram alert and emails the
+ * customer their report with no extra plumbing needed here.
+ */
+export async function regenerateReportById(id: string): Promise<RegenerateResult> {
+  let doc = await getKundaliByOrderId(id);
+  if (!doc) doc = await getKundali(id);
+  if (!doc) {
+    return { ok: false, message: `No kundali found for "${id}".` };
+  }
+
+  if (doc.archiveId && doc.downloadUrl) {
+    return { ok: true, message: "Already generated.", downloadUrl: doc.downloadUrl };
+  }
+
+  const result = await generatePaidReport({
+    orderId: doc.orderId,
+    provider: doc.provider ?? "razorpay",
+    paymentId: doc.paymentId,
+    cacheId: doc.id,
+    email: doc.email,
+    name: doc.name,
+    amount: doc.amount,
+  });
+
+  if (!result) {
+    return {
+      ok: false,
+      message: `Regeneration failed (or already in progress) for ${doc.id}. Check the logs.`,
+    };
+  }
+
+  return {
+    ok: true,
+    message: `Report generated${result.alreadyGenerated ? " (was already done)" : ""} and emailed to ${doc.email || "customer"}.`,
+    downloadUrl: result.downloadUrl,
+  };
+}

@@ -15,6 +15,7 @@ import { pricingApp } from "./routes/pricing.js";
 import { supportApp } from "./routes/support.js";
 import { digestApp } from "./routes/digest.js";
 import { startDailyDigestScheduler } from "./lib/digest.js";
+import { startAutoResolveScheduler } from "./lib/auto-resolve.js";
 import { teaserApp } from "./routes/teaser.js";
 import { telegramBotApp } from "./routes/telegram-bot.js";
 import { webhookApp } from "./routes/webhook.js";
@@ -54,6 +55,9 @@ serve({ fetch: app.fetch, port });
 
 // Daily founder digest at 07:30 IST (Telegram + email).
 startDailyDigestScheduler();
+
+// Auto-retry paid-but-ungenerated reports every 2 hours.
+startAutoResolveScheduler();
 
 // Ensure the Puppeteer browser process is always closed on restart/redeploy —
 // left running, it leaks Chromium processes and grows container memory over time.

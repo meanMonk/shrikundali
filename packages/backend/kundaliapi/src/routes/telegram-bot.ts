@@ -12,6 +12,7 @@ import { getAllPricingDocs } from "../lib/pricing-store.js";
 import { applyPricingPreset, formatPricing, TEST_PRICE } from "../lib/pricing-presets.js";
 import { getAttributionBreakdown, type AttributionRow } from "../lib/attribution-stats.js";
 import { listSupportTickets, getSupportTicketStats, type SupportTicket } from "../lib/support.js";
+import { regenerateReportById } from "../lib/report.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const telegramBotApp = new OpenAPIHono();
@@ -255,6 +256,7 @@ const HELP_TEXT = [
   "*Ops*",
   "/tickets — recent support tickets (payment/download issues)",
   "/failed — paid orders stuck without a completed report (last 7 days)",
+  "/retry <orderId or kundaliId> — regenerate a stuck report now, emails customer on success",
   "",
   "/feedback — feedback stats (not tracked yet)",
 ].join("\n");
@@ -363,6 +365,18 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       since.setDate(since.getDate() - 7);
       const stuck = await getStuckKundalis(since, 10);
       reply = formatFailed(24 * 7, stuck);
+    } else if (text.startsWith("/retry")) {
+      const id = text.slice("/retry".length).trim();
+      if (!id) {
+        reply = "Usage: `/retry <orderId or kundaliId>`\n\nThe ID is in the failure alert message.";
+      } else {
+        const who = msg.from?.username ?? String(chatId);
+        logInfo(`${endpoint} /retry ${id} requested by ${who}`);
+        const result = await regenerateReportById(id);
+        reply = result.ok
+          ? `✅ ${result.message}${result.downloadUrl ? `\n📥 ${result.downloadUrl}` : ""}`
+          : `❌ ${result.message}`;
+      }
     } else if (text === "/txns" || text === "/transactions" || text === "/payments") {
       const start = new Date(now);
       start.setDate(start.getDate() - 7);

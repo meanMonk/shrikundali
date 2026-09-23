@@ -111,6 +111,7 @@ export interface ReportFailureNotification {
 }
 
 export async function notifyAdminReportFailure(data: ReportFailureNotification): Promise<boolean> {
+  const retryId = data.orderId || data.cacheId || "";
   const message = `🚨 *Report Generation FAILED*
 
 👤 ${data.name || "N/A"}
@@ -121,7 +122,7 @@ export async function notifyAdminReportFailure(data: ReportFailureNotification):
 ❗ ${data.error}
 
 Customer has paid but has no report — needs manual attention.
-
+${retryId ? `\n👉 Retry now: \`/retry ${retryId}\`\n(An auto-resolve check also retries every 2h.)` : ""}
 ⏰ ${istNow()}`;
 
   const ok = await sendTelegram(message);
