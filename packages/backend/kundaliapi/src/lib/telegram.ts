@@ -130,6 +130,27 @@ ${retryId ? `\n👉 Retry now: \`/retry ${retryId}\`\n(An auto-resolve check als
   return ok;
 }
 
+export interface AutoResolveNotification {
+  checked: number;
+  resolved: number;
+  stillFailing: number;
+}
+
+/** Sent by the 2-hourly auto-resolve cron whenever it actually touched anything. */
+export async function notifyAdminAutoResolve(data: AutoResolveNotification): Promise<boolean> {
+  const message = `🤖 *Auto-Resolve — Stuck Reports*
+
+Checked: ${data.checked}
+✅ Resolved (regenerated + emailed): ${data.resolved}
+${data.stillFailing > 0 ? `⚠️ Still failing: ${data.stillFailing} (see earlier failure alert for details, or run \`/failed\`)` : "🎉 None still failing"}
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify auto-resolve summary sent (resolved=${data.resolved}, stillFailing=${data.stillFailing})`);
+  return ok;
+}
+
 export interface DownloadNotification {
   name?: string;
   email?: string;

@@ -1,5 +1,6 @@
 import { getStuckKundalis } from "./store.js";
 import { regenerateReportById } from "./report.js";
+import { notifyAdminAutoResolve } from "./telegram.js";
 import { logInfo, logError } from "./logger.js";
 
 /**
@@ -9,9 +10,9 @@ import { logInfo, logError } from "./logger.js";
  * the birth details and, when cached, the ProKerala chart — so this simply
  * retries generatePaidReport for each one via the same path as the
  * Telegram `/retry` command. A successful retry already re-sends the sale
- * alert and emails the customer; a repeat failure stays silent here since
- * the original failure alert (lib/report.ts) already fired once and won't
- * fire again until the doc is fixed.
+ * alert and emails the customer; either way, a summary of what this run
+ * found/fixed is posted to Telegram so a resolve is visible without anyone
+ * having to check the original failure alert or run `/failed`.
  */
 
 const STALE_MINUTES = 15;
@@ -45,6 +46,11 @@ export async function autoResolveStuckReports(): Promise<AutoResolveSummary> {
 
   if (stuck.length > 0) {
     logInfo(`auto-resolve: checked ${stuck.length}, resolved ${resolved}, still failing ${stillFailing}`);
+    // Only ping when the cron actually did something — a quiet run (nothing
+    // stuck) stays silent so this doesn't become noise every 2 hours.
+    await notifyAdminAutoResolve({ checked: stuck.length, resolved, stillFailing }).catch((e) =>
+      logError("auto-resolve/telegram", e),
+    );
   }
 
   return { checked: stuck.length, resolved, stillFailing };
