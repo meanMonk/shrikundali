@@ -24,7 +24,7 @@ docs/ads/
 ├── regional-campaign-structures.md    Per-language campaign plan + ready-to-run native copy
 ├── google-ads-transparency-scan.md    Who runs Google Ads in this category, and how
 ├── google-keyword-research.md         Keyword lists (head + long-tail) + negatives, ready for the Ads account
-├── meta-business-manager-setup.md     How to set up the Meta ad account (needs you — see below)
+├── meta-business-manager-setup.md     Entity-first BM setup (Vaayu Labs → Pages/campaigns per product) + account-health & ban-recovery best practices (needs you — see below)
 └── faceless-video-ads-plan.md         Parked — video creative proposal, not started
 ```
 
