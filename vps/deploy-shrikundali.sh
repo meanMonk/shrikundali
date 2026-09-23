@@ -65,19 +65,25 @@ DEPLOY
 echo "[3/4] Running health checks..."
 sleep 5
 
+# Host-published ports (see each package's compose.yaml):
+#   backend  3460:3400   frontend  3006:3000
+# Check from ON the server (REMOTE_HOST is an ssh alias, not an HTTP host).
+BACKEND_PORT=3460
+FRONTEND_PORT=3006
+
 if [ "$SERVICE" = "backend" ] || [ "$SERVICE" = "all" ]; then
-  if curl -sf "http://$REMOTE_HOST:3400/health" >/dev/null 2>&1; then
-    echo "  kundaliapi: healthy on :3400"
+  if ssh "$REMOTE_HOST" "curl -sf http://localhost:${BACKEND_PORT}/health" >/dev/null 2>&1; then
+    echo "  kundaliapi: healthy on :${BACKEND_PORT}"
   else
-    echo "  kundaliapi: health check failed on :3400"
+    echo "  kundaliapi: health check failed on :${BACKEND_PORT}"
   fi
 fi
 
 if [ "$SERVICE" = "frontend" ] || [ "$SERVICE" = "all" ]; then
-  if curl -sf "http://$REMOTE_HOST:3001" >/dev/null 2>&1; then
-    echo "  kundaliweb: healthy on :3001"
+  if ssh "$REMOTE_HOST" "curl -sf http://localhost:${FRONTEND_PORT}" >/dev/null 2>&1; then
+    echo "  kundaliweb: healthy on :${FRONTEND_PORT}"
   else
-    echo "  kundaliweb: health check failed on :3001"
+    echo "  kundaliweb: health check failed on :${FRONTEND_PORT}"
   fi
 fi
 
