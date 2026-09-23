@@ -93,16 +93,23 @@ async function getCollection(): Promise<Collection<KundaliDoc>> {
   if (col) return col;
   const db = await getDb();
   const c = db.collection<KundaliDoc>("kundalis");
-  await Promise.all([
-    c.createIndex({ id: 1 }, { unique: true }),
-    c.createIndex({ orderId: 1 }, { sparse: true }),
-    c.createIndex({ email: 1 }),
-    c.createIndex({ archiveId: 1 }, { sparse: true }),
-    c.createIndex({ status: 1 }),
-    c.createIndex({ createdAt: -1 }),
-  ]);
+  // Index creation is an optimization, not a correctness requirement. Some
+  // deployments use a Mongo user without createIndexes privilege — don't let
+  // that turn every request into a 400. Log and carry on.
+  try {
+    await Promise.all([
+      c.createIndex({ id: 1 }, { unique: true }),
+      c.createIndex({ orderId: 1 }, { sparse: true }),
+      c.createIndex({ email: 1 }),
+      c.createIndex({ archiveId: 1 }, { sparse: true }),
+      c.createIndex({ status: 1 }),
+      c.createIndex({ createdAt: -1 }),
+    ]);
+    logInfo("kundalis collection initialized");
+  } catch (e) {
+    logInfo(`kundalis index creation skipped (${String(e)}) — check Mongo privileges`);
+  }
   col = c;
-  logInfo("kundalis collection initialized");
   return col;
 }
 

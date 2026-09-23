@@ -103,14 +103,19 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
 
   // Always fetch the chart, planet positions (needed for scores) and panchang.
   // The expensive extras (advanced chart with dasha, doshas) only when detailed.
-  const [basic, planets, panchang, advanced, kaalSarp, sadeSati] = await Promise.all([
-    pkGet("/v2/astrology/kundli", qs, token),
-    pkGet("/v2/astrology/planet-position", qs, token),
-    pkGet("/v2/astrology/panchang", qs, token),
-    params.detailed ? pkGet("/v2/astrology/kundli/advanced", qs, token) : Promise.resolve(null),
-    params.detailed ? pkGet("/v2/astrology/kaal-sarp-dosha", qs, token) : Promise.resolve(null),
-    params.detailed ? pkGet("/v2/astrology/sade-sati", qs, token) : Promise.resolve(null),
-  ]);
+  // These run SERIALLY: ProKerala rate-limits per client, and a parallel burst
+  // gets throttled with 429s that can silently drop the planet positions.
+  const basic = await pkGet("/v2/astrology/kundli", qs, token);
+  const planets = await pkGet("/v2/astrology/planet-position", qs, token);
+  const panchang = await pkGet("/v2/astrology/panchang", qs, token);
+  const advanced = params.detailed ? await pkGet("/v2/astrology/kundli/advanced", qs, token) : null;
+  const kaalSarp = params.detailed ? await pkGet("/v2/astrology/kaal-sarp-dosha", qs, token) : null;
+  const sadeSati = params.detailed ? await pkGet("/v2/astrology/sade-sati", qs, token) : null;
+
+  logInfo(
+    `prokerala sub-responses: kundli=${basic.status} planet=${planets.status} panchang=${panchang.status}` +
+      (advanced ? ` advanced=${advanced.status}` : ""),
+  );
 
   const chartRes = advanced && advanced.ok ? advanced : basic;
   if (!chartRes || !chartRes.ok || !chartRes.json) {
@@ -134,13 +139,25 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   // can omit it; the basic chart and kundli payload include it). Fall back to
   // the first non-empty list so we never blank the lagna/chart.
   const candidates = [kundliPositions, basicPositions, advancedPositions, planetPositions];
-  const mergedPositions = candidates.find(hasAscendant) ?? candidates.find((l) => l.length) ?? [];
+  let mergedPositions = candidates.find(hasAscendant) ?? candidates.find((l) => l.length) ?? [];
+
+  // Fallback: if the dedicated planet-position call was throttled or empty,
+  // recover from the advanced chart (which also carries planet_positions).
+  if (mergedPositions.length === 0 && !advanced) {
+    logInfo("prokerala/kundli: planet positions missing — retrying via advanced chart");
+    const advFallback = await pkGet("/v2/astrology/kundli/advanced", qs, token);
+    const advPos = ((advFallback.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
+    if (advPos.length) {
+      mergedPositions = advPos;
+      logInfo(`prokerala/kundli: recovered ${advPos.length} planet positions via advanced chart`);
+    }
+  }
 
   // Never return a chart without planetary positions — a partial upstream
   // response (e.g. one endpoint rate-limited) must fail loudly instead of
   // producing or caching an empty chart.
   if (mergedPositions.length === 0) {
-    logError("prokerala/kundli", "no planet positions in any response");
+    logError("prokerala/kundli", `no planet positions in any response (planet-position status=${planets.status})`);
     throw new Error("ProKerala returned no planet positions");
   }
 
