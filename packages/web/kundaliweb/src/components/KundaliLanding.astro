@@ -164,7 +164,9 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     <h2 style="color:var(--color-primary);font-size:1.3rem;margin-bottom:0.5rem;text-align:center">{formHeading}</h2>
     <p style="text-align:center;color:var(--color-text-muted);font-size:0.9rem;margin-bottom:1rem">{formSubheading}</p>
 
-    <form id="kundali-form" style="max-width:600px;margin:0 auto">
+    <form id="kundali-form" class={dual ? "kundali-form dual" : "kundali-form"} style={dual ? "max-width:960px;margin:0 auto" : "max-width:600px;margin:0 auto"}>
+      <div class="person-card">
+        {dual && <p class="person-card-title">Your Details</p>}
       <label class="field-label">
         <span>Your Name</span>
         <input type="text" id="label" name="label" placeholder="Your name" required class="field-input" />
@@ -229,10 +231,11 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         <span class="field-hint">Type your city — we'll match it automatically.</span>
         <input type="hidden" id="coordinates" value="19.0760,72.8777" />
       </div>
+      </div>
 
       {dual && (
-        <div id="partner-fields" style="border-top:1px dashed var(--color-border);margin:0.75rem 0 1rem;padding-top:0.75rem">
-          <p style="font-weight:600;color:var(--color-secondary);margin-bottom:0.5rem">Partner's Details</p>
+        <div id="partner-fields" class="person-card">
+          <p class="person-card-title">Partner's Details</p>
           <label class="field-label">
             <span>Partner's Name</span>
             <input type="text" id="partner-name" name="partner-name" placeholder="Partner's name" class="field-input" />
@@ -295,6 +298,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         </div>
       )}
 
+      <div class="form-common">
       <label class="field-label">
         <span>Report Language</span>
         <select id="la" name="la" class="field-input">
@@ -310,6 +314,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
       <button type="submit" id="form-submit-btn" class="cta-pulse" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1.05rem;font-weight:700;cursor:pointer">
         Show My Free Preview
       </button>
+      </div>
     </form>
 
     <p id="form-status" style="text-align:center;margin-top:1rem;font-size:0.9rem"></p>
@@ -360,6 +365,18 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         <span id="modal-original-price" style="font-size:1rem;color:var(--color-text-muted);text-decoration:line-through;margin-right:0.5rem"></span>
         <span id="modal-price" style="font-size:1.5rem;font-weight:700;color:var(--color-primary)"></span>
       </div>
+      <div class="report-preview" aria-label="Report preview">
+        <div class="report-preview-cover">
+          <span class="report-preview-kicker">Your Kundali Report</span>
+          <span class="report-preview-title">{pageCount}-page personalised PDF</span>
+          <span class="report-preview-badge">Instant + emailed backup</span>
+        </div>
+        <ul class="report-preview-points">
+          <li><CheckCircle2 size={14} /> Wealth, career &amp; money-timing scores</li>
+          <li><Clock size={14} /> 10+ year Dasha &amp; Antardasha timeline</li>
+          <li><Sparkles size={14} /> Doshas &amp; practical remedies</li>
+        </ul>
+      </div>
       <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;text-align:left">
         <p style="font-size:0.8rem;font-weight:600;color:var(--color-secondary);margin-bottom:0.4rem">What you get:</p>
         <ul id="modal-features-list" style="list-style:none;display:grid;gap:0.3rem;font-size:0.82rem;color:var(--color-text-muted)"></ul>
@@ -405,6 +422,17 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
       </button>
       <div id="success-status" style="display:none;padding:0.5rem;border-radius:6px;font-size:0.82rem;text-align:center"></div>
       <p style="font-size:0.72rem;color:var(--color-text-muted);text-align:center;margin-top:0.6rem">&#x1F512; A backup copy is also sent to your email. Your download link stays active for 7 days.</p>
+    </div>
+  </div>
+
+  <!-- Blocking generation overlay (no close, prevents leaving while we generate) -->
+  <div id="loading-overlay" role="alertdialog" aria-live="polite" aria-busy="true" style="display:none;position:fixed;inset:0;background:rgba(36,30,78,0.66);backdrop-filter:blur(3px);z-index:500;align-items:center;justify-content:center;padding:1.5rem">
+    <div style="background:#fff;border-radius:14px;padding:2rem 1.75rem;max-width:360px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.3)">
+      <div class="loading-ring"></div>
+      <h3 id="loading-overlay-title" style="color:var(--color-primary);font-size:1.15rem;margin-bottom:0.5rem">Generating your report&hellip;</h3>
+      <p id="loading-overlay-text" style="font-size:0.9rem;color:var(--color-text-muted);min-height:2.6em;line-height:1.4">Reading your birth chart&hellip;</p>
+      <div style="height:6px;border-radius:4px;background:var(--color-border);overflow:hidden;margin:1rem 0 0.6rem"><div id="loading-overlay-bar" style="height:100%;width:8%;background:var(--color-primary);transition:width .6s ease"></div></div>
+      <p style="font-size:0.72rem;color:var(--color-text-muted)">Please keep this page open &mdash; it takes less than a minute.</p>
     </div>
   </div>
 
@@ -492,6 +520,25 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     }
     .field-row { display: flex; gap: 0.75rem; align-items: flex-start; }
     .field-row > .field-label { flex: 1 1 0; min-width: 0; }
+    .kundali-form.dual { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.25rem; align-items: start; }
+    .kundali-form.dual .field-row { flex-direction: column; gap: 0.6rem; }
+    .kundali-form.dual .select-group .field-input { padding-left: 0.3rem; padding-right: 0.3rem; }
+    .kundali-form.dual .person-card {
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem 0.25rem;
+      background: var(--color-bg);
+    }
+    .kundali-form.dual .person-card-title {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-secondary);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .kundali-form.dual .form-common { grid-column: 1 / -1; }
     .select-group { display: grid; gap: 0.4rem; }
     .dob-group { grid-template-columns: 0.9fr 1.3fr 1.1fr; }
     .time-group { grid-template-columns: 1fr 1fr 1fr; }
@@ -556,9 +603,32 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     #success-modal > div { box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
     .success-spinner { width: 16px; height: 16px; border: 2px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-ring { width: 54px; height: 54px; border: 4px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; margin: 0 auto 1.1rem; animation: spin 0.9s linear infinite; }
+    body.sk-loading { overflow: hidden; }
+    #loading-overlay > div { box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .report-preview {
+      display: flex; gap: 0.75rem; align-items: center;
+      background: linear-gradient(135deg, rgba(36,30,78,0.06), rgba(181,69,28,0.06));
+      border: 1px solid var(--color-border); border-radius: 10px;
+      padding: 0.75rem; margin-bottom: 1rem; text-align: left;
+    }
+    .report-preview-cover {
+      flex-shrink: 0; width: 84px; height: 108px; border-radius: 6px;
+      background: linear-gradient(160deg, var(--color-secondary), var(--color-primary));
+      color: #fff; display: flex; flex-direction: column; justify-content: center;
+      gap: 0.3rem; padding: 0.55rem; text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .report-preview-kicker { font-size: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; }
+    .report-preview-title { font-family: var(--font-heading); font-size: 0.72rem; font-weight: 700; line-height: 1.2; }
+    .report-preview-badge { font-size: 0.5rem; opacity: 0.9; }
+    .report-preview-points { list-style: none; display: grid; gap: 0.4rem; font-size: 0.78rem; color: var(--color-text-muted); }
+    .report-preview-points li { display: flex; align-items: flex-start; gap: 0.35rem; }
+    .report-preview-points svg { flex-shrink: 0; margin-top: 0.12rem; color: var(--color-primary); }
 
     @media (max-width: 768px) {
       .grid-2 { grid-template-columns: 1fr !important; }
+      .kundali-form.dual { grid-template-columns: 1fr; }
       .field-row { flex-direction: column; gap: 0; }
       .hero-title { font-size: 1.5rem !important; }
       button, .cta-pulse, a.cta-pulse { min-height: 44px; }
@@ -592,6 +662,45 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     let reportOriginalPrice: number | null = null;
     let formName = "";
     let formGender = "";
+
+    // ---- Blocking loading overlay: prevents leaving the page while we generate ----
+    const loadingOverlay = document.getElementById("loading-overlay");
+    const loadingOverlayTitle = document.getElementById("loading-overlay-title");
+    const loadingOverlayText = document.getElementById("loading-overlay-text");
+    const loadingOverlayBar = document.getElementById("loading-overlay-bar");
+    let loadingActive = false;
+    let reportGenerating = false;
+    let loadingTimer: number | null = null;
+
+    function showLoadingOverlay(title: string, messages: string[]) {
+      if (!loadingOverlay) return;
+      loadingActive = true;
+      document.body.classList.add("sk-loading");
+      if (loadingOverlayTitle) loadingOverlayTitle.textContent = title;
+      if (loadingOverlayBar) loadingOverlayBar.style.width = "12%";
+      let i = 0;
+      if (loadingOverlayText) loadingOverlayText.textContent = messages[0] || "";
+      if (loadingTimer) window.clearInterval(loadingTimer);
+      if (messages.length > 1) {
+        loadingTimer = window.setInterval(() => {
+          i = (i + 1) % messages.length;
+          if (loadingOverlayText) loadingOverlayText.textContent = messages[i];
+        }, 2600);
+      }
+    }
+
+    function hideLoadingOverlay() {
+      loadingActive = false;
+      document.body.classList.remove("sk-loading");
+      if (loadingTimer) { window.clearInterval(loadingTimer); loadingTimer = null; }
+      if (loadingOverlay) loadingOverlay.style.display = "none";
+    }
+
+    window.addEventListener("beforeunload", (e) => {
+      if (!loadingActive && !reportGenerating) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
 
     const DEFAULT_FEATURES = [
       "Personalized report from your exact birth chart",
@@ -920,8 +1029,14 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         }
       }
 
-      if (statusEl) { statusEl.textContent = "Generating your preview..."; statusEl.style.color = "var(--color-text-muted)"; }
+      if (statusEl) { statusEl.textContent = ""; }
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Generating..."; }
+      showLoadingOverlay("Generating your free preview\u2026", [
+        "Reading your birth chart\u2026",
+        "Calculating Lagna, Rashi & Nakshatra\u2026",
+        "Checking doshas and yogas\u2026",
+        "Almost there\u2026",
+      ]);
 
       try {
         const res = await fetch(`${API_URL}/teaser`, {
@@ -986,6 +1101,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         if (statusEl) { statusEl.textContent = "Something went wrong. Please try again."; statusEl.style.color = "#c00"; }
         console.error("Teaser submission failed:", err);
       } finally {
+        hideLoadingOverlay();
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Show My Free Preview"; }
       }
     });
@@ -1009,6 +1125,16 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     const successModal = document.getElementById("success-modal") as HTMLDivElement | null;
     const successStatus = document.getElementById("success-status");
     const successDownloadBtn = document.getElementById("success-download-btn") as HTMLButtonElement | null;
+
+    // While the report is generating the success dialog is non-dismissable so the
+    // user can't navigate away mid-generation.
+    let successBlocking = false;
+    function setSuccessBlocking(on: boolean) {
+      successBlocking = on;
+      reportGenerating = on;
+      const closeBtn = document.getElementById("success-close") as HTMLElement | null;
+      if (closeBtn) closeBtn.style.display = on ? "none" : "block";
+    }
 
     function setSuccessStatus(text: string, kind: "info" | "error" | "ok" = "info") {
       if (!successStatus) return;
@@ -1110,9 +1236,10 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     ) {
       if (modal) modal.style.display = "none";
       openSuccessModal({ orderId, amount: reportPrice, email });
+      setSuccessBlocking(true);
       setSuccessStatus("");
       setDownloadButton("preparing");
-      setSuccessProgress("Confirming your payment\u2026", true);
+      setSuccessProgress("Confirming your payment\u2026 please keep this page open.", true);
 
       if (successDownloadBtn) {
         successDownloadBtn.onclick = () => { void finishDownload(orderId); };
@@ -1142,11 +1269,12 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
 
       // 2) Otherwise poll — the server re-confirms payment and self-heals.
       if (!info?.archiveId) {
-        setSuccessProgress("Generating your report\u2026 this usually takes under a minute.", true);
+        setSuccessProgress("Generating your report\u2026 please keep this page open (under a minute).", true);
         info = await waitForReport(orderId);
       }
 
       if (!info?.archiveId) {
+        setSuccessBlocking(false);
         setSuccessProgress(null);
         setDownloadButton("retry");
         setSuccessStatus("Your report is still being prepared. Tap retry in a moment \u2014 a download link is also emailed to you.", "error");
@@ -1159,11 +1287,12 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         content_type: "product",
       });
 
+      setSuccessBlocking(false);
       await finishDownload(orderId);
     }
 
-    document.getElementById("success-close")?.addEventListener("click", () => { if (successModal) successModal.style.display = "none"; });
-    successModal?.addEventListener("click", (e) => { if (e.target === successModal) successModal.style.display = "none"; });
+    document.getElementById("success-close")?.addEventListener("click", () => { if (!successBlocking && successModal) successModal.style.display = "none"; });
+    successModal?.addEventListener("click", (e) => { if (!successBlocking && e.target === successModal) successModal.style.display = "none"; });
 
     // ---- Modal payment: call /payment/checkout + Razorpay ----
     const modalForm = document.getElementById("modal-payment-form") as HTMLFormElement;
