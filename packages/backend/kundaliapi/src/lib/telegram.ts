@@ -98,6 +98,36 @@ export async function notifyAdminDownload(data: DownloadNotification): Promise<b
   return ok;
 }
 
+export interface SupportTicketNotification {
+  id: string;
+  reason: string;
+  orderId?: string;
+  cacheId?: string;
+  email?: string;
+  name?: string;
+  reportType?: string;
+  amount?: number;
+  orderStatus?: string;
+  message?: string;
+}
+
+export async function notifyAdminSupportTicket(t: SupportTicketNotification): Promise<boolean> {
+  const message = `🆘 *Support Ticket*
+
+🏷 \`${t.id}\`
+❓ ${t.reason}
+👤 ${t.name || "N/A"} — ${t.email || "N/A"}
+📋 ${t.reportType || "N/A"}${t.amount != null ? ` · ₹${t.amount}` : ""}
+🔑 order: \`${t.orderId || "N/A"}\` (status: ${t.orderStatus || "?"})
+🗂 kundali: \`${t.cacheId || "N/A"}\`${t.message ? `\n💬 ${t.message}` : ""}
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify support ticket ${t.id} sent`);
+  return ok;
+}
+
 export interface ServiceStartInfo {
   service: string;
   port?: string | number;

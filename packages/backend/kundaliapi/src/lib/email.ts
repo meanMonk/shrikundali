@@ -144,3 +144,97 @@ export async function sendPaymentFailureEmail(
     html,
   });
 }
+
+/** Where support tickets are delivered. Override with SUPPORT_EMAIL. */
+export function supportInbox(): string {
+  return process.env.SUPPORT_EMAIL || "support@rashikundali.com";
+}
+
+export interface SupportEmailContext {
+  id: string;
+  reason: string;
+  orderId?: string;
+  cacheId?: string;
+  email?: string;
+  name?: string;
+  reportType?: string;
+  amount?: number;
+  paymentId?: string;
+  orderStatus?: string;
+  message?: string;
+  createdAt: Date;
+}
+
+function escapeHtml(v: string): string {
+  return v.replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch] ?? ch));
+}
+
+function supportDetailsRows(t: SupportEmailContext): string {
+  const rows: [string, string | number | undefined][] = [
+    ["Ticket", t.id],
+    ["Reason", t.reason],
+    ["Order ID", t.orderId],
+    ["Kundali / cache ID", t.cacheId],
+    ["Email", t.email],
+    ["Name", t.name],
+    ["Report", t.reportType],
+    ["Amount", t.amount != null ? `₹${t.amount}` : undefined],
+    ["Payment ID", t.paymentId],
+    ["Order status", t.orderStatus],
+    ["Raised at", t.createdAt.toISOString()],
+    ["Message", t.message],
+  ];
+  return rows
+    .filter(([, v]) => v !== undefined && v !== "")
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:0.3rem 0.75rem 0.3rem 0;color:#777;">${k}</td><td style="padding:0.3rem 0;color:#111;font-family:monospace;">${escapeHtml(String(v))}</td></tr>`,
+    )
+    .join("");
+}
+
+/** Internal alert to the support inbox. */
+export async function sendSupportTicketEmail(t: SupportEmailContext): Promise<boolean> {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Georgia, serif; color: #1a1a1a; max-width: 640px; margin: 0 auto; padding: 2rem;">
+  <h1 style="color: #8b4513; border-bottom: 2px solid #d4a373; padding-bottom: 0.5rem;">New Support Ticket</h1>
+  <p>A customer reported a problem after payment.</p>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;background:#faf3e8;border:1px solid #e8dfd1;border-radius:8px;padding:0.5rem;">
+    ${supportDetailsRows(t)}
+  </table>
+  <p style="font-size:0.85rem;color:#666;margin-top:1rem;">Look up the order in the \`orders\` / \`kundalis\` collections using the IDs above.</p>
+</body>
+</html>`;
+  return sendViaSMTP({
+    to: supportInbox(),
+    subject: `[Support] ${t.reason} — ${t.orderId ?? t.id}`,
+    html,
+  });
+}
+
+/** Acknowledgement to the customer. */
+export async function sendSupportAckEmail(t: SupportEmailContext): Promise<boolean> {
+  if (!t.email) return false;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Georgia, serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 2rem;">
+  <h1 style="color: #8b4513;">We're on it</h1>
+  <p>Hi ${escapeHtml(t.name || "there")},</p>
+  <p>Thanks for letting us know. We've received your report and our team will get back to you over email as soon as possible — usually within a few hours.</p>
+  <p>For reference, your ticket number is <strong>${escapeHtml(t.id)}</strong>${t.orderId ? ` (order <strong>${escapeHtml(t.orderId)}</strong>)` : ""}.</p>
+  <p style="font-size:0.9rem;color:#666;">If your report is already on its way, you can ignore this — a fresh download link will also be emailed to you.</p>
+  <hr style="border: none; border-top: 1px solid #d4a373; margin: 2rem 0;">
+  <p style="font-size: 0.8rem; color: #888; text-align: center;"><a href="https://rashikundali.com" style="color:#888;">rashikundali.com</a></p>
+</body>
+</html>`;
+  return sendViaSMTP({
+    to: t.email,
+    subject: "We've received your request — Rashi Kundali Support",
+    html,
+  });
+}

@@ -11,6 +11,7 @@ import {
 import { getAllPricingDocs } from "../lib/pricing-store.js";
 import { applyPricingPreset, formatPricing, TEST_PRICE } from "../lib/pricing-presets.js";
 import { getAttributionBreakdown, type AttributionRow } from "../lib/attribution-stats.js";
+import { listSupportTickets, getSupportTicketStats, type SupportTicket } from "../lib/support.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const telegramBotApp = new OpenAPIHono();
@@ -197,6 +198,20 @@ function formatAttribution(title: string, rows: AttributionRow[]): string {
   return lines.join("\n");
 }
 
+function formatTickets(stats: { total: number; open: number }, rows: SupportTicket[]): string {
+  const lines: string[] = ["🆘 *Support Tickets*", `Open: ${stats.open} · Total: ${stats.total}`, ""];
+  if (!rows.length) {
+    lines.push("No tickets yet. 🎉");
+    return lines.join("\n");
+  }
+  for (const t of rows) {
+    lines.push(
+      `• ${t.reason} — ${t.email || "no email"} — order \`${t.orderId || "-"}\` (${t.orderStatus || "?"}) — ${formatIST(t.createdAt)}`,
+    );
+  }
+  return lines.join("\n");
+}
+
 function lastNDays(days: number): { start: Date; end: Date } {
   const end = new Date();
   const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
@@ -238,6 +253,7 @@ const HELP_TEXT = [
   "/actual_price — restore launch prices",
   "",
   "*Ops*",
+  "/tickets — recent support tickets (payment/download issues)",
   "/failed — paid orders stuck without a completed report (last 7 days)",
   "",
   "/feedback — feedback stats (not tracked yet)",
@@ -339,6 +355,9 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
         listKundaliLeads(30, { onlyWithEmail: true }),
       ]);
       reply = formatEmails(leads, rows);
+    } else if (text === "/tickets" || text === "/support") {
+      const [stats, rows] = await Promise.all([getSupportTicketStats(), listSupportTickets(15)]);
+      reply = formatTickets(stats, rows);
     } else if (text === "/failed") {
       const since = new Date(now);
       since.setDate(since.getDate() - 7);
