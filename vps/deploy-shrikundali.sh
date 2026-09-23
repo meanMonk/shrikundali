@@ -11,11 +11,16 @@ echo "==> Deploying shrikundali ($SERVICE)"
 
 # Sync code to VPS
 echo "[1/4] Syncing code..."
+# NOTE: .env files are intentionally NOT synced here — they hold server-side
+# secrets (Mongo credentials, API keys). Syncing them would overwrite whatever
+# is configured on the server with local/dev values. Use vps/sync-env.sh
+# explicitly when you actually want to push env changes.
 rsync -avz --delete \
   --exclude 'node_modules' \
   --exclude '.git' \
   --exclude 'dist' \
   --exclude '*.log' \
+  --exclude '.env' \
   ./ "$REMOTE_HOST:$REPO_DIR/"
 
 # Deploy to VPS
