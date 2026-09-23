@@ -21,6 +21,9 @@ rsync -avz --delete \
   --exclude 'dist' \
   --exclude '*.log' \
   --exclude '.env' \
+  --exclude '.env.local' \
+  --exclude '.env.*.local' \
+  --exclude '.env.prod' \
   ./ "$REMOTE_HOST:$REPO_DIR/"
 
 # Deploy to VPS
