@@ -12,39 +12,17 @@
  *     pnpm --filter kundaliapi pricing:set test
  */
 import "dotenv/config";
-import { REPORT_PRICING } from "../src/lib/pricing.js";
-import type { ReportType } from "../src/lib/store.js";
 import {
-  allDefaultPricingDocs,
   getAllPricingDocs,
   seedPricingDocs,
   upsertPricingDoc,
 } from "../src/lib/pricing-store.js";
+import {
+  PRICING_TYPES,
+  presetPatch,
+  type PricingPreset,
+} from "../src/lib/pricing-presets.js";
 import { closeDb } from "../src/lib/mongo.js";
-
-const TYPES = Object.keys(REPORT_PRICING) as ReportType[];
-
-/** ₹9 for every template, real MRP kept as the struck-through list price. */
-function testPatch(reportType: ReportType) {
-  return {
-    amount: 9,
-    discountPrice: 9,
-    listPrice: REPORT_PRICING[reportType].listPrice,
-    offerLabel: "TEST ₹9",
-    note: "test pricing (₹9)",
-  };
-}
-
-function actualPatch(reportType: ReportType) {
-  const p = REPORT_PRICING[reportType];
-  return {
-    amount: p.amount,
-    discountPrice: p.discountPrice,
-    listPrice: p.listPrice,
-    offerLabel: "",
-    note: "restored to launch pricing",
-  };
-}
 
 function inr(n: number): string {
   return `₹${n}`;
@@ -70,13 +48,10 @@ try {
   if (mode === "show") {
     printTable(await getAllPricingDocs());
     console.log("[pricing] no change (pass 'test' or 'actual' to update)");
-  } else if (mode === "test" || mode === "9") {
-    for (const t of TYPES) await upsertPricingDoc(t, testPatch(t), "script:test");
-    console.log("[pricing] set all reports to ₹9");
-    printTable(await getAllPricingDocs());
-  } else if (mode === "actual" || mode === "real") {
-    for (const t of TYPES) await upsertPricingDoc(t, actualPatch(t), "script:actual");
-    console.log("[pricing] restored launch prices");
+  } else if (mode === "test" || mode === "9" || mode === "actual" || mode === "real") {
+    const preset: PricingPreset = mode === "test" || mode === "9" ? "test" : "actual";
+    for (const t of PRICING_TYPES) await upsertPricingDoc(t, presetPatch(preset, t), `script:${preset}`);
+    console.log(preset === "test" ? "[pricing] set all reports to ₹9" : "[pricing] restored launch prices");
     printTable(await getAllPricingDocs());
   } else {
     console.error(`Unknown mode: ${mode}\nUse: test | actual | show`);
@@ -86,6 +61,6 @@ try {
   console.error("[pricing] failed:", String(e));
   process.exitCode = 1;
 } finally {
-  console.log(`[pricing] known templates: ${allDefaultPricingDocs().map((d) => d.reportType).join(", ")}`);
+  console.log(`[pricing] known templates: ${PRICING_TYPES.join(", ")}`);
   await closeDb();
 }

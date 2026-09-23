@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { getOrderStats, getAllTimeOrderStats } from "../lib/orders.js";
 import { getStuckKundalis } from "../lib/store.js";
+import { getAllPricingDocs } from "../lib/pricing-store.js";
+import { applyPricingPreset, formatPricing, TEST_PRICE } from "../lib/pricing-presets.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const telegramBotApp = new OpenAPIHono();
@@ -142,10 +144,22 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
       since.setDate(since.getDate() - 7);
       const stuck = await getStuckKundalis(since, 10);
       reply = formatFailed(24 * 7, stuck);
+    } else if (text === "/current-pricing" || text === "/current_pricing" || text === "/pricing") {
+      reply = formatPricing(await getAllPricingDocs());
+    } else if (text === "/test-price" || text === "/test_price" || text === "/testprice") {
+      const who = msg.from?.username ?? String(chatId);
+      await applyPricingPreset("test", `telegram:${who}`);
+      logInfo(`${endpoint} TEST pricing applied by ${who}`);
+      reply = `🧪 *Test pricing applied* — every report now charges ₹${TEST_PRICE}.\n\n${formatPricing(await getAllPricingDocs())}`;
+    } else if (text === "/actual-price" || text === "/actual_price" || text === "/actualprice") {
+      const who = msg.from?.username ?? String(chatId);
+      await applyPricingPreset("actual", `telegram:${who}`);
+      logInfo(`${endpoint} launch pricing restored by ${who}`);
+      reply = `✅ *Launch pricing restored.*\n\n${formatPricing(await getAllPricingDocs())}`;
     } else if (text === "/feedback") {
       reply = "💬 *Feedback*\n\nNo feedback collection is wired up yet — there's no ratings/feedback schema in the DB. Ask if you'd like one added (e.g. a post-download rating prompt).";
     } else if (text === "/start" || text === "/help") {
-      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales\n/yesterday — Yesterday's sales\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month\n/overall — All-time totals\n/failed — Paid orders stuck without a completed report (last 7 days)\n/feedback — Feedback stats (not tracked yet)";
+      reply = "📊 *Kundali Stats Bot*\n\nCommands:\n/today — Today's sales\n/yesterday — Yesterday's sales\n/week — Last 7 days\n/month — Last 30 days\n/lastmonth — Previous calendar month\n/overall — All-time totals\n/failed — Paid orders stuck without a completed report (last 7 days)\n\n*Pricing*\n/current-pricing — Show current prices\n/test-price — Set all reports to ₹9 (testing)\n/actual-price — Restore launch prices\n\n/feedback — Feedback stats (not tracked yet)";
     }
 
     if (reply) {
