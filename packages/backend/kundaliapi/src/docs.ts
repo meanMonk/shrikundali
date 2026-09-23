@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
 import { z } from "zod";
-import { kundaliApp } from "./routes/kundali.js";
 
 /**
  * OpenAPI + Scalar docs for kundaliapi.
@@ -13,7 +12,6 @@ import { kundaliApp } from "./routes/kundali.js";
  */
 export function setupDocs(app: Hono) {
   const specApp = new OpenAPIHono();
-  specApp.route("/kundali", kundaliApp);
 
   const healthRoute = createRoute({
     method: "get",

@@ -107,13 +107,16 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   // gets throttled with 429s that can silently drop the planet positions.
   const basic = await pkGet("/v2/astrology/kundli", qs, token);
   const planets = await pkGet("/v2/astrology/planet-position", qs, token);
-  const panchang = await pkGet("/v2/astrology/panchang", qs, token);
+  // Panchang is only used by the paid report templates — skip it for lean
+  // (teaser) fetches so a free preview doesn't burn a 3rd ProKerala credit.
+  const panchang = params.detailed ? await pkGet("/v2/astrology/panchang", qs, token) : null;
   const advanced = params.detailed ? await pkGet("/v2/astrology/kundli/advanced", qs, token) : null;
   const kaalSarp = params.detailed ? await pkGet("/v2/astrology/kaal-sarp-dosha", qs, token) : null;
   const sadeSati = params.detailed ? await pkGet("/v2/astrology/sade-sati", qs, token) : null;
 
   logInfo(
-    `prokerala sub-responses: kundli=${basic.status} planet=${planets.status} panchang=${panchang.status}` +
+    `prokerala sub-responses: kundli=${basic.status} planet=${planets.status}` +
+      (panchang ? ` panchang=${panchang.status}` : "") +
       (advanced ? ` advanced=${advanced.status}` : ""),
   );
 
@@ -141,6 +144,17 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   const candidates = [kundliPositions, basicPositions, advancedPositions, planetPositions];
   let mergedPositions = candidates.find(hasAscendant) ?? candidates.find((l) => l.length) ?? [];
 
+  // The Ascendant is also carried as its own top-level `ascendant` object,
+  // separate from the planet_positions rows — but only on the basic /kundli
+  // response; the /kundli/advanced response (preferred as chartRes when
+  // `detailed` is true) can omit it entirely. Losing it here means the
+  // report templates can't locate the Lagna row at all and hard-fail, even
+  // though the chart itself is complete. Prefer whichever response actually
+  // carries it, falling back to chartRes's own value.
+  const basicAscendant = (basic.json?.data as Record<string, unknown> | undefined)?.ascendant;
+  const advancedAscendant = (advanced?.json?.data as Record<string, unknown> | undefined)?.ascendant;
+  const ascendant = baseData.ascendant ?? advancedAscendant ?? basicAscendant;
+
   // Fallback: if the dedicated planet-position call was throttled or empty,
   // recover from the advanced chart (which also carries planet_positions).
   if (mergedPositions.length === 0 && !advanced) {
@@ -161,12 +175,13 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
     throw new Error("ProKerala returned no planet positions");
   }
 
-  const panchangData = panchang.json?.data ?? null;
+  const panchangData = panchang?.json?.data ?? null;
   const kaalSarpData = kaalSarp?.json?.data ?? null;
   const sadeSatiData = sadeSati?.json?.data ?? null;
 
   parsed.data = {
     ...baseData,
+    ...(ascendant ? { ascendant } : {}),
     ...(mergedPositions.length ? { planet_positions: mergedPositions } : {}),
     ...(panchangData ? { panchang: panchangData } : {}),
     ...(kaalSarpData ? { kaal_sarp_dosha: kaalSarpData } : {}),

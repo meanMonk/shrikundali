@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { getKundli, getKundliMatching, type MatchingData } from "../lib/prokerala.js";
+import { getKundli, getKundliMatching, type MatchingData, type KundliData } from "../lib/prokerala.js";
 import { buildTeaser, LOCKED_SECTIONS } from "../lib/teaser.js";
 import { buildMatchSummary } from "../lib/match-report.js";
 import {
@@ -137,13 +137,6 @@ teaserApp.openapi(teaserRoute, async (c) => {
       return c.json({ error: "coordinates and datetime are required to generate a teaser" }, 400);
     }
 
-    const { parsed, raw } = await getKundli({
-      coordinates: body.coordinates,
-      datetime: body.datetime,
-      ayanamsa: body.ayanamsa,
-      la: body.la,
-    });
-
     const reportName = body.name || body.label || "Janam Kundali";
     const birth: BirthDetails = {
       coordinates: body.coordinates,
@@ -155,9 +148,22 @@ teaserApp.openapi(teaserRoute, async (c) => {
       place: body.place,
     };
 
+    // The match_kundali teaser is driven entirely by /kundli-matching — the
+    // native person's own chart (lagna/rashi/nakshatra) is never shown for
+    // this report type, so skip fetching it and save 3 ProKerala credits.
+    const isMatch = reportType === "match_kundali";
+    const { parsed, raw } = isMatch
+      ? { parsed: { status: "ok", data: {} } as KundliData, raw: {} as Record<string, unknown> }
+      : await getKundli({
+          coordinates: body.coordinates,
+          datetime: body.datetime,
+          ayanamsa: body.ayanamsa,
+          la: body.la,
+        });
+
     // Match Kundali needs both charts: compare the native with the partner.
     let matching: MatchingData | null = null;
-    if (reportType === "match_kundali" && body.partner?.datetime && body.partner?.coordinates) {
+    if (isMatch && body.partner?.datetime && body.partner?.coordinates) {
       const nativeIsBoy = (body.gender ?? "").toLowerCase().startsWith("m");
       const girl = nativeIsBoy
         ? { datetime: body.partner.datetime, coordinates: body.partner.coordinates }

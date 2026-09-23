@@ -20,7 +20,7 @@ import { logInfo } from "./logger.js";
  *     status        : "teaser" | "ordered" | "paid" | "generating" | "completed"
  *     orderId, provider, paymentId, amount : payment info
  *     archiveId, downloadUrl : generated report
- *     purchaseNotified, downloadNotified : boolean?
+ *     purchaseNotified, downloadNotified, paymentNotified, failureNotified : boolean?
  *     generatingAt, createdAt, paidAt : Date
  *   }
  */
@@ -65,6 +65,8 @@ export interface KundaliDoc {
   downloadUrl?: string;
   purchaseNotified?: boolean;
   downloadNotified?: boolean;
+  paymentNotified?: boolean;
+  failureNotified?: boolean;
   conversionSent?: boolean;
   attribution?: Record<string, string>;
   partner?: { name?: string; gender?: string; birth?: BirthDetails };
@@ -280,6 +282,28 @@ export async function markKundaliDownloadNotified(id: string): Promise<boolean> 
   const res = await c.findOneAndUpdate(
     { id, downloadNotified: { $ne: true } },
     { $set: { downloadNotified: true } },
+    { returnDocument: "after" },
+  );
+  return !!res;
+}
+
+/** Atomically mark "payment confirmed" notified, so it fires exactly once per kundali. */
+export async function markKundaliPaymentNotified(id: string): Promise<boolean> {
+  const c = await getCollection();
+  const res = await c.findOneAndUpdate(
+    { id, paymentNotified: { $ne: true } },
+    { $set: { paymentNotified: true } },
+    { returnDocument: "after" },
+  );
+  return !!res;
+}
+
+/** Atomically mark "report generation failed" notified, so retries don't spam Telegram. */
+export async function markKundaliFailureNotified(id: string): Promise<boolean> {
+  const c = await getCollection();
+  const res = await c.findOneAndUpdate(
+    { id, failureNotified: { $ne: true } },
+    { $set: { failureNotified: true } },
     { returnDocument: "after" },
   );
   return !!res;

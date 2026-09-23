@@ -73,6 +73,62 @@ ${status}${downloadLine}
   return ok;
 }
 
+export interface PaymentConfirmedNotification {
+  name?: string;
+  email?: string;
+  reportType: string;
+  amount: number;
+  paymentId: string;
+  paymentProvider: string;
+}
+
+export async function notifyAdminPaymentConfirmed(data: PaymentConfirmedNotification): Promise<boolean> {
+  const message = `💳 *Payment Confirmed*
+
+👤 ${data.name || "N/A"}
+📧 ${data.email || "N/A"}
+📋 ${data.reportType}
+💰 ₹${data.amount} via ${data.paymentProvider}
+🔑 \`${data.paymentId}\`
+⏳ Generating report...
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify payment confirmed sent for ${data.paymentId}`);
+  return ok;
+}
+
+export interface ReportFailureNotification {
+  name?: string;
+  email?: string;
+  reportType: string;
+  orderId?: string;
+  cacheId?: string;
+  paymentId?: string;
+  paymentProvider?: string;
+  error: string;
+}
+
+export async function notifyAdminReportFailure(data: ReportFailureNotification): Promise<boolean> {
+  const message = `🚨 *Report Generation FAILED*
+
+👤 ${data.name || "N/A"}
+📧 ${data.email || "N/A"}
+📋 ${data.reportType}
+🔑 order: \`${data.orderId || "N/A"}\` · kundali: \`${data.cacheId || "N/A"}\`
+💳 \`${data.paymentId || "N/A"}\` via ${data.paymentProvider || "N/A"}
+❗ ${data.error}
+
+Customer has paid but has no report — needs manual attention.
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify report failure sent for ${data.orderId || data.cacheId}`);
+  return ok;
+}
+
 export interface DownloadNotification {
   name?: string;
   email?: string;

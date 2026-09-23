@@ -11,7 +11,6 @@ import { configApp } from "./routes/config.js";
 import { dbRoutes } from "./routes/db.js";
 import { downloadApp } from "./routes/download.js";
 import { healthRoutes } from "./routes/health.js";
-import { kundaliApp } from "./routes/kundali.js";
 import { pricingApp } from "./routes/pricing.js";
 import { supportApp } from "./routes/support.js";
 import { digestApp } from "./routes/digest.js";
@@ -37,7 +36,6 @@ app.use(
 );
 app.route("/health", healthRoutes);
 app.route("/db", dbRoutes);
-app.route("/kundali", kundaliApp);
 app.route("/teaser", teaserApp);
 app.route("/payment", checkoutApp);
 app.route("/webhook", webhookApp);

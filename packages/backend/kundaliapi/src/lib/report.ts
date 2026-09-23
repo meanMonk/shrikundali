@@ -3,7 +3,7 @@ import { renderReportPDF, renderMarkdown, type ReportMeta } from "./render.js";
 import { archiveRaw, addArchiveFile } from "./archive.js";
 import { logInfo, logError } from "./logger.js";
 import { sendReportEmail } from "./email.js";
-import { notifyAdminSale } from "./telegram.js";
+import { notifyAdminSale, notifyAdminPaymentConfirmed, notifyAdminReportFailure } from "./telegram.js";
 import { markOrderCompleted } from "./orders.js";
 import {
   getKundali,
@@ -11,6 +11,8 @@ import {
   claimKundaliForReport,
   updateKundali,
   markKundaliConversionSent,
+  markKundaliPaymentNotified,
+  markKundaliFailureNotified,
   REPORT_LABELS,
   type KundaliDoc,
 } from "./store.js";
@@ -55,6 +57,56 @@ async function notifySaleOnce(doc: KundaliDoc): Promise<void> {
     if (ok) await updateKundali(doc.id, { purchaseNotified: true });
   } catch (e) {
     logError("/report/generate/telegram", e);
+  }
+}
+
+/**
+ * Ping the admin chat once payment is confirmed and generation has been
+ * claimed, ahead of the (potentially slow) ProKerala + render work. Fires at
+ * most once per kundali regardless of how many times generation is retried.
+ */
+async function notifyPaymentOnce(
+  doc: KundaliDoc,
+  orderId: string,
+  provider: string,
+  paymentId: string,
+): Promise<void> {
+  try {
+    if (!(await markKundaliPaymentNotified(doc.id))) return;
+    await notifyAdminPaymentConfirmed({
+      name: doc.name,
+      email: doc.email,
+      reportType: doc.reportLabel || REPORT_LABELS[doc.reportType],
+      amount: doc.amount ?? 0,
+      paymentId: paymentId || orderId,
+      paymentProvider: provider,
+    });
+  } catch (e) {
+    logError("/report/generate/telegram-payment", e);
+  }
+}
+
+/**
+ * Alert the admin chat when report generation fails outright — a paying
+ * customer has no report and needs manual attention. Fires at most once per
+ * kundali so the self-heal retry loop (polling /payment/order) can't spam
+ * the same failure over and over.
+ */
+async function notifyFailureOnce(doc: KundaliDoc, orderId: string, error: unknown): Promise<void> {
+  try {
+    if (!(await markKundaliFailureNotified(doc.id))) return;
+    await notifyAdminReportFailure({
+      name: doc.name,
+      email: doc.email,
+      reportType: doc.reportLabel || REPORT_LABELS[doc.reportType],
+      orderId,
+      cacheId: doc.id,
+      paymentId: doc.paymentId,
+      paymentProvider: doc.provider,
+      error: String(error instanceof Error ? error.message : error),
+    });
+  } catch (e) {
+    logError("/report/generate/telegram-failure", e);
   }
 }
 
@@ -107,6 +159,8 @@ export async function generatePaidReport(
     language: birth?.la,
     reportNo: doc.id.toUpperCase(),
   };
+
+  await notifyPaymentOnce(doc, orderId, provider, paymentId);
 
   try {
     logInfo(`${endpoint} generating report for ${doc.id} (order ${orderId})`);
@@ -299,6 +353,7 @@ export async function generatePaidReport(
     return { archiveId: archive.id, downloadUrl, alreadyGenerated: false };
   } catch (e) {
     logError(endpoint, e);
+    await notifyFailureOnce(doc, orderId, e);
     await updateKundali(doc.id, { status: "paid" }).catch(() => {});
     return null;
   }
