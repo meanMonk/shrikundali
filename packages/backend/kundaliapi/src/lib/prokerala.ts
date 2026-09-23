@@ -136,6 +136,14 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   const candidates = [kundliPositions, basicPositions, advancedPositions, planetPositions];
   const mergedPositions = candidates.find(hasAscendant) ?? candidates.find((l) => l.length) ?? [];
 
+  // Never return a chart without planetary positions — a partial upstream
+  // response (e.g. one endpoint rate-limited) must fail loudly instead of
+  // producing or caching an empty chart.
+  if (mergedPositions.length === 0) {
+    logError("prokerala/kundli", "no planet positions in any response");
+    throw new Error("ProKerala returned no planet positions");
+  }
+
   const panchangData = panchang.json?.data ?? null;
   const kaalSarpData = kaalSarp?.json?.data ?? null;
   const sadeSatiData = sadeSati?.json?.data ?? null;
@@ -228,7 +236,7 @@ export async function getPersonalReportPdf(
       modules: options.modules ?? DEFAULT_PERSONAL_REPORT_MODULES,
       template: {
         style: options.templateStyle ?? "vedic-astro-green",
-        footer: options.footer ?? "shrikundali.com",
+        footer: options.footer ?? "rashikundali.com",
       },
       report: {
         name: options.reportName ?? "Kundali Report",

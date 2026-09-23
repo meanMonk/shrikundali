@@ -78,7 +78,7 @@ const TOTAL_PAGES = 12;
 const COPY = {
   en: {
     brand: "Shri Kundali",
-    footer: "shrikundali.in",
+    footer: "rashikundali.com",
     auspicious: "AUSPICIOUS",
     title: "Janam Kundali Report",
     subtitle: "Personalized Financial Kundali Report",
@@ -167,7 +167,7 @@ const COPY = {
   },
   hi: {
     brand: "श्री कुंडली",
-    footer: "shrikundali.in",
+    footer: "rashikundali.com",
     auspicious: "शुभम्",
     title: "जन्म कुंडली रिपोर्ट",
     subtitle: "वित्तीय कुंडली — धन, कर्ज़, करियर एवं समय",

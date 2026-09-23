@@ -589,7 +589,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
         const res = await fetch(`${API_URL}/teaser`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reportType: REPORT_TYPE, name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, place: (document.getElementById("birthplace") as HTMLInputElement | null)?.value || "", email: `preview-${Date.now()}@shrikundali.in`, attribution: checkoutAttribution() }),
+          body: JSON.stringify({ reportType: REPORT_TYPE, name: formName, gender: formGender, datetime, coordinates, ayanamsa: 1, la: lang, place: (document.getElementById("birthplace") as HTMLInputElement | null)?.value || "", email: `preview-${Date.now()}@rashikundali.com`, attribution: checkoutAttribution() }),
         });
         if (!res.ok) throw new Error(`Teaser request failed (${res.status})`);
         const data = await res.json();
