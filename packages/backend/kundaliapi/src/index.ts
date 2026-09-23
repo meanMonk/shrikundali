@@ -14,6 +14,8 @@ import { healthRoutes } from "./routes/health.js";
 import { kundaliApp } from "./routes/kundali.js";
 import { pricingApp } from "./routes/pricing.js";
 import { supportApp } from "./routes/support.js";
+import { digestApp } from "./routes/digest.js";
+import { startDailyDigestScheduler } from "./lib/digest.js";
 import { teaserApp } from "./routes/teaser.js";
 import { telegramBotApp } from "./routes/telegram-bot.js";
 import { webhookApp } from "./routes/webhook.js";
@@ -41,6 +43,7 @@ app.route("/payment", checkoutApp);
 app.route("/webhook", webhookApp);
 app.route("/download", downloadApp);
 app.route("/support", supportApp);
+app.route("/digest", digestApp);
 app.route("/api/config", configApp);
 app.route("/api/pricing", pricingApp);
 app.route("/telegram/bot", telegramBotApp);
@@ -50,6 +53,9 @@ const port = Number(process.env.PORT ?? 3000);
 console.log(`kundaliapi listening on :${port}  (docs: http://localhost:${port}/docs)`);
 
 serve({ fetch: app.fetch, port });
+
+// Daily founder digest at 07:30 IST (Telegram + email).
+startDailyDigestScheduler();
 
 // Ensure the Puppeteer browser process is always closed on restart/redeploy —
 // left running, it leaks Chromium processes and grows container memory over time.

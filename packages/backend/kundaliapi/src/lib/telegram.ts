@@ -134,6 +134,13 @@ export interface ServiceStartInfo {
   env?: string;
 }
 
+/** Daily founder digest (Markdown). */
+export async function notifyFounderDigest(text: string): Promise<boolean> {
+  const ok = await sendTelegram(text);
+  if (ok) logInfo("telegram/notify founder digest sent");
+  return ok;
+}
+
 export async function notifyAdminServiceStart(info: ServiceStartInfo): Promise<boolean> {
   const message = `🚀 *Service Restarted*
 

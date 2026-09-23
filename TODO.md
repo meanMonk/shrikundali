@@ -38,9 +38,10 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
 
 - [ ] **Meta Business — create business account + sub-accounts (ad accounts/Pages) and
       launch 10+ ad variants.** ([#59](https://github.com/meanMonk/shrikundali/issues/59))
-  - Setup walkthrough: `docs/ads/meta-business-manager-setup.md`.
-  - Copy: `docs/ads/meta-ads-copy.md`, `docs/ads/money-debt-sprint-copy.md`.
-  - Creatives: `docs/ads/money-debt-creatives/` (`docs/ads/README.md` indexes them).
+  - **Founder priority (on Sahil's plate).** Quick direction:
+    `docs/ads/meta-business-manager-setup.md` (account/BM walkthrough),
+    `docs/ads/meta-ads-copy.md` + `docs/ads/money-debt-sprint-copy.md` (copy),
+    `docs/ads/money-debt-creatives/` (creatives; `docs/ads/README.md` indexes them).
   - Note in setup doc: prefer **one BM with multiple Pages/ad accounts**, not multiple
     BMs (duplicate-account risk). Produce 10+ distinct creative/copy variants for the
     first campaign.
@@ -58,6 +59,27 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
       `src/lib/pricing-store.ts`, `src/lib/pricing-presets.ts`, `src/routes/pricing.ts`,
       `scripts/set-pricing.ts`. Payment modal also made compact/responsive with trust badges.
 
+
+- [x] **Post-payment support tickets.** Success-modal chips (download failed / paid no
+      report / paid twice) → `POST /support/ticket` → Mongo `support_tickets` (enriched from
+      the kundali/order) + email to `SUPPORT_EMAIL` + customer ack + Telegram ping;
+      `/tickets` on the bot. Code: `lib/support.ts`, `routes/support.ts`. ([#73](https://github.com/meanMonk/shrikundali/issues/73))
+
+- [x] **Daily founder digest (07:30 IST) — Telegram + email.** In-process scheduler
+      (`lib/digest.ts` → `startDailyDigestScheduler`) builds day/7d/30d/all-time orders +
+      revenue, today's funnel, top sources (30d), open tickets and stuck reports, and sends
+      to Telegram + `FOUNDER_EMAIL` (default `sahil.k@vaayulabs.com`). Manual trigger
+      `POST /digest/run`, preview `GET /digest/preview` (both `x-admin-token` when
+      `ADMIN_TOKEN` is set). Disable with `DIGEST_ENABLED=false`.
+
+- [ ] **Live E2E validation with a real payment, then review in ~4 days.** Run the full
+      funnel on production (form → teaser → Razorpay → webhook → PDF → email/Telegram →
+      download → support path), then check back and decide next steps. ([#60](https://github.com/meanMonk/shrikundali/issues/60))
+      - After the 4-day review: **create the next batch of ad campaigns** (Google + Meta).
+
+- [ ] **Enable Cashfree as a fallback payment gateway.** `lib/payment.ts` already implements
+      Cashfree create/verify — set `CASHFREE_APP_ID` / `CASHFREE_SECRET_KEY` /
+      `CASHFREE_ENV` and surface it as a fallback if Razorpay is unavailable. ([#66](https://github.com/meanMonk/shrikundali/issues/66))
 
 - [~] **Validate the complete end-to-end PDF kundali report flow.** ([#60](https://github.com/meanMonk/shrikundali/issues/60))
   - Flow: form → teaser → Razorpay/Cashfree checkout → webhook → PDF generate →

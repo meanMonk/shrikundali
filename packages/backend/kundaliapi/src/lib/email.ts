@@ -150,6 +150,16 @@ export function supportInbox(): string {
   return process.env.SUPPORT_EMAIL || "support@rashikundali.com";
 }
 
+/** Founder daily digest recipient. Override with FOUNDER_EMAIL. */
+export function founderInbox(): string {
+  return process.env.FOUNDER_EMAIL || "sahil.k@vaayulabs.com";
+}
+
+/** Daily business overview email to the founder. */
+export async function sendFounderDigestEmail(subject: string, html: string): Promise<boolean> {
+  return sendViaSMTP({ to: founderInbox(), subject, html });
+}
+
 export interface SupportEmailContext {
   id: string;
   reason: string;
