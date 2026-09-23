@@ -282,6 +282,17 @@ const ASSETS = {
     },
     outputName: "E4-book-hero",
   },
+
+  // F. Regional-language creative — DO NOT bake native-script (Telugu/Tamil/Malayalam/
+  // Kannada) text into gpt-image-1 output. Tested (F1, Telugu, since removed): the
+  // model renders Devanagari and Latin text correctly (see E1-E4) but garbles complex
+  // Brahmic scripts into malformed non-words. Real competitors (see
+  // docs/ads/meta-library-snapshots/mana-sastram-telugu-₹199-direct-competitor.png)
+  // confirm the actual convention: the IMAGE stays English/numerals (which the model
+  // renders perfectly), and native-language copy lives in the ad's primary text/caption
+  // field instead, written as normal text — not as image pixels. So: reuse E1-E4 as-is
+  // across every language; see docs/ads/regional-campaign-structures.md for the
+  // per-language caption copy that pairs with them. No new image generation needed.
 };
 
 // ── CLI ────────────────────────────────────────────────────────────────────────

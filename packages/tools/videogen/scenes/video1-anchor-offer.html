@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Video 1 — Anchor Offer (V4 hero)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", "Noto Sans Devanagari", sans-serif; }
+  body { background: #1a0f2e; }
+
+  #stage {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #1a0f2e;
+  }
+
+  .bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff;
+    padding: 0 60px;
+  }
+
+  .headline {
+    top: 140px;
+    font-size: 58px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    opacity: 0;
+    animation: fadeUp 1s ease-out forwards;
+  }
+
+  .price-row {
+    top: 900px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    opacity: 0;
+    animation: popIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .price-old {
+    font-size: 44px;
+    color: #cbb9e0;
+    text-decoration: line-through;
+  }
+  .price-new {
+    font-size: 96px;
+    font-weight: 800;
+    color: #ffd54a;
+    text-shadow: 0 0 30px rgba(255,213,74,0.7);
+  }
+
+  .subtext {
+    top: 1080px;
+    font-size: 40px;
+    line-height: 1.4;
+    color: #f1e9ff;
+    opacity: 0;
+    animation: fadeUp 1s ease-out forwards;
+  }
+
+  .checklist {
+    top: 1260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    font-size: 38px;
+    color: #fff;
+  }
+  .checklist span {
+    opacity: 0;
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+
+  .cta {
+    top: 1650px;
+    display: flex;
+    justify-content: center;
+  }
+  .cta-button {
+    background: #ffd54a;
+    color: #1a0f2e;
+    font-size: 46px;
+    font-weight: 800;
+    padding: 26px 70px;
+    border-radius: 60px;
+    box-shadow: 0 0 0 rgba(255,213,74,0.6);
+    opacity: 0;
+    animation: fadeUp 0.6s ease-out forwards, pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.6); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,213,74,0.55); }
+    50%      { box-shadow: 0 0 0 26px rgba(255,213,74,0); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Composition: 1080x1920 (9:16), ~18s. Re-export to 4:5 / 1:1 / 16:9 via export-formats.sh -->
+  <div id="stage" data-start="0" data-duration="18" data-width="1080" data-height="1920">
+
+    <img class="bg" src="../assets/E1-anchor-book-cover.png" data-start="0" data-duration="18" alt="" />
+
+    <div class="overlay headline" data-start="0.5" data-duration="3">
+      आपकी कुंडली में जवाब<br />पहले से मौजूद हैं 🔮
+    </div>
+
+    <div class="overlay price-row" data-start="4" data-duration="14">
+      <span class="price-old">₹499</span>
+      <span class="price-new">₹199</span>
+    </div>
+
+    <div class="overlay subtext" data-start="6" data-duration="8">
+      Dhan yog, karz ka karan, aur agle<br />12 mahino ka financial outlook
+    </div>
+
+    <div class="overlay checklist" data-start="9" data-duration="9">
+      <span style="animation-delay:0s">✅ Money & Wealth Analysis</span>
+      <span style="animation-delay:0.5s">✅ Karz / Debt Reasons</span>
+      <span style="animation-delay:1s">✅ 12-Month Outlook</span>
+      <span style="animation-delay:1.5s">✅ Instant PDF</span>
+    </div>
+
+    <div class="overlay cta" data-start="13" data-duration="5">
+      <div class="cta-button">Get Report — ₹199</div>
+    </div>
+
+    <!-- Voiceover: record V4 script (see docs/ads/faceless-video-ads-plan.md → Video 1 script)
+         and drop the file at packages/tools/videogen/audio/video1-voiceover.mp3, then uncomment: -->
+    <!-- <audio data-start="0" data-duration="18" src="../audio/video1-voiceover.mp3"></audio> -->
+
+  </div>
+
+</body>
+</html>

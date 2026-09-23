@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Video 2 — WhatsApp-Speed Checklist (V8)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", "Noto Sans Devanagari", sans-serif; }
+  body { background: #1a0f2e; }
+
+  #stage {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #1a0f2e;
+  }
+
+  .bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff;
+    padding: 0 60px;
+  }
+
+  .headline {
+    top: 120px;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    opacity: 0;
+    animation: fadeUp 1s ease-out forwards;
+  }
+
+  .checklist {
+    top: 620px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 34px;
+    font-size: 44px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .checklist span {
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideIn 0.55s ease-out forwards;
+  }
+
+  .price-badge {
+    top: 1420px;
+    opacity: 0;
+    animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .price-badge .tag {
+    display: inline-block;
+    background: #ffd54a;
+    color: #1a0f2e;
+    font-size: 64px;
+    font-weight: 800;
+    padding: 20px 56px;
+    border-radius: 20px;
+  }
+
+  .cta {
+    top: 1650px;
+    display: flex;
+    justify-content: center;
+  }
+  .cta-button {
+    background: #25d366;
+    color: #ffffff;
+    font-size: 44px;
+    font-weight: 800;
+    padding: 26px 64px;
+    border-radius: 60px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease-out forwards, pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.6); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(37,211,102,0.55); }
+    50%      { box-shadow: 0 0 0 26px rgba(37,211,102,0); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Composition: 1080x1920 (9:16), ~15s. Re-export to 4:5 / 1:1 / 16:9 via export-formats.sh -->
+  <div id="stage" data-start="0" data-duration="15" data-width="1080" data-height="1920">
+
+    <img class="bg" src="../assets/E2-premium-pdf-template.png" data-start="0" data-duration="15" alt="" />
+
+    <div class="overlay headline" data-start="0.3" data-duration="3">
+      Apni Kundali jaane,<br />apna paisa pehchane! ✨
+    </div>
+
+    <div class="overlay checklist" data-start="3" data-duration="8">
+      <span style="animation-delay:0s">✅ Dhan &amp; Karz ka Yog</span>
+      <span style="animation-delay:0.7s">✅ Saving Blocks</span>
+      <span style="animation-delay:1.4s">✅ Financial Planning Guidance</span>
+      <span style="animation-delay:2.1s">✅ Instant Detailed PDF</span>
+    </div>
+
+    <div class="overlay price-badge" data-start="9" data-duration="6">
+      <span class="tag">Sirf ₹99</span>
+    </div>
+
+    <div class="overlay cta" data-start="10.5" data-duration="4.5">
+      <div class="cta-button">Get Report Now</div>
+    </div>
+
+    <!-- Voiceover: record V8 script (see docs/ads/faceless-video-ads-plan.md → Video 2 script)
+         and drop the file at packages/tools/videogen/audio/video2-voiceover.mp3, then uncomment: -->
+    <!-- <audio data-start="0" data-duration="15" src="../audio/video2-voiceover.mp3"></audio> -->
+
+  </div>
+
+</body>
+</html>
