@@ -1,6 +1,7 @@
 import type { MatchingData } from "./prokerala.js";
 import { val, str } from "./scores.js";
 import { htmlToPdf, formatBirthDateTime } from "./render.js";
+import { loadLogo, frameMarkup, footerMarkup, coverHTML, heading, themeCSS } from "./report-theme.js";
 
 export interface MatchMeta {
   girlName?: string;
@@ -143,11 +144,12 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-export function buildMatchReportHTML(data: MatchingData, meta: MatchMeta = {}): string {
+export async function buildMatchReportHTML(data: MatchingData, meta: MatchMeta = {}): Promise<string> {
   const s = buildMatchSummary(data);
   const girl = meta.girlName || "Bride";
   const boy = meta.boyName || "Groom";
   const genDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+  const logo = await loadLogo();
 
   const rows = s.koots
     .map(
@@ -157,72 +159,69 @@ export function buildMatchReportHTML(data: MatchingData, meta: MatchMeta = {}): 
     )
     .join("");
 
+  const cover = coverHTML({
+    logo,
+    brand: "Rashi Kundali",
+    eyebrow: "AUSPICIOUS",
+    title: "Kundali Matching Report",
+    subtitle: "Ashtakoot Guna Milan Compatibility",
+    preparedForLabel: "PREPARED FOR",
+    name: `${girl} & ${boy}`,
+    factsLines: [
+      `${esc(girl)}: ${esc(formatBirthDateTime(meta.girlDatetime))}${meta.girlPlace ? ` &nbsp;·&nbsp; ${esc(meta.girlPlace)}` : ""}`,
+      `${esc(boy)}: ${esc(formatBirthDateTime(meta.boyDatetime))}${meta.boyPlace ? ` &nbsp;·&nbsp; ${esc(meta.boyPlace)}` : ""}`,
+    ],
+    footnote: `${meta.reportNo ? `Report No. ${esc(meta.reportNo)} &nbsp;·&nbsp; ` : ""}Generated ${esc(genDate)}`,
+  });
+
   return `<!DOCTYPE html>
 <html lang="${esc(meta.language || "en")}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kundali Matching Report</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: 'Noto Sans Devanagari', Georgia, "Times New Roman", serif; color: #1a1a1a; line-height: 1.7; margin: 0; padding: 0 22mm; font-size: 12pt; }
-  h1 { font-size: 24pt; color: #8b4513; border-bottom: 3px solid #d4a373; padding-bottom: 8px; margin: 28px 0 16px; }
-  h2 { font-size: 15pt; color: #6b3a0e; margin: 22px 0 8px; }
-  p { margin: 8px 0; text-align: justify; }
-  .muted { color: #777; font-size: 10.5pt; }
-  .score { text-align: center; border: 2px solid #d4a373; border-radius: 10px; padding: 18px; margin: 18px 0; background: #fdf8f0; }
-  .score .big { font-size: 40pt; color: #8b4513; font-weight: 700; line-height: 1; }
-  .score .band { font-size: 13pt; color: #6b3a0e; margin-top: 6px; }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10.5pt; }
-  th, td { border: 1px solid #d4a373; padding: 7px 9px; text-align: left; vertical-align: top; }
-  th { background: #faf3e8; font-weight: 700; }
-  tr:nth-child(even) td { background: #fdf8f0; }
-  .pagebreak { page-break-after: always; }
-  .foot { margin-top: 24px; border-top: 1px solid #d4a373; padding-top: 8px; color: #777; font-size: 9pt; display: flex; justify-content: space-between; }
-</style>
+<style>${themeCSS(logo)}</style>
 </head>
 <body>
-  <h1>Kundali Matching Report</h1>
-  <p class="muted">Prepared for <b>${esc(girl)}</b> &amp; <b>${esc(boy)}</b> · Generated ${esc(genDate)}${meta.reportNo ? ` · Report No. ${esc(meta.reportNo)}` : ""}</p>
+${frameMarkup(logo)}
+<div class="theme-content">
+${cover}
 
-  <div class="score">
-    <div class="big">${s.totalPoints} / ${s.maximumPoints}</div>
-    <div class="band">${esc(s.band)} · ${s.percentage}% compatibility</div>
-  </div>
+${heading("Compatibility Score", "Ashtakoot Guna Milan")}
+<div class="score">
+  <div class="big">${s.totalPoints} / ${s.maximumPoints}</div>
+  <div class="band">${esc(s.band)} · ${s.percentage}% compatibility</div>
+</div>
+<h2>Overall Recommendation</h2>
+<p>${esc(s.recommendation || "The charts were compared across the eight Ashtakoot factors. See the breakdown below.")}</p>
 
-  <h2>Overall Recommendation</h2>
-  <p>${esc(s.recommendation || "The charts were compared across the eight Ashtakoot factors. See the breakdown below.")}</p>
+${heading("Ashtakoot (Guna Milan) Breakdown")}
+<p>Each of the eight kootas contributes a maximum number of points. The table below shows both partners' values and a short reading of each factor.</p>
+<table>
+  <thead><tr><th>Koota</th><th>${esc(girl)}</th><th>${esc(boy)}</th><th>Reading</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
 
-  <div class="pagebreak"></div>
-  <h2>Ashtakoot (Guna Milan) Breakdown</h2>
-  <p>Each of the eight kootas contributes a maximum number of points. The table below shows both partners' values and a short reading of each factor.</p>
-  <table>
-    <thead><tr><th>Koota</th><th>${esc(girl)}</th><th>${esc(boy)}</th><th>Reading</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-
-  <div class="pagebreak"></div>
-  <h2>Partner Details</h2>
-  <table>
-    <thead><tr><th>Attribute</th><th>${esc(girl)}</th><th>${esc(boy)}</th></tr></thead>
-    <tbody>
-      <tr><td>Nakshatra</td><td>${esc(s.girl.nakshatra)} (Pada ${esc(s.girl.pada)})</td><td>${esc(s.boy.nakshatra)} (Pada ${esc(s.boy.pada)})</td></tr>
-      <tr><td>Rashi (Moon sign)</td><td>${esc(s.girl.rasi)}</td><td>${esc(s.boy.rasi)}</td></tr>
-      <tr><td>Rashi lord</td><td>${esc(s.girl.lord)}</td><td>${esc(s.boy.lord)}</td></tr>
-      <tr><td>Date / time of birth</td><td>${esc(formatBirthDateTime(meta.girlDatetime))}</td><td>${esc(formatBirthDateTime(meta.boyDatetime))}</td></tr>
-      <tr><td>Place of birth</td><td>${esc(meta.girlPlace || "—")}</td><td>${esc(meta.boyPlace || "—")}</td></tr>
-    </tbody>
-  </table>
-
-  <h2>How to read this</h2>
-  <p>Guna Milan is a traditional 36-point compatibility framework. A higher score is encouraging, but no score is a verdict on a relationship: individual charts, timing and conscious effort matter far more. Nadi and Bhakoot carry the most weight; where they flag a concern, classical remedies and an in-person consultation are advisable.</p>
-  <p class="muted">For guidance only. Not a substitute for professional, medical, legal or financial advice.</p>
-
-  <div class="foot"><span>Generated ${esc(genDate)}</span><span>rashikundali.com</span></div>
+${heading("Partner Details")}
+<table>
+  <thead><tr><th>Attribute</th><th>${esc(girl)}</th><th>${esc(boy)}</th></tr></thead>
+  <tbody>
+    <tr><td>Nakshatra</td><td>${esc(s.girl.nakshatra)} (Pada ${esc(s.girl.pada)})</td><td>${esc(s.boy.nakshatra)} (Pada ${esc(s.boy.pada)})</td></tr>
+    <tr><td>Rashi (Moon sign)</td><td>${esc(s.girl.rasi)}</td><td>${esc(s.boy.rasi)}</td></tr>
+    <tr><td>Rashi lord</td><td>${esc(s.girl.lord)}</td><td>${esc(s.boy.lord)}</td></tr>
+    <tr><td>Date / time of birth</td><td>${esc(formatBirthDateTime(meta.girlDatetime))}</td><td>${esc(formatBirthDateTime(meta.boyDatetime))}</td></tr>
+    <tr><td>Place of birth</td><td>${esc(meta.girlPlace || "—")}</td><td>${esc(meta.boyPlace || "—")}</td></tr>
+  </tbody>
+</table>
+<h2>How to read this</h2>
+<p>Guna Milan is a traditional 36-point compatibility framework. A higher score is encouraging, but no score is a verdict on a relationship: individual charts, timing and conscious effort matter far more. Nadi and Bhakoot carry the most weight; where they flag a concern, classical remedies and an in-person consultation are advisable.</p>
+<p class="muted">For guidance only. Not a substitute for professional, medical, legal or financial advice.</p>
+</div>
+${footerMarkup(`Generated ${genDate}`, "Rashi Kundali · rashikundali.com")}
 </body>
 </html>`;
 }
 
 export async function renderMatchReportPDF(data: MatchingData, meta: MatchMeta = {}): Promise<Buffer> {
-  return htmlToPdf(buildMatchReportHTML(data, meta));
+  return htmlToPdf(await buildMatchReportHTML(data, meta));
 }

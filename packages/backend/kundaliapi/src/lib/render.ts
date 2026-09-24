@@ -1,5 +1,6 @@
 import type { KundliData } from "./prokerala.js";
 import { val, str, calculateMoneyAxisScores, flattenYogas } from "./scores.js";
+import { loadLogo, frameMarkup, footerMarkup, coverHTML, heading, themeCSS } from "./report-theme.js";
 
 /* ────────────────────────────────────────────────────────────
    Report metadata
@@ -270,19 +271,9 @@ function buildBlocks(
   const yogas = flattenYogas(d.yoga_details);
   const scores = calculateMoneyAxisScores(d);
 
-  /* ── Cover ── */
-  push(
-    { t: "h1", text: label },
-    { t: "p", text: `Prepared for ${meta.name || "the native"}` },
-    {
-      t: "muted",
-      text: `${fmtBirthDate(meta.datetime)} • ${fmtBirthTime(meta.datetime)} • ${meta.coordinates || ""}`,
-    },
-    { t: "muted", text: `Generated on ${fmtDate(new Date().toISOString())}` },
-    { t: "pagebreak" },
-  );
-
-  // Angle-specific focus section (marriage / career / dosha / health).
+  // Angle-specific focus section (marriage / career / dosha / health) opens
+  // page 2 — the cover itself is rendered separately via report-theme's
+  // coverHTML() in renderHTML(), not as a block.
   if (intro.length) push(...intro);
 
   /* ── Birth details ── */
@@ -632,7 +623,13 @@ export function axisInterpretation(key: string, score: number): string {
 export function renderMarkdown(data: KundliData, label?: string, meta: ReportMeta = {}): string {
   const title = label || "Janam Kundali Report";
   const blocks = buildBlocks(data.data, title, meta);
-  const out: string[] = [];
+  const out: string[] = [
+    `# ${title}`,
+    `Prepared for ${meta.name || "the native"}`,
+    `_${fmtBirthDate(meta.datetime)} • ${fmtBirthTime(meta.datetime)} • ${meta.coordinates || ""}_`,
+    `_Generated on ${fmtDate(new Date().toISOString())}_`,
+    "\n---\n",
+  ];
   for (const b of blocks) {
     switch (b.t) {
       case "h1": out.push(`\n# ${b.text}\n`); break;
@@ -662,19 +659,25 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function renderHTML(
+export async function renderHTML(
   data: KundliData,
   label?: string,
   meta: ReportMeta = {},
   intro: Block[] = [],
-): string {
+): Promise<string> {
   const title = label || "Janam Kundali Report";
   const blocks = buildBlocks(data.data, title, meta, intro);
+  const logo = await loadLogo();
+  const genDate = fmtDate(new Date().toISOString());
 
+  // The first h1 in the block stream becomes the section heading that opens
+  // page 2 (right after the cover); every subsequent h1 also forces a fresh
+  // page via .theme-head's page-break-before, matching the previous
+  // "h1 always starts a new page" policy.
   const body: string[] = [];
   for (const b of blocks) {
     switch (b.t) {
-      case "h1": body.push(`<h1>${escapeHtml(b.text)}</h1>`); break;
+      case "h1": body.push(heading(b.text)); break;
       case "h2": body.push(`<h2>${escapeHtml(b.text)}</h2>`); break;
       case "h3": body.push(`<h3>${escapeHtml(b.text)}</h3>`); break;
       case "p": body.push(`<p>${escapeHtml(b.text)}</p>`); break;
@@ -693,32 +696,34 @@ export function renderHTML(
     }
   }
 
+  const cover = coverHTML({
+    logo,
+    brand: "Rashi Kundali",
+    eyebrow: "AUSPICIOUS",
+    title,
+    preparedForLabel: "PREPARED FOR",
+    name: meta.name || "—",
+    factsLines: [
+      `${escapeHtml(fmtBirthDate(meta.datetime))} &nbsp;·&nbsp; ${escapeHtml(fmtBirthTime(meta.datetime))}${meta.place ? ` &nbsp;·&nbsp; ${escapeHtml(meta.place)}` : ""}`,
+    ],
+    footnote: `${meta.reportNo ? `Report No. ${escapeHtml(meta.reportNo)} &nbsp;·&nbsp; ` : ""}Generated ${escapeHtml(genDate)}`,
+  });
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)}</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: 'Noto Sans Devanagari', Georgia, "Times New Roman", serif; color: #1a1a1a; line-height: 1.7; margin: 0; padding: 0 22mm; font-size: 12pt; }
-  h1 { font-size: 22pt; color: #8b4513; border-bottom: 3px solid #d4a373; padding-bottom: 8px; margin: 28px 0 16px; }
-  h2 { font-size: 15pt; color: #6b3a0e; margin: 22px 0 8px; }
-  h3 { font-size: 12.5pt; color: #8b4513; margin: 16px 0 6px; }
-  p { margin: 8px 0; text-align: justify; }
-  p.muted { color: #777; font-size: 10.5pt; }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10.5pt; }
-  th, td { border: 1px solid #d4a373; padding: 6px 9px; text-align: left; vertical-align: top; }
-  th { background: #faf3e8; font-weight: 700; }
-  tr:nth-child(even) td { background: #fdf8f0; }
-  ul { margin: 8px 0; padding-left: 22px; }
-  .pagebreak { page-break-after: always; }
-  h1 { page-break-before: always; }
-  h1:first-of-type { page-break-before: avoid; }
-</style>
+<style>${themeCSS(logo)}</style>
 </head>
 <body>
+${frameMarkup(logo)}
+<div class="theme-content">
+${cover}
 ${body.join("\n")}
+</div>
+${footerMarkup(`Generated ${genDate}`, "Rashi Kundali · rashikundali.com")}
 </body>
 </html>`;
 }
@@ -811,7 +816,7 @@ export async function renderPDF(
   meta: ReportMeta = {},
   attempts = 3,
 ): Promise<Buffer> {
-  return htmlToPdf(renderHTML(data, label, meta), attempts);
+  return htmlToPdf(await renderHTML(data, label, meta), attempts);
 }
 
 /**

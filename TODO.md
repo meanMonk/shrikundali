@@ -189,6 +189,20 @@ plus direct API calls. Backend had to be started with overrides
 
 ## D. Design
 
+- [x] **PDF report cover + design consistency across all report types (2026-09-24).**
+      Redesigned the financial report's cover (page 1): clearer type hierarchy, real
+      vertical rhythm, fixed the frame/corner ornaments (were floating off the border),
+      body-text bumped +2px for readability. Then ported the same ornate look (gold
+      double-frame, diamond corners, watermark, serif cover, warm ivory tables) to the
+      other report types, which previously fell back to a plain, unbranded template:
+      marriage/career/dosha/health reports (`lib/render.ts`) and the match report
+      (`lib/match-report.ts`) now share a `lib/report-theme.ts` module. Those documents
+      are flowing (variable page count), so the frame/corners/watermark/footer use
+      `position:fixed` (repeats on every printed page in Chromium) instead of the
+      financial report's fixed-height-per-page-div approach — avoids clipping risk on
+      variable-length content. Verified via local PDF renders (no ProKerala calls) for
+      all three templates before shipping.
+
 - [ ] **Review home page + other page designs ("Claude design") — make them clean and
       simple.** ([#63](https://github.com/meanMonk/shrikundali/issues/63))
   - Align to the brand system in `docs/prd/shrikundali-frontend-prd.md` §3 (deep

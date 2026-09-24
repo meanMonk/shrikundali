@@ -612,23 +612,28 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
 
   const pages: string[] = [];
 
-  /* ── Page 1: Cover (minimal) ── */
+  /* ── Page 1: Cover ── */
   const logoHtml = logo
-    ? `<img src="${logo}" alt="${esc(brand)}" style="height:92px;margin:0 auto 6px;display:block"/>`
-    : `<div style="font-size:22px;font-weight:700;color:#7A1F2B;letter-spacing:2px">${esc(brand)}</div>`;
+    ? `<img src="${logo}" alt="${esc(brand)}" class="cover-logo"/>`
+    : `<div class="cover-wordmark">${esc(brand)}</div>`;
   pages.push(`
     <div class="cover">
-      ${logoHtml}
-      <div style="font-size:10px;letter-spacing:5px;color:#A67C00;margin-top:8px">${esc(C.auspicious)}</div>
-      <h1 class="cover-title">${esc(title)}</h1>
-      <div class="cover-sub">${esc(C.subtitle)}</div>
-      <div class="cover-tag">${esc(C.tagline)}</div>
-      <div class="cover-divider"></div>
-      <div style="font-size:11px;color:#555;letter-spacing:2px">${esc(C.preparedFor)}</div>
-      <div style="font-size:26px;color:#7A1F2B;font-weight:700;margin-top:4px">${esc(meta.name || "—")}</div>
-      <div style="font-size:13px;color:#222;margin-top:12px">${esc(fmtBirthDate(meta.datetime, lang))} · ${esc(fmtBirthTime(meta.datetime))}</div>
-      <div style="font-size:12px;color:#444">${esc(placeLabel)}</div>
-      <div class="small-note" style="margin-top:18px">${esc(C.reportNo)} ${esc(meta.reportNo || "—")} · ${esc(C.preparedOn)} ${esc(genDate)}</div>
+      <div class="cover-brand">
+        ${logoHtml}
+        <div class="cover-eyebrow">${esc(C.auspicious)}</div>
+      </div>
+      <div class="cover-heading">
+        <h1 class="cover-title">${esc(title)}</h1>
+        <div class="cover-subtitle">${esc(C.subtitle)}</div>
+      </div>
+      <div class="cover-rule"><span class="rule"></span>${lotus(13)}<span class="rule"></span></div>
+      <div class="cover-tagline">${esc(C.tagline)}</div>
+      <div class="cover-person">
+        <div class="cover-label">${esc(C.preparedFor)}</div>
+        <div class="cover-name">${esc(meta.name || "—")}</div>
+        <div class="cover-facts">${esc(fmtBirthDate(meta.datetime, lang))} &nbsp;·&nbsp; ${esc(fmtBirthTime(meta.datetime))} &nbsp;·&nbsp; ${esc(placeLabel)}</div>
+      </div>
+      <div class="cover-footnote">${esc(C.reportNo)} ${esc(meta.reportNo || "—")} &nbsp;·&nbsp; ${esc(C.preparedOn)} ${esc(genDate)}</div>
     </div>`);
 
   /* ── Page 2: Birth details + Panchang + Avakahada + numerology ── */
@@ -940,31 +945,43 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
     .page { width:210mm; height:297mm; padding:16mm 15mm 14mm; page-break-after:always; position:relative; overflow:hidden; }
     .page:last-child { page-break-after:auto; }
     ${logo ? `.wm { position:absolute; inset:0; z-index:0; background-image:url("${logo}"); background-repeat:no-repeat; background-position:center; background-size:120mm auto; opacity:0.07; }` : ".wm { display:none; }"}
-    .frame { position:absolute; inset:7mm; border:3px double #D4A72C; pointer-events:none; z-index:2; }
-    .corner { position:absolute; width:9px; height:9px; background:#D4A72C; z-index:2; }
-    .corner.tl { top:6mm; left:6mm; } .corner.tr { top:6mm; right:6mm; }
-    .corner.bl { bottom:6mm; left:6mm; } .corner.br { bottom:6mm; right:6mm; }
+    .frame { position:absolute; inset:9mm; border:2px double #D4A72C; pointer-events:none; z-index:2; }
+    .corner { position:absolute; width:7px; height:7px; background:#D4A72C; z-index:2; transform:rotate(45deg); }
+    .corner.tl { top:9mm; left:9mm; margin:-4px 0 0 -4px; } .corner.tr { top:9mm; right:9mm; margin:-4px -4px 0 0; }
+    .corner.bl { bottom:9mm; left:9mm; margin:0 0 -4px -4px; } .corner.br { bottom:9mm; right:9mm; margin:0 -4px -4px 0; }
     .content { position:relative; z-index:1; height:100%; }
     h1 { font-family:'Noto Serif Devanagari',Georgia,serif; }
     .head { border-bottom:2px solid #C9760B; padding-bottom:6px; margin-bottom:10px; }
     .head-title { font-size:17px; font-weight:700; color:#7A1F2B; }
     .head-line { display:flex; align-items:center; gap:6px; margin:3px 0; }
     .head-line .rule { flex:0 0 34px; height:1px; background:#D4A72C; }
-    .head-sub { font-size:10.5px; color:#555; }
+    .head-sub { font-size:12.5px; color:#555; }
     .sub-head { font-size:12px; font-weight:700; color:#7A1F2B; margin:12px 0 4px; border-left:3px solid #C9760B; padding-left:7px; }
-    table { width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:10.2px; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:12.2px; }
     th,td { border:1px solid #C8B27A; padding:4px 7px; text-align:left; vertical-align:top; }
     th { background:#F7EFDC; color:#7A1F2B; font-weight:700; }
     tr:nth-child(even) td { background:#FBF7EE; }
     .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .cover { height:calc(297mm - 30mm); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-    .cover-title { font-size:28px; color:#7A1F2B; margin:16px 0 4px; }
-    .cover-sub { font-size:15px; color:#26327A; font-weight:600; }
-    .cover-tag { font-size:11px; color:#6B5410; margin-top:6px; }
-    .cover-divider { width:62%; height:2px; background:#C9760B; margin:18px 0; }
+    .cover { height:calc(297mm - 34mm); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+    .cover-brand { display:flex; flex-direction:column; align-items:center; }
+    .cover-logo { height:82px; display:block; }
+    .cover-wordmark { font-size:22px; font-weight:700; color:#7A1F2B; letter-spacing:2px; }
+    .cover-eyebrow { font-size:9.5px; font-weight:600; letter-spacing:6px; color:#A67C00; text-transform:uppercase; margin-top:12px; }
+    .cover-heading { margin-top:26px; }
+    .cover-title { font-family:'Noto Serif Devanagari',Georgia,serif; font-size:33px; font-weight:700; color:#7A1F2B; letter-spacing:0.3px; line-height:1.3; margin:0; }
+    .cover-subtitle { font-size:12.5px; color:#5B5040; font-weight:500; letter-spacing:0.3px; margin-top:8px; }
+    .cover-rule { display:flex; align-items:center; justify-content:center; gap:12px; margin:26px 0 12px; }
+    .cover-rule .rule { width:44px; height:1px; background:#D4A72C; }
+    .cover-tagline { font-size:9.5px; letter-spacing:2.2px; color:#A67C00; text-transform:uppercase; }
+    .cover-person { margin-top:46px; }
+    .cover-label { font-size:9.5px; font-weight:600; letter-spacing:3.5px; color:#8A7A4A; text-transform:uppercase; }
+    .cover-name { font-family:'Noto Serif Devanagari',Georgia,serif; font-size:25px; font-weight:700; color:#26327A; margin-top:10px; }
+    .cover-facts { font-size:11.5px; color:#555; margin-top:12px; letter-spacing:0.2px; }
+    .cover-footnote { font-size:9px; color:#8A7A4A; letter-spacing:0.5px; margin-top:60px; }
+    .cover-divider { width:62%; height:2px; background:#C9760B; margin:18px auto; }
     .small-note { font-size:9.5px; color:#555; margin-top:10px; }
     .mantra { color:#7A1F2B; font-size:12px; line-height:1.75; font-family:'Noto Serif Devanagari',serif; }
-    .note { background:#F7EFDC; border-left:3px solid #C9760B; padding:7px 10px; font-size:10.2px; margin:8px 0; line-height:1.55; color:#222; }
+    .note { background:#F7EFDC; border-left:3px solid #C9760B; padding:7px 10px; font-size:12.2px; margin:8px 0; line-height:1.55; color:#222; }
     .map { display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; margin:10px 0 14px; background:#F7EFDC; border:1px solid #E4D6AE; border-radius:6px; padding:12px 14px; }
     .map > div { text-align:center; border-right:1px dashed #E4D6AE; padding:2px 6px; }
     .map > div:nth-child(2n) { border-right:none; }
@@ -972,9 +989,9 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
     .map .m { color:#A67C00; font-size:9px; letter-spacing:1.5px; }
     .map .v { color:#7A1F2B; font-size:14px; font-weight:700; }
     .e-tag { display:inline-block; margin:2px 0 14px; padding:3px 12px; background:#FBF3E0; border:1px solid #E4D6AE; border-radius:12px; color:#8a6d1a; font-size:9.5px; letter-spacing:1px; }
-    .essay { font-size:10.6px; line-height:1.68; color:#222; margin:7px 0; text-align:justify; }
+    .essay { font-size:12.6px; line-height:1.68; color:#222; margin:7px 0; text-align:justify; }
     .essay b { color:#7A1F2B; }
-    .notes p { margin:5px 0; font-size:10.2px; line-height:1.55; text-align:justify; }
+    .notes p { margin:5px 0; font-size:12.2px; line-height:1.55; text-align:justify; }
     .notes p b { color:#7A1F2B; }
     .notes p.wl { background:#FBF7EE; border-left:3px solid #C9760B; padding:5px 8px; }
     .kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px 12px; margin:10px 0; }
@@ -986,15 +1003,15 @@ export async function buildFinancialReportHTML(data: KundliData, label: string, 
     .chart-pair .cap { text-align:center; font-size:9.5px; color:#555; margin-top:2px; }
     .dosha { border:1px solid #C8B27A; border-radius:6px; padding:8px 11px; margin:8px 0; }
     .dosha-head { display:flex; justify-content:space-between; align-items:center; color:#7A1F2B; font-size:12px; }
-    .dosha-desc { font-size:10.2px; color:#333; margin-top:4px; line-height:1.5; }
+    .dosha-desc { font-size:12.2px; color:#333; margin-top:4px; line-height:1.5; }
     .badge { font-size:9px; padding:2px 8px; border-radius:10px; font-weight:700; }
     .badge.ok { background:#e7f6ec; color:#12691f; }
     .badge.warn { background:#fdeccb; color:#8a5200; }
-    .remedies { columns:2; column-gap:16px; font-size:10.2px; line-height:1.5; }
+    .remedies { columns:2; column-gap:16px; font-size:12.2px; line-height:1.5; }
     .remedies div { break-inside:avoid; margin:0 0 6px; }
-    .disclaimer { border:1px solid #C8B27A; background:#FBF7EE; padding:12px 14px; font-size:10px; color:#333; line-height:1.6; border-radius:6px; }
+    .disclaimer { border:1px solid #C8B27A; background:#FBF7EE; padding:12px 14px; font-size:12px; color:#333; line-height:1.6; border-radius:6px; }
     .center-fill { min-height:calc(297mm - 44mm); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
-    .foot { position:absolute; left:15mm; right:15mm; bottom:8mm; z-index:2; display:flex; justify-content:space-between; font-size:8.5px; color:#7A5B00; letter-spacing:0.4px; }
+    .foot { position:absolute; left:15mm; right:15mm; bottom:11mm; z-index:2; display:flex; justify-content:space-between; font-size:8.5px; color:#7A5B00; letter-spacing:0.4px; }
   `;
 
   return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><style>${css}</style></head><body>
