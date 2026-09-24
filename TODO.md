@@ -172,6 +172,20 @@ plus direct API calls. Backend had to be started with overrides
 - [ ] **Dead `trackServerEvent`.** `lib/tracking.ts` POSTs to `/track`, which the API does
       not expose. Remove or add the endpoint.
 
+- [x] **Removed unused download route surface (2026-09-24).** Audited every mounted
+      route for exposure vs. actual usage. The old dev-only `/kundali/generate,markdown,pdf`
+      routes were already gone (commit `8e5d4a8`); the only ProKerala-calling public route
+      is `/teaser` (legitimately used by every landing page, kept as-is). Found and removed:
+      `GET /download/:archiveId/markdown`, `/json` and `/status` — never called by the
+      frontend (only `/download/:archiveId/pdf` is, via `report.ts`'s `downloadUrl`) and
+      didn't touch ProKerala anyway, just dead unauthenticated surface serving/checking
+      already-archived files. `lib/report.ts` still writes `report.md` to the archive for
+      internal record; only the public route serving it was removed.
+      **Flagged, not actioned:** `/teaser` has no rate limiting — it's the one route that
+      does call ProKerala per-request and is fully public/unauthenticated, so a scripted
+      burst there could exhaust credits fast. Worth a lightweight IP/window rate limit
+      (e.g. via Hono middleware) as a follow-up.
+
 - [x] **Add more buy buttons + B2C conversion/offer copy on every page.** Force the
       purchase click with urgency, offers, and outcome-focused copy. ([#61](https://github.com/meanMonk/shrikundali/issues/61))
   - Every page carries repeated purchase CTAs. Remaining: lock the CTA verb
