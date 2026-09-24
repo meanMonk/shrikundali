@@ -101,21 +101,34 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   });
   if (params.la) qs.set("la", params.la);
 
-  // Always fetch the chart, planet positions (needed for scores) and panchang.
-  // The expensive extras (advanced chart with dasha, doshas) only when detailed.
-  // These run SERIALLY: ProKerala rate-limits per client, and a parallel burst
-  // gets throttled with 429s that can silently drop the planet positions.
+  // Always fetch the basic chart first. It already carries ascendant +
+  // planet_positions inline (see hasAscendant() below) — the dedicated
+  // /planet-position endpoint (60 credits) is billed separately and is
+  // ONLY needed as a fallback when the basic response is missing them, so
+  // we no longer fetch it eagerly on every call. This alone drops a free
+  // teaser from 160 credits (kundli + planet-position, always) to 100
+  // (kundli alone, the common case).
+  // These run SERIALLY: ProKerala rate-limits per client, and a parallel
+  // burst gets throttled with 429s that can silently drop data.
   const basic = await pkGet("/v2/astrology/kundli", qs, token);
-  const planets = await pkGet("/v2/astrology/planet-position", qs, token);
   // Panchang is only used by the paid report templates — skip it for lean
-  // (teaser) fetches so a free preview doesn't burn a 3rd ProKerala credit.
+  // (teaser) fetches so a free preview doesn't burn extra ProKerala credit.
   const panchang = params.detailed ? await pkGet("/v2/astrology/panchang", qs, token) : null;
   const advanced = params.detailed ? await pkGet("/v2/astrology/kundli/advanced", qs, token) : null;
   const kaalSarp = params.detailed ? await pkGet("/v2/astrology/kaal-sarp-dosha", qs, token) : null;
   const sadeSati = params.detailed ? await pkGet("/v2/astrology/sade-sati", qs, token) : null;
 
+  const hasAscendantIn = (list: unknown[]) =>
+    list.some((p) => String((p as Record<string, unknown>)?.name ?? "").toLowerCase() === "ascendant");
+  const basicPositionsEarly: unknown[] = ((basic.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
+  const advancedPositionsEarly: unknown[] = ((advanced?.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
+  const needsPlanetPositionFallback =
+    !hasAscendantIn(basicPositionsEarly) && !hasAscendantIn(advancedPositionsEarly);
+  const planets = needsPlanetPositionFallback ? await pkGet("/v2/astrology/planet-position", qs, token) : null;
+
   logInfo(
-    `prokerala sub-responses: kundli=${basic.status} planet=${planets.status}` +
+    `prokerala sub-responses: kundli=${basic.status}` +
+      (planets ? ` planet=${planets.status}` : " planet=skipped") +
       (panchang ? ` panchang=${panchang.status}` : "") +
       (advanced ? ` advanced=${advanced.status}` : ""),
   );
@@ -132,7 +145,7 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   const parsed = raw as unknown as KundliData;
   const baseData = (parsed.data ?? {}) as Record<string, unknown>;
 
-  const planetPositions: unknown[] = planets.json?.data?.planet_position ?? [];
+  const planetPositions: unknown[] = planets?.json?.data?.planet_position ?? [];
   const basicPositions: unknown[] = ((basic.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
   const advancedPositions: unknown[] = ((advanced?.json?.data as Record<string, unknown> | undefined)?.planet_positions ?? []) as unknown[];
   const kundliPositions: unknown[] = ((baseData as Record<string, unknown>).planet_positions ?? []) as unknown[];
@@ -171,7 +184,7 @@ export async function getKundli(params: KundliParams): Promise<KundliResult> {
   // response (e.g. one endpoint rate-limited) must fail loudly instead of
   // producing or caching an empty chart.
   if (mergedPositions.length === 0) {
-    logError("prokerala/kundli", `no planet positions in any response (planet-position status=${planets.status})`);
+    logError("prokerala/kundli", `no planet positions in any response (planet-position status=${planets?.status ?? "skipped"})`);
     throw new Error("ProKerala returned no planet positions");
   }
 

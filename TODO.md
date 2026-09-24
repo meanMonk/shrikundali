@@ -186,6 +186,24 @@ plus direct API calls. Backend had to be started with overrides
       burst there could exhaust credits fast. Worth a lightweight IP/window rate limit
       (e.g. via Hono middleware) as a follow-up.
 
+- [x] **Root-caused the ProKerala credit burn + trimmed `/teaser` fetch (2026-09-24).**
+      Pulled ProKerala's credit-usage report: `/v2/astrology/kundli/advanced` alone costs
+      **600 credits** per call (vs. 100 for `/kundli`, 60 for `/planet-position`/`/kaal-sarp-dosha`/
+      `/sade-sati`, 20 for `/panchang`) — a single detailed fetch (`getKundli({detailed:true})`,
+      `lib/prokerala.ts`) fires all six endpoints serially and costs **~900 credits per call**.
+      That's the paid-report/auto-resolve-retry path; at 5000 total credits that's only
+      ~5-6 attempts, which is what the old 2-hourly retry loop burned through so fast.
+      Separately, `/teaser` (the free, unauthenticated preview every report type shares)
+      was calling `/kundli` (100) **and** `/planet-position` (60) on every single hit —
+      but `/kundli`'s own response already carries `ascendant` + `planet_positions` inline,
+      so the dedicated `/planet-position` call was dead weight in the common case. Fixed:
+      `planet-position` is now only fetched as a fallback when the basic (or, when
+      `detailed:true`, advanced) response is actually missing the ascendant row — same
+      correctness guarantee, ~60 fewer credits on the typical teaser call. The detailed/paid
+      path's own `basic`+`advanced` double-fetch (the P0 ascendant-bug insurance from
+      `769d216`) was intentionally left untouched — bigger saving available there but it
+      touches recently-fixed paid-report correctness, so flagging rather than changing blind.
+
 - [x] **Add more buy buttons + B2C conversion/offer copy on every page.** Force the
       purchase click with urgency, offers, and outcome-focused copy. ([#61](https://github.com/meanMonk/shrikundali/issues/61))
   - Every page carries repeated purchase CTAs. Remaining: lock the CTA verb
