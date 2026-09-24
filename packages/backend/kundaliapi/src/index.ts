@@ -56,7 +56,7 @@ serve({ fetch: app.fetch, port });
 // Daily founder digest at 07:30 IST (Telegram + email).
 startDailyDigestScheduler();
 
-// Auto-retry paid-but-ungenerated reports every 2 hours.
+// Auto-retry paid-but-ungenerated reports daily at 06:30 IST.
 startAutoResolveScheduler();
 
 // Ensure the Puppeteer browser process is always closed on restart/redeploy —

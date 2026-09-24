@@ -374,7 +374,7 @@ export interface RegenerateResult {
 /**
  * Manually re-trigger generation for a kundali stuck after payment, by order
  * ID or cache ID — the single entry point for both the Telegram `/retry`
- * command and the 2-hourly auto-resolve cron. Reuses generatePaidReport, so
+ * command and the daily auto-resolve cron. Reuses generatePaidReport, so
  * a successful retry already re-sends the sale Telegram alert and emails the
  * customer their report with no extra plumbing needed here.
  */

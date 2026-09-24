@@ -122,7 +122,7 @@ export async function notifyAdminReportFailure(data: ReportFailureNotification):
 ❗ ${data.error}
 
 Customer has paid but has no report — needs manual attention.
-${retryId ? `\n👉 Retry now: \`/retry ${retryId}\`\n(An auto-resolve check also retries every 2h.)` : ""}
+${retryId ? `\n👉 Retry now: \`/retry ${retryId}\`\n(An auto-resolve check also retries daily at 06:30 IST.)` : ""}
 ⏰ ${istNow()}`;
 
   const ok = await sendTelegram(message);
@@ -136,7 +136,7 @@ export interface AutoResolveNotification {
   stillFailing: number;
 }
 
-/** Sent by the 2-hourly auto-resolve cron whenever it actually touched anything. */
+/** Sent by the daily auto-resolve cron whenever it actually touched anything. */
 export async function notifyAdminAutoResolve(data: AutoResolveNotification): Promise<boolean> {
   const message = `🤖 *Auto-Resolve — Stuck Reports*
 

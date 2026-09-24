@@ -74,6 +74,7 @@ export interface KundaliDoc {
   generatingAt?: Date;
   createdAt: Date;
   paidAt?: Date;
+  autoResolveAttempted?: boolean;
 }
 
 export const REPORT_LABELS: Record<ReportType, string> = {

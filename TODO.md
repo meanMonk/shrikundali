@@ -97,11 +97,24 @@ Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked
       endpoint); needs a top-up on the ProKerala dashboard before any report,
       paid or free, can generate again. Also shipped: payment-confirmed +
       report-failure Telegram alerts (previously only success notified), a
-      Telegram `/retry <orderId>` command, and a 2-hourly in-process cron
-      (`lib/auto-resolve.ts`) that auto-regenerates any paid-but-stuck report
-      with no manual step. Also trimmed free-teaser ProKerala credit usage
+      Telegram `/retry <orderId>` command, and a daily (06:30 IST) in-process
+      cron (`lib/auto-resolve.ts`) that auto-regenerates any paid-but-stuck
+      report with no manual step. Also trimmed free-teaser ProKerala credit usage
       (3→2 calls; match_kundali no longer fetches an unused solo chart) and
       removed the orphaned, unpaid `/kundali/generate,markdown,pdf` dev routes.
+
+- [x] **Fixed: auto-resolve cron burned through ProKerala's 5000 credits (2026-09-24).**
+      Root cause: the cron added in `02d9f8f` retried every paid-but-stuck order
+      every 2 hours over a 14-day lookback, with no attempt cap — since some
+      orders were permanently broken (the ascendant bug + the credit exhaustion
+      above), the same orders got re-billed ~6-7 ProKerala calls per retry,
+      indefinitely. Fix in `lib/auto-resolve.ts`/`lib/store.ts`: lookback cut to
+      24h, and each order now gets exactly **one** auto-resolve attempt ever —
+      a new `autoResolveAttempted` flag is set on the doc after the attempt
+      (win or lose) so it's never picked up by the cron again. Manual Telegram
+      `/retry <orderId>` is unaffected — still a single-call retry per
+      invocation, callable on demand as many times as needed. See
+      [#82](https://github.com/meanMonk/shrikundali/issues/82).
 
 ### Integration test — local end-to-end (2026-09-23) `[~]`
 
@@ -167,6 +180,12 @@ plus direct API calls. Backend had to be started with overrides
 - [~] **Mobile view review — add missing pages / fix responsive layout.** ([#62](https://github.com/meanMonk/shrikundali/issues/62))
   - PRD §7 is mobile-first. Modal compacted for mobile + trust badges (2026-09-23); full
     landing/form audit still ongoing per `docs/prd/frontend-gap-plan.md` (item 6).
+
+- [ ] **Multi-language report support (i18n).** ([#81](https://github.com/meanMonk/shrikundali/issues/81))
+  - Only `en`/`hi` wired today; ProKerala chart endpoints localize only `en, hi, ta, te, ml`.
+  - Plan: shared language registry → dropdown (native names) → clamp `la` before ProKerala →
+    localize our templates (ref data + chrome + essays) → per-script PDF fonts.
+  - Separate: cover-page (page 1) redesign.
 
 ## D. Design
 
