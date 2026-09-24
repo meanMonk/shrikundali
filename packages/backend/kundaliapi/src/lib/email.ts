@@ -58,6 +58,7 @@ export async function sendReportEmail(
   paymentId: string,
   pdf?: Buffer,
   features?: ReportEmailFeature[],
+  regenerateUrl?: string,
 ): Promise<boolean> {
   const featureList = (features && features.length > 0 ? features : [
     { title: "Complete birth chart analysis", detail: "Planet positions, houses & degrees" },
@@ -93,6 +94,13 @@ export async function sendReportEmail(
   </div>
 
   <a href="${downloadUrl}" style="display: inline-block; background: #8b4513; color: white; padding: 0.8rem 2rem; text-decoration: none; border-radius: 4px; font-weight: 600;">Download Full Report (PDF)</a>
+
+  ${regenerateUrl ? `
+  <div style="background: #fff8e6; border: 1px solid #e8c96a; border-radius: 8px; padding: 1rem 1.25rem; margin: 1.25rem 0;">
+    <p style="margin: 0 0 0.35rem 0; font-size: 0.92rem; color: #333;"><strong>Entered a wrong birth detail?</strong> You can fix it <strong>once, free</strong> within 7 days — no refund needed:</p>
+    <p style="margin: 0; font-size: 0.92rem;"><a href="${regenerateUrl}" style="color: #8b4513; font-weight: 600;">Correct my details &amp; regenerate my report</a></p>
+    <p style="margin: 0.35rem 0 0 0; font-size: 0.78rem; color: #888;">This is a one-time link. Please double-check every field before submitting.</p>
+  </div>` : ""}
 
   <div style="background: #f1f7ff; border: 1px solid #cfe3ff; border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0;">
     <h2 style="color: #8b4513; font-size: 1.05rem; margin: 0 0 0.75rem 0;">What's inside your PDF</h2>
@@ -141,6 +149,36 @@ export async function sendPaymentFailureEmail(
   return sendViaSMTP({
     to,
     subject: "Your Kundali Report — Processing",
+    html,
+  });
+}
+
+/** One-time correction link email (lost link / re-issue). */
+export async function sendRegenerateLinkEmail(
+  to: string,
+  name: string,
+  regenerateUrl: string,
+  reportType: string,
+  expiresAt: Date,
+): Promise<boolean> {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Georgia, serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 2rem;">
+  <h1 style="color: #8b4513; border-bottom: 2px solid #d4a373; padding-bottom: 0.5rem;">Your One-Time Correction Link</h1>
+  <p>Hi ${name || "there"},</p>
+  <p>Here is your <strong>one-time link</strong> to correct your birth details and regenerate your <strong>${reportType}</strong> report, free of charge:</p>
+  <p style="margin: 1.25rem 0;"><a href="${regenerateUrl}" style="display: inline-block; background: #8b4513; color: white; padding: 0.8rem 2rem; text-decoration: none; border-radius: 4px; font-weight: 600;">Correct my details &amp; regenerate</a></p>
+  <p style="font-size: 0.9rem; color: #666;">This link can be used <strong>once</strong> and expires on <strong>${expiresAt.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</strong>. Double-check every field before submitting — a second correction is not included.</p>
+  <p style="font-size: 0.9rem; color: #666;">If you did not request this, you can safely ignore it — your current report stays exactly as it is.</p>
+  <hr style="border: none; border-top: 1px solid #d4a373; margin: 2rem 0;">
+  <p style="font-size: 0.8rem; color: #888; text-align: center;"><a href="https://rashikundali.com" style="color: #888;">rashikundali.com</a></p>
+</body>
+</html>`;
+  return sendViaSMTP({
+    to,
+    subject: "Your one-time report correction link — Rashi Kundali",
     html,
   });
 }

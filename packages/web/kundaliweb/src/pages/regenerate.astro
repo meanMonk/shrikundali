@@ -1,0 +1,268 @@
+---
+import Base from "../layouts/Base.astro";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
+---
+<Base title="Correct Details & Regenerate Report" description="Fix your birth details once, free — regenerate your Rashi Kundali PDF report with corrected inputs.">
+  <div style="max-width:600px;margin:0 auto;padding:1rem 0 2rem">
+    <h1 style="color:var(--color-primary);margin-bottom:0.5rem">Correct Details &amp; Regenerate</h1>
+    <p id="page-sub" style="color:var(--color-text-muted);font-size:0.9rem;margin-bottom:1.5rem">
+      Entered a wrong birth detail? Every order includes <strong>one free correction</strong> within 7 days —
+      no refund needed. Fix your inputs below and get a fresh PDF in minutes.
+    </p>
+
+    <!-- Mode 1: request a link -->
+    <div id="request-card" style="display:none;background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:1.5rem;margin-bottom:1rem">
+      <h2 style="color:var(--color-secondary);font-size:1.05rem;margin-bottom:0.5rem">Get your one-time correction link</h2>
+      <p style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:1rem">
+        Lost your email link? Enter your order ID and purchase email — we'll resend it
+        (only one link stays active at a time).
+      </p>
+      <form id="request-form">
+        <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+          <span style="font-weight:600">Order ID</span>
+          <input type="text" id="req-order" required placeholder="order_..." style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+          <span style="font-weight:600">Purchase email</span>
+          <input type="email" id="req-email" required placeholder="you@example.com" autocomplete="email" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+        </label>
+        <button type="submit" id="req-btn" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer">
+          Email me the link
+        </button>
+      </form>
+      <div id="req-status" style="display:none;margin-top:0.75rem;padding:0.6rem;border-radius:8px;font-size:0.85rem;text-align:center"></div>
+    </div>
+
+    <!-- Mode 2: redeem with token -->
+    <div id="redeem-card" style="display:none;background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:1.5rem;margin-bottom:1rem">
+      <h2 id="redeem-title" style="color:var(--color-secondary);font-size:1.05rem;margin-bottom:0.25rem">Fix your details</h2>
+      <p id="redeem-meta" style="font-size:0.8rem;color:var(--color-text-muted);margin-bottom:1rem"></p>
+      <form id="redeem-form">
+        <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+          <span style="font-weight:600">Purchase email (must match the order)</span>
+          <input type="email" id="f-email" required autocomplete="email" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+          <span style="font-weight:600">Name (as on the report)</span>
+          <input type="text" id="f-name" required style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+        </label>
+        <div style="display:flex;gap:0.75rem">
+          <label style="flex:1;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+            <span style="font-weight:600">Date of birth</span>
+            <input type="date" id="f-date" required min="1920-01-01" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+          </label>
+          <label style="flex:1;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+            <span style="font-weight:600">Time of birth</span>
+            <input type="time" id="f-time" required style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+          </label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+          <span style="font-weight:600">Birthplace</span>
+          <input type="text" id="f-place" placeholder="City, State" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+          <span style="font-weight:600">Coordinates (lat,lon)</span>
+          <input type="text" id="f-coords" required placeholder="19.0760,72.8777" pattern="-?\\d+(\\.\\d+)?\\s*,\\s*-?\\d+(\\.\\d+)?" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+          <span style="font-size:0.75rem;color:var(--color-text-muted)">Shown from your original order — edit only if the city was wrong. Keep the lat,lon format.</span>
+        </label>
+        <div id="partner-block" style="display:none;border-top:1px dashed var(--color-border);padding-top:1rem;margin-top:0.5rem">
+          <h3 style="color:var(--color-secondary);font-size:0.95rem;margin-bottom:0.75rem">Partner's corrected details</h3>
+          <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+            <span style="font-weight:600">Partner's name</span>
+            <input type="text" id="f-pname" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+          </label>
+          <div style="display:flex;gap:0.75rem">
+            <label style="flex:1;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+              <span style="font-weight:600">Partner's date of birth</span>
+              <input type="date" id="f-pdate" min="1920-01-01" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+            </label>
+            <label style="flex:1;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+              <span style="font-weight:600">Partner's time</span>
+              <input type="time" id="f-ptime" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+            </label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem;font-size:0.9rem">
+            <span style="font-weight:600">Partner's coordinates (lat,lon)</span>
+            <input type="text" id="f-pcoords" placeholder="19.0760,72.8777" style="font-size:16px;min-height:44px;padding:0.6rem 0.75rem;border:1px solid var(--color-border);border-radius:8px;width:100%;box-sizing:border-box" />
+          </label>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;color:var(--color-text-muted);margin:0.25rem 0 0.9rem">
+          <input type="checkbox" id="f-confirm" required style="width:20px;height:20px;flex-shrink:0;margin-top:0.1rem" />
+          <span>I have double-checked every field. I understand this link works <strong>once only</strong> — a second correction is not included.</span>
+        </label>
+        <button type="submit" id="redeem-btn" style="width:100%;min-height:44px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer">
+          Regenerate my report
+        </button>
+      </form>
+      <div id="redeem-status" style="display:none;margin-top:0.75rem;padding:0.6rem;border-radius:8px;font-size:0.85rem;text-align:center"></div>
+      <div id="redeem-done" style="display:none;margin-top:0.75rem;text-align:center">
+        <a id="redeem-download" href="#" style="display:inline-block;background:var(--color-primary);color:#fff;padding:0.85rem 2rem;border-radius:8px;font-weight:700;text-decoration:none">Download corrected PDF</a>
+        <p style="font-size:0.78rem;color:var(--color-text-muted);margin-top:0.5rem">A backup copy has also been emailed to you.</p>
+      </div>
+    </div>
+
+    <div id="fatal" style="display:none;background:#fee;border:1px solid #f5c6c6;border-radius:12px;padding:1.25rem;text-align:center">
+      <p id="fatal-text" style="font-size:0.9rem;color:#900"></p>
+      <p style="margin-top:0.75rem"><button id="fatal-req" type="button" style="background:#fff;border:1px solid var(--color-border);border-radius:8px;padding:0.6rem 1.25rem;font-weight:600;cursor:pointer;color:var(--color-primary)">Request a fresh link instead</button></p>
+    </div>
+
+    <p style="font-size:0.78rem;color:var(--color-text-muted);text-align:center;margin-top:1rem">
+      One free correction per order, valid 7 days from purchase. Wrong details after that, or
+      change-of-mind and accuracy-disappointment cases, are covered in our
+      <a href="/refund">Refund Policy</a>.
+    </p>
+  </div>
+
+  <script define:vars={{ API }}>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token") || "";
+    const requestCard = document.getElementById("request-card");
+    const redeemCard = document.getElementById("redeem-card");
+    const fatal = document.getElementById("fatal");
+    const fatalText = document.getElementById("fatal-text");
+
+    function showStatus(id, text, kind) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = "block";
+      el.textContent = text;
+      el.style.background = kind === "error" ? "#fee" : kind === "ok" ? "#e7f6ec" : "#eef2ff";
+      el.style.color = kind === "error" ? "#900" : kind === "ok" ? "#1a7f37" : "#334";
+    }
+
+    function showFatal(text) {
+      if (fatal) fatal.style.display = "block";
+      if (fatalText) fatalText.textContent = text;
+      if (redeemCard) redeemCard.style.display = "none";
+    }
+
+    document.getElementById("fatal-req")?.addEventListener("click", () => {
+      if (fatal) fatal.style.display = "none";
+      if (requestCard) requestCard.style.display = "block";
+    });
+
+    // ---- Mode 1: request a link ----
+    document.getElementById("request-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("req-btn");
+      const orderId = document.getElementById("req-order").value.trim();
+      const email = document.getElementById("req-email").value.trim();
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+      try {
+        const res = await fetch(`${API}/regenerate/request`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, email }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Could not send the link.");
+        showStatus("req-status", "Link sent — check your inbox (and spam folder). It works once and expires in 7 days.", "ok");
+      } catch (err) {
+        showStatus("req-status", err.message || "Something went wrong.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Email me the link";
+      }
+    });
+
+    // ---- Mode 2: redeem with token ----
+    let tokenInfo = null;
+
+    function splitDatetime(iso) {
+      // "1990-05-14T12:30:00+05:30" -> ["1990-05-14", "12:30"]
+      const m = String(iso || "").match(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+      return m ? [m[1], m[2]] : ["", ""];
+    }
+
+    async function initRedeem() {
+      const res = await fetch(`${API}/regenerate/${encodeURIComponent(token)}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showFatal(data.error || "This link is invalid, already used, or expired.");
+        return;
+      }
+      tokenInfo = data;
+      redeemCard.style.display = "block";
+      const meta = document.getElementById("redeem-meta");
+      if (meta) {
+        const exp = data.expiresAt ? new Date(data.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
+        meta.textContent = `${data.reportLabel || data.reportType} · Order ${data.orderId}${exp ? ` · Use once before ${exp}` : ""}`;
+      }
+      const title = document.getElementById("redeem-title");
+      if (title && data.reportLabel) title.textContent = `Fix your details — ${data.reportLabel}`;
+      document.getElementById("f-email").value = data.email || "";
+      document.getElementById("f-name").value = data.name || "";
+      const [d, t] = splitDatetime(data.birth?.datetime);
+      document.getElementById("f-date").value = d;
+      document.getElementById("f-time").value = t;
+      document.getElementById("f-place").value = data.birth?.place || "";
+      document.getElementById("f-coords").value = data.birth?.coordinates || "";
+      if (data.partner) {
+        document.getElementById("partner-block").style.display = "block";
+        document.getElementById("f-pname").value = data.partner.name || "";
+        const [pd, pt] = splitDatetime(data.partner.birth?.datetime);
+        document.getElementById("f-pdate").value = pd;
+        document.getElementById("f-ptime").value = pt;
+        document.getElementById("f-pcoords").value = data.partner.birth?.coordinates || "";
+      }
+    }
+
+    document.getElementById("redeem-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("redeem-btn");
+      btn.disabled = true;
+      btn.textContent = "Recalculating your chart...";
+      showStatus("redeem-status", "Recalculating your chart and rebuilding the PDF — keep this page open (under a minute).", "info");
+      try {
+        const date = document.getElementById("f-date").value;
+        const time = document.getElementById("f-time").value;
+        const payload = {
+          email: document.getElementById("f-email").value.trim(),
+          name: document.getElementById("f-name").value.trim(),
+          datetime: `${date}T${time}:00+05:30`,
+          coordinates: document.getElementById("f-coords").value.trim(),
+          place: document.getElementById("f-place").value.trim() || undefined,
+        };
+        if (tokenInfo?.partner) {
+          const pd = document.getElementById("f-pdate").value;
+          const pt = document.getElementById("f-ptime").value;
+          const pc = document.getElementById("f-pcoords").value.trim();
+          if (!pd || !pt || !pc) throw new Error("Please fill in your partner's corrected birth details too.");
+          payload.partner = {
+            name: document.getElementById("f-pname").value.trim() || undefined,
+            datetime: `${pd}T${pt}:00+05:30`,
+            coordinates: pc,
+          };
+        }
+        const res = await fetch(`${API}/regenerate/${encodeURIComponent(token)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Regeneration failed.");
+        showStatus("redeem-status", "Done — your corrected report is ready.", "ok");
+        const done = document.getElementById("redeem-done");
+        const link = document.getElementById("redeem-download");
+        if (done && link && data.downloadUrl) {
+          link.href = data.downloadUrl.startsWith("http") ? data.downloadUrl : `${API}${data.downloadUrl}`;
+          done.style.display = "block";
+        }
+        btn.textContent = "Report regenerated";
+      } catch (err) {
+        showStatus("redeem-status", err.message || "Something went wrong.", "error");
+        btn.disabled = false;
+        btn.textContent = "Regenerate my report";
+      }
+    });
+
+    if (token) {
+      initRedeem();
+    } else {
+      requestCard.style.display = "block";
+      const oid = params.get("orderId");
+      if (oid) document.getElementById("req-order").value = oid;
+    }
+  </script>
+</Base>

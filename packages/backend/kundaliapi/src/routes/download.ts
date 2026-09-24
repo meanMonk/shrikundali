@@ -2,6 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { logInfo, logError } from "../lib/logger.js";
 import { readArchiveFile } from "../lib/archive.js";
 import { getKundaliByArchiveId, markKundaliDownloadNotified } from "../lib/store.js";
+import { getOrderByOrderId } from "../lib/orders.js";
 import { notifyAdminDownload } from "../lib/telegram.js";
 
 const downloadApp = new OpenAPIHono();
@@ -34,6 +35,16 @@ downloadApp.openapi(downloadRoute, async (c) => {
     const data = await readArchiveFile(archiveId, "report.pdf");
     if (!data) {
       return c.json({ error: "Report not found or not yet generated" }, 404);
+    }
+
+    // Refunded orders lose download access — checked here too because this
+    // route is keyed by archive id (shared in emails), not order id.
+    const doc0 = await getKundaliByArchiveId(archiveId);
+    if (doc0?.orderId) {
+      const order = await getOrderByOrderId(doc0.orderId).catch(() => null);
+      if (order?.status === "refunded") {
+        return c.json({ error: "This order was refunded, so the report is no longer available for download." }, 410);
+      }
     }
 
     logInfo(`${endpoint} serving pdf for ${archiveId}`);

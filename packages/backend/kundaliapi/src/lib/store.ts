@@ -75,6 +75,10 @@ export interface KundaliDoc {
   createdAt: Date;
   paidAt?: Date;
   autoResolveAttempted?: boolean;
+  /** One-time correction flow: previous archive kept for audit, count + time. */
+  previousArchiveId?: string;
+  regenerationCount?: number;
+  regeneratedAt?: Date;
 }
 
 export const REPORT_LABELS: Record<ReportType, string> = {
@@ -138,7 +142,18 @@ export async function getKundaliByArchiveId(archiveId: string): Promise<KundaliD
 
 export async function updateKundali(id: string, patch: Partial<KundaliDoc>): Promise<void> {
   const c = await getCollection();
-  await c.updateOne({ id }, { $set: patch });
+  // `undefined` values become $unset so callers can clear a field
+  // (e.g. the regenerate flow clears archiveId/downloadUrl before rebuilding).
+  const set: Record<string, unknown> = {};
+  const unset: Record<string, ""> = {};
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === undefined) unset[k] = "";
+    else set[k] = v;
+  }
+  const update: Record<string, Record<string, unknown>> = {};
+  if (Object.keys(set).length) update.$set = set;
+  if (Object.keys(unset).length) update.$unset = unset;
+  if (Object.keys(update).length) await c.updateOne({ id }, update);
 }
 
 export async function updateKundaliByOrderId(

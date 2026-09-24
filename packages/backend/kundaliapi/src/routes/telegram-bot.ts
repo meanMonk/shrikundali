@@ -13,6 +13,10 @@ import { applyPricingPreset, formatPricing, TEST_PRICE } from "../lib/pricing-pr
 import { getAttributionBreakdown, type AttributionRow } from "../lib/attribution-stats.js";
 import { listSupportTickets, getSupportTicketStats, type SupportTicket } from "../lib/support.js";
 import { regenerateReportById } from "../lib/report.js";
+import { getKundaliByOrderId } from "../lib/store.js";
+import { getOrderByOrderId, markOrderRefunded } from "../lib/orders.js";
+import { createRazorpayRefund, getRazorpayPayment } from "../lib/payment.js";
+import { createRegenerateToken, regenerateUrlFor } from "../lib/regenerate-tokens.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const telegramBotApp = new OpenAPIHono();
@@ -253,12 +257,14 @@ const HELP_TEXT = [
   "/test_price — set all reports to ₹9 (testing)",
   "/actual_price — restore launch prices",
   "",
-  "*Ops*",
-  "/tickets — recent support tickets (payment/download issues)",
-  "/failed — paid orders stuck without a completed report (last 7 days)",
-  "/retry <orderId or kundaliId> — regenerate a stuck report now, emails customer on success",
-  "",
-  "/feedback — feedback stats (not tracked yet)",
+   "*Ops*",
+   "/tickets — recent support tickets (payment/download issues)",
+   "/failed — paid orders stuck without a completed report (last 7 days)",
+   "/retry <orderId or kundaliId> — regenerate a stuck report now, emails customer on success",
+   "/regenlink <orderId> — one-time correction link (send instead of refunding wrong-details cases)",
+   "/refund <orderId> [amount] — issue a Razorpay refund + block re-downloads",
+   "",
+   "/feedback — feedback stats (not tracked yet)",
 ].join("\n");
 
 const webhookRoute = createRoute({
@@ -376,6 +382,73 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
         reply = result.ok
           ? `✅ ${result.message}${result.downloadUrl ? `\n📥 ${result.downloadUrl}` : ""}`
           : `❌ ${result.message}`;
+      }
+    } else if (text.startsWith("/regenlink")) {
+      const orderId = text.slice("/regenlink".length).trim();
+      if (!orderId) {
+        reply = "Usage: `/regenlink <orderId>`\n\nIssues a one-time correction link — send this to the customer instead of refunding a wrong-details case.";
+      } else {
+        const doc = await getKundaliByOrderId(orderId);
+        if (!doc?.email || !doc.archiveId) {
+          reply = `❌ No completed order found for \`${orderId}\` (needs a delivered report + email).`;
+        } else {
+          const order = await getOrderByOrderId(orderId);
+          if (order?.status === "refunded") {
+            reply = `❌ Order \`${orderId}\` is already refunded — no correction link.`;
+          } else {
+            const token = await createRegenerateToken({
+              kundaliId: doc.id,
+              orderId,
+              email: doc.email,
+              reportType: doc.reportType,
+            });
+            reply = `🔁 One-time correction link for \`${orderId}\` (expires in 7 days, single use):\n${regenerateUrlFor(token.token)}`;
+          }
+        }
+      }
+    } else if (text.startsWith("/refund")) {
+      // /refund <orderId> [amount] — same guards as POST /payment/refund.
+      const parts = text.slice("/refund".length).trim().split(/\s+/).filter(Boolean);
+      if (!parts[0]) {
+        reply = "Usage: `/refund <orderId> [amount]`\n\nFull refund when amount is omitted. Prefer `/regenlink` for wrong-details cases.";
+      } else {
+        const orderId = parts[0];
+        const amount = parts[1] ? Number(parts[1]) : undefined;
+        if (parts[1] && !(amount && amount > 0)) {
+          reply = "❌ Amount must be a positive number (INR).";
+        } else {
+          const who = msg.from?.username ?? String(chatId);
+          logInfo(`${endpoint} /refund ${orderId} requested by ${who}`);
+          const doc = await getKundaliByOrderId(orderId);
+          const order = await getOrderByOrderId(orderId);
+          if (!doc) {
+            reply = `❌ Unknown order \`${orderId}\`.`;
+          } else if (order?.status === "refunded") {
+            reply = `❌ Order \`${orderId}\` is already refunded.`;
+          } else if (doc.provider && doc.provider !== "razorpay") {
+            reply = `❌ ${doc.provider} refunds must be issued from the provider dashboard.`;
+          } else if (!doc.paymentId) {
+            reply = `❌ No captured payment on \`${orderId}\` — nothing to refund.`;
+          } else {
+            const payment = await getRazorpayPayment(doc.paymentId);
+            if (!payment) {
+              reply = "❌ Could not verify the payment with Razorpay.";
+            } else {
+              try {
+                const refund = await createRazorpayRefund(doc.paymentId, amount, { order_id: orderId });
+                await markOrderRefunded(orderId, {
+                  refundId: refund.id,
+                  amount: refund.amount,
+                  reason: `telegram:${who}`,
+                });
+                reply = `↩️ Refunded \`${orderId}\` — ₹${refund.amount} (refund \`${refund.id}\`). Re-downloads are now blocked.`;
+              } catch (e) {
+                logError(endpoint, e);
+                reply = `❌ Refund failed: ${String(e)}`;
+              }
+            }
+          }
+        }
       }
     } else if (text === "/txns" || text === "/transactions" || text === "/payments") {
       const start = new Date(now);

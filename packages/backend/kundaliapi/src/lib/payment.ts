@@ -212,3 +212,74 @@ export async function verifyPayment(params: VerifyPaymentParams): Promise<boolea
       throw new Error(`Unknown provider: ${params.provider}`);
   }
 }
+
+// ─── Razorpay refunds (admin-only) ─────────────────────────
+
+export interface RazorpayRefundResult {
+  id: string;
+  status: string;
+  amount: number;
+  paymentId: string;
+}
+
+function razorpayAuth(): string {
+  const keyId = process.env.RAZORPAY_KEY_ID ?? "";
+  const keySecret = process.env.RAZORPAY_KEY_SECRET ?? "";
+  if (!keyId || !keySecret) throw new Error("RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET required");
+  return Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+}
+
+/** Fetch a single Razorpay payment — used to confirm a paymentId before refunding. */
+export async function getRazorpayPayment(paymentId: string): Promise<Record<string, unknown> | null> {
+  try {
+    const res = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+      headers: { Authorization: `Basic ${razorpayAuth()}` },
+    });
+    if (!res.ok) {
+      logError("razorpay/get-payment", `${paymentId}: ${res.status}`);
+      return null;
+    }
+    return await res.json() as Record<string, unknown>;
+  } catch (e) {
+    logError("razorpay/get-payment", e);
+    return null;
+  }
+}
+
+/**
+ * Issue a Razorpay refund for a captured payment. `amount` is in INR
+ * (omit for a full refund). Only ever called from the admin-only
+ * `POST /payment/refund` endpoint — never from customer-facing code.
+ */
+export async function createRazorpayRefund(
+  paymentId: string,
+  amount?: number,
+  notes?: Record<string, string>,
+): Promise<RazorpayRefundResult> {
+  const res = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}/refund`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${razorpayAuth()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...(amount != null ? { amount: Math.round(amount * 100) } : {}),
+      speed: "normal",
+      ...(notes ? { notes } : {}),
+    }),
+  });
+
+  const data = await res.json() as Record<string, unknown>;
+  if (!res.ok) {
+    logError("razorpay/create-refund", data);
+    throw new Error(`Razorpay refund failed: ${res.status} ${JSON.stringify(data)}`);
+  }
+
+  logInfo(`Razorpay refund issued: ${data.id} for payment ${paymentId}`);
+  return {
+    id: String(data.id),
+    status: String(data.status ?? "processed"),
+    amount: Number(data.amount ?? 0) / 100,
+    paymentId,
+  };
+}

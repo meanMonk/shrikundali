@@ -18,6 +18,7 @@ import {
 } from "./store.js";
 import { sendPurchaseConversion } from "./conversions.js";
 import { isAngleReport } from "./angle-report.js";
+import { createRegenerateToken, regenerateUrlFor } from "./regenerate-tokens.js";
 
 const API_BASE = () => process.env.APP_URL ?? "http://localhost:3400";
 
@@ -348,9 +349,27 @@ export async function generatePaidReport(
     // Notify the admin chat first — this must not depend on email delivery.
     await notifySaleOnce({ ...doc, archiveId: archive.id, downloadUrl });
 
+    // One-time correction link: the revenue-protection lever. Wrong birth
+    // details are the top refund trigger on ad traffic — a free single-use
+    // regenerate beats a refund/chargeback. Best-effort; never fail the sale.
+    let regenerateUrl: string | undefined;
+    try {
+      if (email) {
+        const token = await createRegenerateToken({
+          kundaliId: doc.id,
+          orderId,
+          email,
+          reportType: doc.reportType,
+        });
+        regenerateUrl = regenerateUrlFor(token.token);
+      }
+    } catch (e) {
+      logError(`${endpoint}/regen-token`, e);
+    }
+
     // Email is best-effort; a failure here must never affect the sale notification.
     try {
-      await sendReportEmail(email, name || "", downloadUrl, label, amount, paymentId, pdf);
+      await sendReportEmail(email, name || "", downloadUrl, label, amount, paymentId, pdf, undefined, regenerateUrl);
     } catch (e) {
       logError(`${endpoint}/email`, e);
     }

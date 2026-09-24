@@ -12,6 +12,8 @@ import { dbRoutes } from "./routes/db.js";
 import { downloadApp } from "./routes/download.js";
 import { healthRoutes } from "./routes/health.js";
 import { pricingApp } from "./routes/pricing.js";
+import { refundsApp } from "./routes/refunds.js";
+import { regenerateApp } from "./routes/regenerate.js";
 import { supportApp } from "./routes/support.js";
 import { digestApp } from "./routes/digest.js";
 import { startDailyDigestScheduler } from "./lib/digest.js";
@@ -32,13 +34,15 @@ app.use(
   cors({
     origin: allowedOrigins,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "x-admin-token"],
   })
 );
 app.route("/health", healthRoutes);
 app.route("/db", dbRoutes);
 app.route("/teaser", teaserApp);
 app.route("/payment", checkoutApp);
+app.route("/payment", refundsApp);
+app.route("/regenerate", regenerateApp);
 app.route("/webhook", webhookApp);
 app.route("/download", downloadApp);
 app.route("/support", supportApp);

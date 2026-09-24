@@ -375,6 +375,10 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
       <form id="modal-payment-form">
         <div class="pay-email-head"><span>Get PDF on Email</span><span class="pay-free">FREE</span></div>
         <input type="email" id="modal-email" name="email" placeholder="Your email address" required class="field-input" autocomplete="email" />
+        <label style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.76rem;color:var(--color-text-muted);margin-top:0.6rem;line-height:1.5">
+          <input type="checkbox" id="modal-refund-ack" required style="width:20px;height:20px;flex-shrink:0;margin-top:0.1rem" />
+          <span>I understand this is an <strong>instantly generated digital PDF report</strong> and is <strong>non-refundable</strong> once generated. One free birth-detail correction is included — see <a href="/refund" target="_blank" rel="noopener" style="color:var(--color-primary)">Refund Policy</a>.</span>
+        </label>
         <button type="submit" id="modal-pay-btn" class="cta-pulse pay-btn">Pay &#8377;249 &amp; Download PDF</button>
         <ul id="modal-features-list" class="pay-feats"></ul>
         <div id="modal-status" class="pay-status" style="display:none"></div>
@@ -387,7 +391,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
           <span class="pay-sep">|</span>
           <img src="/assets/payment/razorpay.png" alt="Razorpay" height="20" loading="lazy" />
         </div>
-        <p class="pay-trust-note">Instant download &bull; Bank-grade security</p>
+        <p class="pay-trust-note">Instant download &bull; Bank-grade security &bull; One free correction included</p>
       </div>
     </div>
   </div>
@@ -426,7 +430,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
         </div>
         <p id="support-done" style="display:none;font-size:0.8rem;font-weight:600;color:var(--color-success);text-align:center">&#10003; Thanks! Our team will get back to you over email.</p>
       </div>
-      <p style="font-size:0.72rem;color:var(--color-text-muted);text-align:center;margin-top:0.6rem">&#x1F512; A backup copy is also sent to your email. Your download link stays active for 7 days.</p>
+      <p style="font-size:0.72rem;color:var(--color-text-muted);text-align:center;margin-top:0.6rem">&#x1F512; A backup copy is also sent to your email. Your download link stays active for 7 days.<br />Wrong birth detail? Your email also carries a one-time link to correct it &amp; regenerate free.</p>
     </div>
   </div>
 
@@ -481,7 +485,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Can I get a refund? <span>+</span></div>
-      <div class="faq-a">Since this is an instantly-delivered digital report, we don't offer refunds once generation has started, except in cases of duplicate or failed payment. See our Refund Policy.</div>
+      <div class="faq-a">Your report is generated instantly after payment, so sales are final — except duplicate charges or a report that was never delivered (see our Refund Policy). Mistyped a birth detail? Every order includes one free correction &amp; regeneration within 7 days via the link in your delivery email.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Is this a computer-generated or hand-written report? <span>+</span></div>

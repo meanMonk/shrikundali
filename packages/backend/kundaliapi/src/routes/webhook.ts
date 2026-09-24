@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { cashfreeVerifyPayment } from "../lib/payment.js";
 import { getKundaliByOrderId, updateKundaliByOrderId } from "../lib/store.js";
 import { generatePaidReport } from "../lib/report.js";
-import { markOrderPaid, markOrderFailed } from "../lib/orders.js";
+import { markOrderPaid, markOrderFailed, markOrderRefunded, getOrderByPaymentId } from "../lib/orders.js";
 import { logInfo, logError } from "../lib/logger.js";
 
 const webhookApp = new OpenAPIHono();
@@ -61,6 +61,21 @@ webhookApp.openapi(razorpayRoute, async (c) => {
         await markOrderFailed(payment.order_id, payment.error_description).catch((e) =>
           logError(endpoint, e),
         );
+      }
+    } else if (body.event === "refund.created" || body.event === "refund.processed") {
+      // Refund issued from the Razorpay dashboard (or our admin endpoint):
+      // mirror it onto the order so re-downloads are blocked and stats stay true.
+      const refund = body.payload?.refund?.entity;
+      const paymentId = refund?.payment_id ?? body.payload?.payment?.entity?.id;
+      if (paymentId) {
+        const order = await getOrderByPaymentId(paymentId);
+        if (order) {
+          await markOrderRefunded(order.orderId, {
+            refundId: refund?.id ?? "dashboard",
+            amount: refund?.amount != null ? Number(refund.amount) / 100 : undefined,
+            reason: "razorpay_dashboard",
+          }).catch((e) => logError(endpoint, e));
+        }
       }
     }
 

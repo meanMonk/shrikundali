@@ -24,6 +24,10 @@ export interface Order {
   archiveId?: string;
   downloadUrl?: string;
   attribution?: Record<string, string>;
+  refundId?: string;
+  refundedAt?: Date;
+  refundAmount?: number;
+  refundReason?: string;
   createdAt: Date;
   paidAt?: Date;
 }
@@ -83,6 +87,32 @@ export async function markOrderFailed(orderId: string, reason?: string): Promise
 }
 
 /**
+ * Refund issued (admin-only path). The order row is the source of truth for
+ * "refunded" — the kundali doc keeps its archive so ops can still see what
+ * was delivered, but re-downloads for refunded orders are blocked in the
+ * download routes.
+ */
+export async function markOrderRefunded(
+  orderId: string,
+  refund: { refundId: string; amount?: number; reason?: string },
+): Promise<void> {
+  const col = await getCollection();
+  await col.updateOne(
+    { orderId },
+    {
+      $set: {
+        status: "refunded",
+        refundId: refund.refundId,
+        refundedAt: new Date(),
+        ...(refund.amount != null ? { refundAmount: refund.amount } : {}),
+        ...(refund.reason ? { refundReason: refund.reason } : {}),
+      },
+    },
+  );
+  logInfo(`order ${orderId} marked refunded (${refund.refundId})`);
+}
+
+/**
  * Report generated and delivered — the terminal success state. Upserts so an
  * order is never lost even if it somehow wasn't created at checkout time
  * (e.g. legacy rows from before this flow existed).
@@ -111,6 +141,17 @@ export async function getOrderByOrderId(orderId: string): Promise<Order | null> 
     return (await col.findOne({ orderId })) as Order | null;
   } catch (e) {
     logError("orders/get", e);
+    return null;
+  }
+}
+
+/** Find an order by its captured payment id (used by refund webhooks). */
+export async function getOrderByPaymentId(paymentId: string): Promise<Order | null> {
+  try {
+    const col = await getCollection();
+    return (await col.findOne({ paymentId })) as Order | null;
+  } catch (e) {
+    logError("orders/get-by-payment", e);
     return null;
   }
 }

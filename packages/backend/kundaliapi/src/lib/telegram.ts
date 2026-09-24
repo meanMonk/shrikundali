@@ -160,6 +160,31 @@ export interface DownloadNotification {
   archiveId: string;
 }
 
+/** Customer used their one-time correction link — revenue saved, not refunded. */
+export async function notifyAdminRegenerated(data: {
+  name?: string;
+  email?: string;
+  reportType: string;
+  orderId: string;
+  archiveId: string;
+}): Promise<boolean> {
+  const message = `🔁 *Report Regenerated (one-time correction)*
+
+👤 ${data.name || "N/A"}
+📧 ${data.email || "N/A"}
+📋 ${data.reportType}
+🔑 \`${data.orderId}\`
+🗂 new archive: \`${data.archiveId}\`
+
+💰 Refund avoided via correction link.
+
+⏰ ${istNow()}`;
+
+  const ok = await sendTelegram(message);
+  if (ok) logInfo(`telegram/notify regenerated sent for ${data.orderId}`);
+  return ok;
+}
+
 export async function notifyAdminDownload(data: DownloadNotification): Promise<boolean> {
   const message = `📥 *Report Downloaded*
 

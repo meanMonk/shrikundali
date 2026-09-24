@@ -213,6 +213,30 @@ plus direct API calls. Backend had to be started with overrides
   - PRD §7 is mobile-first. Modal compacted for mobile + trust badges (2026-09-23); full
     landing/form audit still ongoing per `docs/prd/frontend-gap-plan.md` (item 6).
 
+- [x] **Refund-proofing for ad traffic: one-time correction links + admin refunds + hardened policy (2026-09-24).**
+      Wrong birth details are the top refund trigger on impulse ad traffic, so refunds are
+      replaced with a free single-use recalculation wherever possible:
+      - Backend: `lib/regenerate-tokens.ts` (`regenerate_tokens` collection, 7-day TTL, at most
+        one live link per order) + `routes/regenerate.ts` (`POST /regenerate/request`,
+        `GET /regenerate/:token`, `POST /regenerate/:token` — re-runs ProKerala + teaser +
+        the standard paid-report pipeline, keeps `previousArchiveId` for audit).
+      - Every delivered report email now carries the one-time correction link
+        (`lib/email.ts` + auto-issued in `generatePaidReport`); re-issues via
+        `sendRegenerateLinkEmail`. Web base comes from new `WEB_URL` env.
+      - Admin-only refunds: `POST /payment/refund` (`x-admin-token`, new `ADMIN_TOKEN` env)
+        via Razorpay refunds API (`lib/payment.ts`), mirrored from dashboard refunds in the
+        webhook (`refund.created/processed`), order status → `refunded`, re-downloads blocked
+        (410) on both download routes. Telegram `/regenlink <orderId>` (send instead of
+        refunding) + `/refund <orderId> [amount]`.
+      - Web: new `/regenerate` page (request-link mode + token correction form, incl. partner
+        fields for match reports), mandatory non-refundable-ack checkbox in the payment modal,
+        FAQ + success-modal + trust copy updated, footer link added.
+      - Refund policy (`/refund`) rewritten: sale final once generated, wrong-details →
+        free one-time recalculation (not a refund), only duplicate/never-delivered qualify,
+        5-7 day processing, dispute/chargeback clause (server delivery logs submitted as proof).
+      - Ops must set in production: `RAZORPAY_WEBHOOK_SECRET` (webhook signatures currently
+        unenforced when empty), `ADMIN_TOKEN`, `WEB_URL`. Never commit live keys.
+
 - [ ] **Multi-language report support (i18n).** ([#81](https://github.com/meanMonk/shrikundali/issues/81))
   - Only `en`/`hi` wired today; ProKerala chart endpoints localize only `en, hi, ta, te, ml`.
   - Plan: shared language registry → dropdown (native names) → clamp `la` before ProKerala →

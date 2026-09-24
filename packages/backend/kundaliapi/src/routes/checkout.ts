@@ -17,7 +17,7 @@ import { readArchiveFile } from "../lib/archive.js";
 import { notifyAdminDownload } from "../lib/telegram.js";
 import { logGeneration, logInfo, logError } from "../lib/logger.js";
 import { getReportAmount } from "../lib/pricing-store.js";
-import { createOrder, markOrderPaid } from "../lib/orders.js";
+import { createOrder, markOrderPaid, getOrderByOrderId } from "../lib/orders.js";
 
 const checkoutApp = new OpenAPIHono();
 
@@ -331,6 +331,12 @@ checkoutApp.openapi(
 
       if (!doc) {
         return c.json({ error: "Unknown order" }, 404);
+      }
+
+      // Refunded orders lose download access — the PDF was paid back.
+      const order = await getOrderByOrderId(orderId).catch(() => null);
+      if (order?.status === "refunded") {
+        return c.json({ error: "This order was refunded, so the report is no longer available for download." }, 410);
       }
 
       // Self-heal: generate on demand if the order is paid but not yet rendered.
