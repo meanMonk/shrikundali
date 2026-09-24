@@ -164,7 +164,12 @@ plus direct API calls. Backend had to be started with overrides
       end-to-end without a real charge.
 - [ ] **Matching preview fallback.** When the compatibility call fails/rate-limits, show a
       retry/notice instead of silently hiding the Guna Milan score.
-- [ ] **Load Razorpay `checkout.js` lazily** on unlock only (kill the per-page console noise).
+- [x] **Load Razorpay `checkout.js` lazily** on unlock only (kill the per-page console noise).
+      Done 2026-09-24: static `<script src checkout.js>` removed from
+      `KundaliLanding.astro` (live funnel) and `kundali.astro` (legacy page);
+      new `ensureRazorpayLoaded()` injects the script on demand — prefetched
+      (non-blocking) on unlock click, awaited with a friendly ad-blocker-aware
+      error before order creation.
 - [ ] **Financial report page completeness.** Template targets 12 pages; generated PDF was
       11 pages — verify no section is silently dropped for lean charts.
 - [ ] **Orphaned legacy checkout.** `/kundali/` redirects to `/download?orderId=…`, but no
@@ -185,6 +190,12 @@ plus direct API calls. Backend had to be started with overrides
       does call ProKerala per-request and is fully public/unauthenticated, so a scripted
       burst there could exhaust credits fast. Worth a lightweight IP/window rate limit
       (e.g. via Hono middleware) as a follow-up.
+      **Done 2026-09-24:** in-memory per-IP sliding window in `lib/rate-limit.ts`,
+      enforced in `routes/teaser.ts` — fresh (credit-spending) teasers only;
+      `cacheId` lookups return stored data free and are never counted. Defaults
+      20 req / 60s / IP, 429 + `Retry-After` beyond that; tune via
+      `TEASER_RATE_LIMIT_MAX` / `TEASER_RATE_LIMIT_WINDOW_MS`, disable with
+      `TEASER_RATE_LIMIT_ENABLED=false` (see `.env.example`).
 
 - [x] **Root-caused the ProKerala credit burn + trimmed `/teaser` fetch (2026-09-24).**
       Pulled ProKerala's credit-usage report: `/v2/astrology/kundli/advanced` alone costs

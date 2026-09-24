@@ -172,6 +172,29 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
 
     init();
 
+    // Razorpay checkout.js loads lazily on first payment attempt — no
+    // static <script> tag (it fired on every page view, even without
+    // checkout, and logged ERR_BLOCKED_BY_ORB noise).
+    let razorpayLoadPromise = null;
+    function ensureRazorpayLoaded() {
+      if (window.Razorpay) return Promise.resolve();
+      if (!razorpayLoadPromise) {
+        razorpayLoadPromise = new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://checkout.razorpay.com/v1/checkout.js";
+          s.async = true;
+          const timer = setTimeout(() => reject(new Error("Razorpay checkout timed out. Check your connection and retry.")), 15000);
+          s.onload = () => { clearTimeout(timer); resolve(); };
+          s.onerror = () => {
+            clearTimeout(timer);
+            reject(new Error("Could not load the payment window (blocked?). Disable ad-blockers for this site and retry."));
+          };
+          document.head.appendChild(s);
+        }).catch((e) => { razorpayLoadPromise = null; throw e; });
+      }
+      return razorpayLoadPromise;
+    }
+
     document.getElementById("payment-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = document.getElementById("pay-btn");
@@ -207,6 +230,17 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
         (window as any).trackAddPaymentInfo({ transaction_id: data.orderId, value: data.amount, currency: data.currency, content_ids: [data.orderId] });
 
         if (provider === "razorpay" && data.key) {
+          try {
+            await ensureRazorpayLoaded();
+          } catch (loadErr) {
+            statusEl.style.display = "block";
+            statusEl.style.background = "#fee";
+            statusEl.style.color = "#c00";
+            statusEl.textContent = loadErr.message || "Payment window failed to load. Please try again.";
+            btn.disabled = false;
+            btn.textContent = "Pay & Download Report →";
+            return;
+          }
           const options = {
             key: data.key,
             amount: data.amount * 100,
@@ -249,6 +283,4 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
       }
     });
   </script>
-
-  <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 </Base>

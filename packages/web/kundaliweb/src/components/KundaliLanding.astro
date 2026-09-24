@@ -1153,6 +1153,29 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
     });
 
     // ---- Unlock button: open payment modal ----
+    // Razorpay checkout.js is loaded lazily (first unlock click / payment
+    // attempt) instead of a static <script> on every page — the static tag
+    // fired on pages that never check out and logged ERR_BLOCKED_BY_ORB noise.
+    let razorpayLoadPromise: Promise<void> | null = null;
+    function ensureRazorpayLoaded(): Promise<void> {
+      if ((window as any).Razorpay) return Promise.resolve();
+      if (!razorpayLoadPromise) {
+        razorpayLoadPromise = new Promise<void>((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://checkout.razorpay.com/v1/checkout.js";
+          s.async = true;
+          const timer = window.setTimeout(() => reject(new Error("Razorpay checkout timed out. Check your connection and retry.")), 15000);
+          s.onload = () => { window.clearTimeout(timer); resolve(); };
+          s.onerror = () => {
+            window.clearTimeout(timer);
+            reject(new Error("Could not load the payment window (blocked?). Disable ad-blockers for this site and retry."));
+          };
+          document.head.appendChild(s);
+        }).catch((e) => { razorpayLoadPromise = null; throw e; });
+      }
+      return razorpayLoadPromise;
+    }
+
     const modal = document.getElementById("payment-modal") as HTMLDivElement;
     const modalEmail = document.getElementById("modal-email") as HTMLInputElement;
     const modalClose = document.getElementById("modal-close");
@@ -1162,6 +1185,8 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
       modal.style.display = "flex";
       if (modalEmail) modalEmail.focus();
       trackBeginCheckout({ value: reportPrice, currency: "INR" });
+      // Prefetch while the user types their email — non-blocking.
+      void ensureRazorpayLoaded().catch(() => {});
     });
 
     modalClose?.addEventListener("click", () => { modal.style.display = "none"; });
@@ -1400,6 +1425,17 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
       modalPayBtn.textContent = "Processing...";
       if (modalStatus) { modalStatus.style.display = "none"; }
 
+      // Fail fast before creating a pending order if the payment SDK
+      // can't load (offline / script blocked).
+      try {
+        await ensureRazorpayLoaded();
+      } catch (err: any) {
+        if (modalStatus) { modalStatus.style.display = "block"; modalStatus.style.background = "#fee"; modalStatus.style.color = "#c00"; modalStatus.textContent = err?.message || "Payment window failed to load. Please try again."; }
+        modalPayBtn.disabled = false;
+        modalPayBtn.textContent = `Pay \u20B9${reportPrice || ""} & Download PDF`;
+        return;
+      }
+
       trackAddPaymentInfo({ value: reportPrice, currency: "INR" });
 
       try {
@@ -1459,5 +1495,4 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
       }
     });
   </script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 </Base>

@@ -11,6 +11,12 @@ import {
   type ReportType,
 } from "../lib/store.js";
 import { logGeneration, logError } from "../lib/logger.js";
+import {
+  checkRateLimit,
+  clientIpFromHeaders,
+  rateLimitEnabled,
+  teaserRateLimitConfig,
+} from "../lib/rate-limit.js";
 
 const teaserApp = new OpenAPIHono();
 
@@ -103,6 +109,7 @@ const teaserRoute = createRoute({
   responses: {
     200: { description: "Teaser data with cache ID", content: { "application/json": { schema: TeaserResponse } } },
     400: { description: "Bad request", content: { "application/json": { schema: z.object({ error: z.string() }) } } },
+    429: { description: "Rate limited — retry after the Retry-After seconds", content: { "application/json": { schema: z.object({ error: z.string() }) } } },
   },
 });
 
@@ -135,6 +142,25 @@ teaserApp.openapi(teaserRoute, async (c) => {
 
     if (!body.coordinates || !body.datetime) {
       return c.json({ error: "coordinates and datetime are required to generate a teaser" }, 400);
+    }
+
+    // Rate-limit only requests that will actually spend ProKerala credits.
+    // cacheId hits above returned early (free); everything below this point
+    // calls at least one paid endpoint. Tune via TEASER_RATE_LIMIT_MAX /
+    // TEASER_RATE_LIMIT_WINDOW_MS, disable with TEASER_RATE_LIMIT_ENABLED=false.
+    if (rateLimitEnabled()) {
+      const ip = clientIpFromHeaders(
+        c.req.header("x-forwarded-for"),
+        c.req.header("x-real-ip"),
+      );
+      const result = checkRateLimit(ip, teaserRateLimitConfig());
+      if (!result.allowed) {
+        c.header("Retry-After", String(result.retryAfterSec));
+        return c.json(
+          { error: `Too many requests. Please wait ${result.retryAfterSec}s and try again.` },
+          429,
+        );
+      }
     }
 
     const reportName = body.name || body.label || "Janam Kundali";
