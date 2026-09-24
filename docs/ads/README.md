@@ -7,6 +7,7 @@ Start here. Everything in this folder, what it's for, and the order to actually 
 ```
 docs/ads/
 ├── README.md                          ← you are here
+├── google-search-campaign-status.md   ★ LIVE — Campaign 1 (Debt/Money Search) actual account state + what's next
 ├── campaign-plan.md                   6-week Meta angle rotation (original plan)
 ├── meta-ads-copy.md                   Original per-angle Meta copy (Money/Marriage/Career/Dosha/Health/Matching)
 ├── google-ads-copy.md                 Original Google Search copy, same 5 angles
