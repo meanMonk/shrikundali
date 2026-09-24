@@ -173,8 +173,8 @@ const API = import.meta.env.VITE_API_URL ?? "http://localhost:3400";
     init();
 
     // Razorpay checkout.js loads lazily on first payment attempt — no
-    // static <script> tag (it fired on every page view, even without
-    // checkout, and logged ERR_BLOCKED_BY_ORB noise).
+    // static script tag, since a static one fired on every page view,
+    // even without checkout, and logged ERR_BLOCKED_BY_ORB noise.
     let razorpayLoadPromise = null;
     function ensureRazorpayLoaded() {
       if (window.Razorpay) return Promise.resolve();

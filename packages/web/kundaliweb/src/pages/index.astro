@@ -1,22 +1,269 @@
 ---
-import KundaliLanding from "../components/KundaliLanding.astro";
+import Base from "../layouts/Base.astro";
+import {
+  Wallet,
+  Heart,
+  Briefcase,
+  ShieldAlert,
+  HeartPulse,
+  Users,
+  Lock,
+  CheckCircle2,
+  Clock,
+  Star,
+  ArrowRight,
+} from "@lucide/astro";
+
+const REPORTS = [
+  {
+    slug: "p/financial-kundali",
+    reportType: "financial_kundali",
+    icon: Wallet,
+    title: "Financial Kundali",
+    desc: "Dhan yoga, income potential and the right timing for investments, job changes and business.",
+  },
+  {
+    slug: "p/marriage-kundali",
+    reportType: "marriage_kundali",
+    icon: Heart,
+    title: "Marriage Kundali",
+    desc: "Your most favorable marriage timing windows, causes of delay, and remedies.",
+  },
+  {
+    slug: "p/career-kundali",
+    reportType: "career_kundali",
+    icon: Briefcase,
+    title: "Career Kundali",
+    desc: "Your strongest career windows — job change, promotion or business, and when to make the move.",
+  },
+  {
+    slug: "p/dosha-report",
+    reportType: "dosha_report",
+    icon: ShieldAlert,
+    title: "Dosha Report",
+    desc: "Manglik, Kaal Sarp, Pitra and Sade Sati checks, with simple, practical remedies.",
+  },
+  {
+    slug: "p/health-kundali",
+    reportType: "health_kundali",
+    icon: HeartPulse,
+    title: "Health Kundali",
+    desc: "Health-sensitive planetary periods and preventive guidance from your 6th house.",
+  },
+  {
+    slug: "p/kundali-matching",
+    reportType: "match_kundali",
+    icon: Users,
+    title: "Kundali Matching",
+    desc: "Guna Milan compatibility score and long-term harmony check for two birth charts.",
+  },
+];
 ---
-<KundaliLanding
-  headline="Bank Balance Kab Double Hoga?"
-  subheadline="Sirf apni janam date se jaaniye — dhan yog, career growth aur invest karne ka sahi samay, aapki Vedic Kundali ke anusaar."
-  angleCopy="Personalized to your exact birth chart — get clarity on money, career growth and the right time to invest, switch jobs, or start a business."
-  seoTitle="Financial Kundali Report — Dhan, Career, Investment Timing"
-  seoDescription="Get your personalized Vedic Financial Kundali report — income potential, career growth windows, investment timing and more, based on your exact birth chart."
-  angle="money"
-  features={[
-    "Dhan Yoga analysis — wealth-generating combinations in your chart",
-    "2nd, 6th, 10th & 11th house deep-dive for income and earnings",
-    "Best periods for investments, property and major purchases",
-    "Ideal timing for job changes, promotions and business launches",
-    "Debt and expense risk periods, with practical precautions",
-    "Full Dasha & Antardasha financial timeline for 10+ years",
-    "Doshas affecting wealth, with remedies to minimize their impact",
-    "Downloadable PDF you can revisit anytime",
-  ]}
-  aboutCopy="Every report is generated from your exact date, time and place of birth using the Lahiri ayanamsa — the sidereal system followed by traditional Vedic astrologers across India. We analyze your wealth houses (2nd, 6th, 10th, 11th) and running planetary periods against classical Parashari principles to pinpoint when money flows freely and when caution is warranted — delivered in minutes instead of days."
-/>
+<Base
+  title="Vedic Kundali Reports — Money, Marriage, Career, Health & Matching"
+  description="Personalized Vedic Kundali PDF reports from your exact birth details — financial, marriage, career, health, dosha and kundali-matching reports. Free preview, instant PDF."
+>
+  <style>
+    .report-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--color-text);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .report-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(43, 38, 32, 0.08);
+      border-color: var(--color-gold);
+    }
+    .report-card .icon-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--color-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+    }
+    .report-card h3 { font-size: 1.05rem; color: var(--color-secondary); }
+    .report-card p { font-size: 0.85rem; color: var(--color-text-muted); flex-grow: 1; }
+    .report-card .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.25rem; }
+    .report-card .price-tag { font-weight: 700; color: var(--color-primary); font-size: 1rem; }
+    .report-card .go-link { display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 600; font-size: 0.85rem; color: var(--color-primary); }
+    .reports-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .quick-select { background: var(--color-secondary); color: #fff; border-radius: 16px; padding: 2rem 1.5rem; text-align: center; }
+    .quick-select select {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      font-size: 1rem;
+      margin: 1rem auto 0.75rem;
+      display: block;
+      background: #fff;
+      color: var(--color-text);
+    }
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .step-card { background: #fff; border: 1px solid var(--color-border); border-radius: 12px; padding: 1.25rem; text-align: center; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--color-gold); color: var(--color-secondary);
+      display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 0.6rem;
+    }
+    @media (max-width: 720px) {
+      .reports-grid, .steps-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- Hero -->
+  <section
+    class="hero fade-in"
+    style="text-align:center;padding:3.5rem 1.5rem;border-radius:16px;margin-bottom:1.5rem;background:var(--color-secondary)"
+  >
+    <h1 style="font-size:2.1rem;color:#fff;margin-bottom:0.75rem;line-height:1.3">
+      Your Complete Vedic Kundali, Decoded
+    </h1>
+    <p style="font-size:1.1rem;color:#fff;opacity:0.9;margin-bottom:0.75rem;max-width:620px;margin-left:auto;margin-right:auto">
+      One accurate birth-chart report, tailored to what you actually want to know — money, marriage, career, health, doshas, or compatibility.
+    </p>
+    <p style="font-size:0.95rem;color:#fff;opacity:0.75;max-width:600px;margin:0 auto 1.25rem">
+      Enter your birth details once, get a free preview instantly, then unlock the full personalized PDF report.
+    </p>
+    <a href="#pick-report" style="display:inline-flex;align-items:center;gap:0.4rem;background:var(--color-gold);color:var(--color-secondary);padding:0.9rem 1.75rem;border-radius:8px;font-size:1.05rem;font-weight:700;text-decoration:none;min-height:44px">
+      Choose My Report <ArrowRight size={20} />
+    </a>
+  </section>
+
+  <!-- Trust strip -->
+  <section class="fade-in" style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:1.5rem;margin:1.5rem 0">
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <Lock size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Private &amp; Secure</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Your birth data stays confidential</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <CheckCircle2 size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Vedic Accuracy</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Lahiri ayanamsa, precise ephemeris</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <Clock size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Instant PDF</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Delivered to your email in minutes</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:start;gap:0.5rem;padding:0.75rem;background:var(--color-bg);border-radius:8px">
+        <Star size={22} color="var(--color-primary)" />
+        <div>
+          <h3 style="color:var(--color-primary);font-size:0.95rem;margin-bottom:0.25rem">Trusted by Thousands</h3>
+          <p style="font-size:0.8rem;color:var(--color-text-muted)">Loved across India</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What we do -->
+  <section class="fade-in" style="margin:2rem 0">
+    <h2 style="text-align:center;color:var(--color-secondary);font-size:1.4rem;margin-bottom:1.25rem">How Rashi Kundali Works</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3 style="color:var(--color-secondary);font-size:1rem;margin-bottom:0.4rem">Enter Birth Details</h3>
+        <p style="font-size:0.85rem;color:var(--color-text-muted)">Your exact date, time and place of birth — takes under a minute.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3 style="color:var(--color-secondary);font-size:1rem;margin-bottom:0.4rem">See Your Free Preview</h3>
+        <p style="font-size:0.85rem;color:var(--color-text-muted)">Instant chart summary and key scores for the report you picked — no payment needed.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3 style="color:var(--color-secondary);font-size:1rem;margin-bottom:0.4rem">Unlock the Full PDF</h3>
+        <p style="font-size:0.85rem;color:var(--color-text-muted)">Pay once, get your full personalized report emailed instantly and ready to download.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick select -->
+  <section id="pick-report" class="fade-in quick-select" style="margin:2rem 0">
+    <h2 style="font-size:1.3rem;margin-bottom:0.4rem">Which Kundali Report Do You Need?</h2>
+    <p style="font-size:0.9rem;opacity:0.85">Pick one below and we'll take you straight to your form.</p>
+    <select id="quick-select-report" aria-label="Choose a report type">
+      <option value="" selected disabled>Select a report type&hellip;</option>
+      {REPORTS.map((r) => (
+        <option value={r.slug}>{r.title}</option>
+      ))}
+    </select>
+    <button
+      id="quick-select-go"
+      type="button"
+      style="background:var(--color-gold);color:var(--color-secondary);border:none;padding:0.85rem 1.75rem;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;min-height:44px"
+    >
+      Continue
+    </button>
+  </section>
+
+  <!-- Report grid -->
+  <section class="fade-in" style="margin:2rem 0">
+    <h2 style="text-align:center;color:var(--color-secondary);font-size:1.4rem;margin-bottom:1.25rem">All Our Kundali Reports</h2>
+    <div class="reports-grid">
+      {REPORTS.map((r) => (
+        <a href={`/${r.slug}/`} class="report-card" data-report-type={r.reportType}>
+          <div class="icon-badge"><r.icon size={22} /></div>
+          <h3>{r.title}</h3>
+          <p>{r.desc}</p>
+          <div class="card-footer">
+            <span class="price-tag" data-price></span>
+            <span class="go-link">View Report <ArrowRight size={14} /></span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <script define:vars={{ apiUrl: import.meta.env.VITE_API_URL ?? "http://localhost:3400" }}>
+    const select = document.getElementById("quick-select-report");
+    const goBtn = document.getElementById("quick-select-go");
+    goBtn?.addEventListener("click", () => {
+      const val = select?.value;
+      if (val) window.location.href = `/${val}/#form-section`;
+    });
+    select?.addEventListener("change", () => {
+      if (select.value) window.location.href = `/${select.value}/#form-section`;
+    });
+
+    fetch(`${apiUrl}/api/pricing`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const docs = Array.isArray(data) ? data : data?.pricing;
+        if (!Array.isArray(docs)) return;
+        document.querySelectorAll("[data-report-type]").forEach((card) => {
+          const type = card.getAttribute("data-report-type");
+          const doc = docs.find((d) => d.reportType === type);
+          const priceEl = card.querySelector("[data-price]");
+          if (doc && priceEl) {
+            priceEl.textContent = `₹${doc.discountPrice}`;
+            if (doc.listPrice > doc.discountPrice) {
+              const strike = document.createElement("span");
+              strike.style.cssText = "display:inline-block;color:var(--color-text-muted);text-decoration:line-through;font-weight:400;font-size:0.8rem;margin-left:0.4rem";
+              strike.textContent = `₹${doc.listPrice}`;
+              priceEl.appendChild(strike);
+            }
+          }
+        });
+      })
+      .catch(() => {});
+  </script>
+</Base>
