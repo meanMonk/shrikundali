@@ -257,10 +257,13 @@ export async function getKundaliStats(startDate?: Date, endDate?: Date): Promise
 /** Most recent submitted users, newest first. */
 export async function listKundaliLeads(
   limit = 30,
-  options: { onlyWithEmail?: boolean } = {},
+  options: { onlyWithEmail?: boolean; startDate?: Date; endDate?: Date } = {},
 ): Promise<LeadRow[]> {
   const c = await getCollection();
-  const filter = options.onlyWithEmail ? { email: { $exists: true, $nin: [""] } } : {};
+  const filter = {
+    ...dateFilter(options.startDate, options.endDate),
+    ...(options.onlyWithEmail ? { email: { $exists: true, $nin: [""] } } : {}),
+  };
   const docs = await c
     .find(filter, {
       projection: {

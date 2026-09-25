@@ -113,6 +113,28 @@ function formatUsers(leads: LeadStats, rows: LeadRow[]): string {
   return lines.join("\n");
 }
 
+function formatSubmitted(days: number, leads: LeadStats, rows: LeadRow[]): string {
+  const lines: string[] = [`📝 *Submitted — last ${days} day${days === 1 ? "" : "s"}*`, "", formatLeadSummary(leads)];
+
+  const byType = Object.entries(leads.byReportType).sort((a, b) => b[1] - a[1]);
+  if (byType.length) {
+    lines.push("", "*By report:*");
+    for (const [type, count] of byType) lines.push(`• ${type}: ${count}`);
+  }
+
+  if (rows.length) {
+    lines.push("", `*List (${rows.length}):*`);
+    for (const r of rows) {
+      lines.push(
+        `• ${r.name || "—"} — ${r.email || "no email"} — ${r.reportType} — ${r.status} — ${formatIST(r.createdAt)}`,
+      );
+    }
+  } else {
+    lines.push("", "No submissions in this window.");
+  }
+  return lines.join("\n");
+}
+
 function formatEmails(leads: LeadStats, rows: LeadRow[]): string {
   const lines: string[] = [
     "📧 *Captured Emails*",
@@ -251,6 +273,7 @@ const HELP_TEXT = [
   "*Users*",
   "/users — users who submitted details (count + recent)",
   "/emails — captured emails (unique count + list)",
+  "/submitted <days> — users who submitted details in the last N days (default 1)",
   "",
   "*Pricing*",
   "/current_pricing — show current prices",
@@ -363,6 +386,19 @@ telegramBotApp.openapi(webhookRoute, async (c) => {
         listKundaliLeads(30, { onlyWithEmail: true }),
       ]);
       reply = formatEmails(leads, rows);
+    } else if (text.startsWith("/submitted")) {
+      const arg = text.slice("/submitted".length).trim();
+      const days = arg ? Number(arg) : 1;
+      if (!Number.isFinite(days) || days <= 0) {
+        reply = "Usage: `/submitted <days>`\n\ne.g. `/submitted 2` for the last 2 days. Defaults to 1 day.";
+      } else {
+        const { start, end } = lastNDays(days);
+        const [leads, rows] = await Promise.all([
+          getKundaliStats(start, end),
+          listKundaliLeads(200, { startDate: start, endDate: end }),
+        ]);
+        reply = formatSubmitted(days, leads, rows);
+      }
     } else if (text === "/tickets" || text === "/support") {
       const [stats, rows] = await Promise.all([getSupportTicketStats(), listSupportTickets(15)]);
       reply = formatTickets(stats, rows);
